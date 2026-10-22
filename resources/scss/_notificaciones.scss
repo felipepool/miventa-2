@@ -1,0 +1,37 @@
+body.swal2-toast-shown .swal2-container.miventa-toast-container {
+    z-index: 1200;
+    width: min(36rem, 100%);
+    padding-top: calc(1rem + env(safe-area-inset-top));
+    padding-right: calc(1rem + env(safe-area-inset-right));
+    padding-left: calc(1rem + env(safe-area-inset-left));
+}
+
+.swal2-popup.swal2-toast.miventa-toast {
+    width: min(36rem, 100%);
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 0.75rem;
+    font-family: inherit;
+    border-radius: $border-radius;
+    box-shadow: $box-shadow;
+
+    .swal2-title {
+        min-width: 0;
+        margin: 0.5rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        font-weight: 500;
+        overflow-wrap: anywhere;
+    }
+
+    .swal2-close {
+        width: 3rem;
+        height: 3rem;
+        margin: 0;
+        font-size: 2rem;
+    }
+}
+
+@media print {
+    .miventa-toast-container { display: none !important; }
+}

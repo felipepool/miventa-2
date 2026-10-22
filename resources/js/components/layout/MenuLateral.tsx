@@ -1,4 +1,6 @@
-import { Link, NavLink } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Collapse } from 'react-bootstrap';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Icon } from '@/components/ui';
 import { useSesion } from '@/lib/auth';
 
@@ -11,17 +13,35 @@ interface ItemMenu {
     href: string;
     label: string;
     icon: string;
+    permiso?: string;
 }
 
 /** Ítems del menú; crece con cada módulo que se incorpora. */
-const ITEMS: ItemMenu[] = [{ href: '/dashboard', label: 'Inicio', icon: 'speedometer2' }];
+const ITEMS: ItemMenu[] = [
+    { href: '/dashboard', label: 'Inicio', icon: 'speedometer2' },
+];
+
+const ADMINISTRACION: ItemMenu[] = [
+    { href: '/usuarios', label: 'Usuarios', icon: 'person-badge', permiso: 'gestionar_usuarios' },
+];
 
 /**
  * Menú principal: marca y navegación. Fijo desde pantallas grandes y
  * desplegable (offcanvas) en celular y tablet.
  */
 export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
-    const { negocio } = useSesion().contexto;
+    const { contexto, permisos } = useSesion();
+    const { negocio } = contexto;
+    const { pathname } = useLocation();
+    const administracion = ADMINISTRACION.filter((item) => !item.permiso || permisos.includes(item.permiso));
+    const administracionActiva = administracion.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
+    const [administracionAbierta, setAdministracionAbierta] = useState(administracionActiva);
+
+    useEffect(() => {
+        if (administracionActiva) {
+            setAdministracionAbierta(true);
+        }
+    }, [pathname, administracionActiva]);
 
     return (
         <>
@@ -39,12 +59,39 @@ export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
                 </div>
 
                 <nav className="app-sidebar__nav" aria-label="Menú principal">
-                    {ITEMS.map((item) => (
+                    {ITEMS.filter((item) => !item.permiso || permisos.includes(item.permiso)).map((item) => (
                         <NavLink key={item.href} to={item.href} className="app-sidebar__link" onClick={onCerrar}>
                             <Icon name={item.icon} />
                             {item.label}
                         </NavLink>
                     ))}
+                    {administracion.length > 0 && (
+                        <div className="app-sidebar__group">
+                            <button
+                                type="button"
+                                className={`app-sidebar__link app-sidebar__group-toggle ${administracionActiva ? 'has-active' : ''}`}
+                                aria-expanded={administracionAbierta}
+                                aria-controls="menu-administracion"
+                                onClick={() => setAdministracionAbierta((actual) => !actual)}
+                            >
+                                <Icon name="gear" />
+                                <span className="flex-grow-1 text-start">Administración</span>
+                                <Icon name="chevron-down" className={`app-sidebar__chevron ${administracionAbierta ? 'is-open' : ''}`} />
+                            </button>
+                            <Collapse in={administracionAbierta}>
+                                <div id="menu-administracion">
+                                    <div className="app-sidebar__group-items">
+                                        {administracion.map((item) => (
+                                            <NavLink key={item.href} to={item.href} className="app-sidebar__link app-sidebar__link--nested" onClick={onCerrar}>
+                                                <Icon name={item.icon} />
+                                                {item.label}
+                                            </NavLink>
+                                        ))}
+                                    </div>
+                                </div>
+                            </Collapse>
+                        </div>
+                    )}
                 </nav>
             </aside>
         </>

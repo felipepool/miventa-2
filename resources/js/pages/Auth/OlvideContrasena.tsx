@@ -2,9 +2,10 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Alert, Button, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { Icon, TextField } from '@/components/ui';
+import { TextField } from '@/components/ui';
 import { erroresDeValidacion, mensajeDeError, prepararCsrf, web } from '@/lib/http';
 import { useTitulo } from '@/lib/useTitulo';
+import { notificar } from '@/lib/notificaciones';
 
 /**
  * Pide el enlace para crear una contraseña nueva. La respuesta es la misma
@@ -16,7 +17,6 @@ export default function OlvideContrasena() {
     const [email, setEmail] = useState('');
     const [errores, setErrores] = useState<Record<string, string>>({});
     const [error, setError] = useState<string | null>(null);
-    const [enviado, setEnviado] = useState<string | null>(null);
     const [procesando, setProcesando] = useState(false);
 
     const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -28,7 +28,7 @@ export default function OlvideContrasena() {
         try {
             await prepararCsrf();
             const response = await web.post<{ message: string }>('/forgot-password', { email });
-            setEnviado(response.data.message);
+            notificar(response.data.message);
         } catch (exception) {
             const validacion = erroresDeValidacion(exception);
             setErrores(validacion);
@@ -45,13 +45,6 @@ export default function OlvideContrasena() {
         <>
             <h1 className="h5 mb-1">¿Olvidaste tu contraseña?</h1>
             <p className="text-muted mb-4">Escribe el correo de tu cuenta y te enviaremos un enlace para crear una nueva.</p>
-
-            {enviado && (
-                <Alert variant="success" className="small">
-                    <Icon name="envelope-check" className="me-1" />
-                    {enviado}
-                </Alert>
-            )}
 
             {error && (
                 <Alert variant="danger" className="small">

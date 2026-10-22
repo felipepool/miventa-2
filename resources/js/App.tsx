@@ -2,12 +2,15 @@ import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import Spinner from 'react-bootstrap/Spinner';
 import AppLayout from '@/layouts/AppLayout';
 import GuestLayout from '@/layouts/GuestLayout';
-import { useAuth } from '@/lib/auth';
+import { useAuth, useSesion } from '@/lib/auth';
 import Login from '@/pages/Auth/Login';
 import OlvideContrasena from '@/pages/Auth/OlvideContrasena';
 import RestablecerContrasena from '@/pages/Auth/RestablecerContrasena';
 import Dashboard from '@/pages/Dashboard';
 import NotFoundPage from '@/pages/NotFoundPage';
+import SinAcceso from '@/pages/SinAcceso';
+import UsuariosIndex from '@/pages/Usuarios/Index';
+import NuevoUsuario from '@/pages/Usuarios/Nuevo';
 
 function Cargando() {
     return (
@@ -35,6 +38,12 @@ function RequiereSesion() {
     }
 
     return <Outlet />;
+}
+
+function RequierePermiso({ permiso }: { permiso: string }) {
+    const { permisos } = useSesion();
+
+    return permisos.includes(permiso) ? <Outlet /> : <SinAcceso />;
 }
 
 /**
@@ -69,6 +78,11 @@ export default function App() {
                 <Route element={<AppLayout />}>
                     <Route index element={<Navigate to="/dashboard" replace />} />
                     <Route path="dashboard" element={<Dashboard />} />
+                    <Route element={<RequierePermiso permiso="gestionar_usuarios" />}>
+                        <Route path="usuarios" element={<UsuariosIndex />}>
+                            <Route path="nuevo" element={<NuevoUsuario />} />
+                        </Route>
+                    </Route>
                     <Route path="*" element={<NotFoundPage />} />
                 </Route>
             </Route>

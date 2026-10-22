@@ -8,6 +8,18 @@ export interface User {
 
 export type Rol = 'admin' | 'cajero' | 'cocina' | 'garzon';
 
+export interface OpcionRol {
+    value: Rol;
+    label: string;
+}
+
+export interface Usuario extends User {
+    activo: boolean;
+    roles: Rol[];
+    sucursales: SucursalResumen[];
+    es_usuario_actual: boolean;
+}
+
 export interface SucursalResumen {
     id: string;
     nombre: string;

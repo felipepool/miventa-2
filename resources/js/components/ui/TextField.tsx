@@ -23,9 +23,14 @@ export default function TextField({ label, error, hint, id, className, ...contro
     return (
         <Form.Group controlId={controlId} className={className ?? 'mb-3'}>
             <Form.Label>{label}</Form.Label>
-            <Form.Control isInvalid={Boolean(error)} {...controlProps} />
-            {hint && !error && <Form.Text muted>{hint}</Form.Text>}
-            <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
+            <Form.Control
+                isInvalid={Boolean(error)}
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? `${controlId}-error` : hint ? `${controlId}-ayuda` : undefined}
+                {...controlProps}
+            />
+            {hint && !error && <Form.Text id={`${controlId}-ayuda`} muted>{hint}</Form.Text>}
+            {error && <Form.Control.Feedback id={`${controlId}-error`} type="invalid">{error}</Form.Control.Feedback>}
         </Form.Group>
     );
 }

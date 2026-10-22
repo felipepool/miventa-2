@@ -2,9 +2,10 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Alert, Button, Spinner } from 'react-bootstrap';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Icon, TextField } from '@/components/ui';
+import { TextField } from '@/components/ui';
 import { erroresDeValidacion, mensajeDeError, prepararCsrf, web } from '@/lib/http';
 import { useTitulo } from '@/lib/useTitulo';
+import { notificar } from '@/lib/notificaciones';
 
 /**
  * Crea la contraseña nueva desde el enlace que llegó por correo.
@@ -32,6 +33,7 @@ export default function RestablecerContrasena() {
             await prepararCsrf();
             const response = await web.post<{ message: string }>('/reset-password', { ...datos, token });
             setListo(response.data.message);
+            notificar(response.data.message);
         } catch (exception) {
             const validacion = erroresDeValidacion(exception);
             setErrores(validacion);
@@ -50,10 +52,6 @@ export default function RestablecerContrasena() {
         return (
             <>
                 <h1 className="h5 mb-3">Contraseña actualizada</h1>
-                <Alert variant="success" className="small">
-                    <Icon name="check-circle" className="me-1" />
-                    {listo}
-                </Alert>
                 <Button variant="primary" className="w-100" onClick={() => navigate('/login', { replace: true })}>
                     Iniciar sesión
                 </Button>
