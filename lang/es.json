@@ -1,0 +1,10 @@
+{
+    "Login": "Iniciar sesión",
+    "Logout": "Cerrar sesión",
+    "Email Address": "Correo electrónico",
+    "Password": "Contraseña",
+    "Remember Me": "Recordarme",
+    "Toggle navigation": "Mostrar navegación",
+    "These credentials do not match our records.": "Correo o contraseña incorrectos.",
+    "Too many login attempts. Please try again in :seconds seconds.": "Demasiados intentos. Vuelve a intentarlo en :seconds segundos."
+}
