@@ -1,11 +1,11 @@
 import Card from 'react-bootstrap/Card';
-import { useUser } from '@/lib/auth';
+import { useSesion } from '@/lib/auth';
 import { useTitulo } from '@/lib/useTitulo';
 
 export default function Dashboard() {
     useTitulo('Inicio');
 
-    const user = useUser();
+    const { user } = useSesion();
 
     return (
         <Card>

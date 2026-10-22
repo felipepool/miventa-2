@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Middleware\EstablecerContexto;
 use App\Http\Middleware\LimitarRestablecerContrasena;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,9 +17,23 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
+
         $middleware->web(append: [
+            EstablecerContexto::class,
             LimitarRestablecerContrasena::class,
         ]);
+
+        $middleware->api(append: [
+            EstablecerContexto::class,
+        ]);
+
+        // El contexto (negocio y sucursal) se fija después de autenticar y antes de
+        // resolver los modelos de la ruta: así el binding ya filtra por negocio.
+        $middleware->prependToPriorityList(
+            before: SubstituteBindings::class,
+            prepend: EstablecerContexto::class,
+        );
+
         $middleware->redirectUsersTo('/dashboard');
         $middleware->redirectGuestsTo('/login');
     })

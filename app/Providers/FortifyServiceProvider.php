@@ -6,12 +6,17 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
+use App\Http\Middleware\EstablecerContexto;
 use App\Http\Responses\RespuestaEnlaceRestablecer;
+use App\Models\Negocio;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Contracts\FailedPasswordResetLinkRequestResponse;
 use Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse;
@@ -42,8 +47,35 @@ class FortifyServiceProvider extends ServiceProvider
         // Recuperar contraseña: 6 solicitudes por minuto por IP (ver LimitarRestablecerContrasena).
         RateLimiter::for('restablecer', fn (Request $request) => Limit::perMinute(6)->by($request->ip()));
 
+        // Ingreso con código de negocio + usuario: el usuario solo se busca dentro de su negocio.
+        Fortify::authenticateUsing(function (Request $request): ?User {
+            $request->validate([
+                'codigo_negocio' => ['required', 'string', 'max:30'],
+            ]);
+
+            $negocio = Negocio::where('codigo', Str::lower(trim($request->string('codigo_negocio'))))->first();
+
+            $user = $negocio?->usuarios()
+                ->where('username', Str::lower(trim($request->string(Fortify::username()))))
+                ->first();
+
+            if ($user === null || ! Hash::check($request->string('password'), $user->password)) {
+                return null;
+            }
+
+            if (! $user->puedeIniciarSesion()) {
+                throw ValidationException::withMessages([
+                    Fortify::username() => EstablecerContexto::CUENTA_DESHABILITADA,
+                ]);
+            }
+
+            return $user;
+        });
+
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
+            $throttleKey = Str::transliterate(Str::lower(
+                $request->input('codigo_negocio').'|'.$request->input(Fortify::username()),
+            ).'|'.$request->ip());
 
             return Limit::perMinute(5)->by($throttleKey);
         });

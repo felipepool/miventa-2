@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
+ * Datos públicos de un usuario: el `public_id` sale como `id`, nunca el numérico.
+ *
  * @mixin User
  */
 class UserResource extends JsonResource
@@ -16,10 +18,6 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'email' => $this->email,
-        ];
+        return $this->datosPublicos('name', 'username', 'email');
     }
 }

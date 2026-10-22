@@ -1,16 +1,17 @@
 import { Button, Dropdown } from 'react-bootstrap';
-import { Icon } from '@/components/ui';
-import { useAuth, useUser } from '@/lib/auth';
+import { Icon, SelectorSucursal } from '@/components/ui';
+import { useAuth, useSesion } from '@/lib/auth';
 
 interface BarraSuperiorProps {
     onAbrirMenu: () => void;
 }
 
 /**
- * Barra superior: botón de menú (en pantallas chicas) y usuario.
+ * Barra superior: botón de menú (en pantallas chicas), sucursal activa,
+ * código del negocio y usuario.
  */
 export default function BarraSuperior({ onAbrirMenu }: BarraSuperiorProps) {
-    const user = useUser();
+    const { user, contexto } = useSesion();
     const { logout } = useAuth();
 
     return (
@@ -19,6 +20,17 @@ export default function BarraSuperior({ onAbrirMenu }: BarraSuperiorProps) {
                 <Icon name="list" />
             </Button>
 
+            <div className="min-w-0">
+                <SelectorSucursal />
+            </div>
+
+            {contexto.negocio && (
+                <span className="codigo-negocio d-none d-md-inline-flex" title="Código de negocio: tus usuarios lo usan para ingresar">
+                    <Icon name="building" />
+                    Código <strong>{contexto.negocio.codigo}</strong>
+                </span>
+            )}
+
             <div className="ms-auto d-flex align-items-center gap-2">
                 <Dropdown align="end">
                     <Dropdown.Toggle variant="light" className="d-flex align-items-center gap-2">
@@ -26,7 +38,7 @@ export default function BarraSuperior({ onAbrirMenu }: BarraSuperiorProps) {
                         <span className="d-none d-sm-inline">{user.name}</span>
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                        <Dropdown.Header>{user.email}</Dropdown.Header>
+                        <Dropdown.Header>@{user.username}</Dropdown.Header>
                         <Dropdown.Divider />
                         <Dropdown.Item as="button" onClick={() => void logout()}>
                             <Icon name="box-arrow-right" className="me-2" />

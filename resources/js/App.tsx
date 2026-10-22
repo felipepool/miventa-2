@@ -23,14 +23,14 @@ function Cargando() {
  * Rutas que requieren sesión: sin ella, se va al login recordando a dónde quería ir.
  */
 function RequiereSesion() {
-    const { user } = useAuth();
+    const { sesion } = useAuth();
     const location = useLocation();
 
-    if (user === undefined) {
+    if (sesion === undefined) {
         return <Cargando />;
     }
 
-    if (user === null) {
+    if (sesion === null) {
         return <Navigate to="/login" replace state={{ desde: location.pathname + location.search }} />;
     }
 
@@ -41,13 +41,13 @@ function RequiereSesion() {
  * Rutas solo para invitados (login, recuperar contraseña): con sesión, al inicio.
  */
 function SoloInvitados() {
-    const { user } = useAuth();
+    const { sesion } = useAuth();
 
-    if (user === undefined) {
+    if (sesion === undefined) {
         return <Cargando />;
     }
 
-    if (user) {
+    if (sesion) {
         return <Navigate to="/dashboard" replace />;
     }
 

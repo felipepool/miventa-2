@@ -1,5 +1,6 @@
 import { Link, NavLink } from 'react-router-dom';
 import { Icon } from '@/components/ui';
+import { useSesion } from '@/lib/auth';
 
 interface MenuLateralProps {
     abierto: boolean;
@@ -20,6 +21,8 @@ const ITEMS: ItemMenu[] = [{ href: '/dashboard', label: 'Inicio', icon: 'speedom
  * desplegable (offcanvas) en celular y tablet.
  */
 export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
+    const { negocio } = useSesion().contexto;
+
     return (
         <>
             <div className={`app-sidebar-backdrop ${abierto ? 'show' : ''}`} onClick={onCerrar} aria-hidden="true" />
@@ -27,7 +30,10 @@ export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
             <aside className={`app-sidebar ${abierto ? 'show' : ''}`}>
                 <div className="d-flex align-items-start justify-content-between">
                     <Link to="/dashboard" className="app-sidebar__brand" onClick={onCerrar}>
-                        {import.meta.env.VITE_APP_NAME}
+                        <span className="d-flex flex-column lh-sm">
+                            {import.meta.env.VITE_APP_NAME}
+                            {negocio && <small className="app-sidebar__business">{negocio.nombre}</small>}
+                        </span>
                     </Link>
                     <button type="button" className="btn-close btn-close-white mt-2 me-2 d-lg-none" onClick={onCerrar} aria-label="Cerrar menú" />
                 </div>

@@ -8,6 +8,28 @@ import type { Credenciales } from '@/lib/auth';
 import { erroresDeValidacion, mensajeDeError } from '@/lib/http';
 import { useTitulo } from '@/lib/useTitulo';
 
+const CLAVE_NEGOCIO_RECORDADO = 'miventa.codigo_negocio';
+
+function leerNegocioRecordado(): string {
+    try {
+        return window.localStorage.getItem(CLAVE_NEGOCIO_RECORDADO) ?? '';
+    } catch {
+        return '';
+    }
+}
+
+function guardarNegocioRecordado(codigo: string | null): void {
+    try {
+        if (codigo) {
+            window.localStorage.setItem(CLAVE_NEGOCIO_RECORDADO, codigo);
+        } else {
+            window.localStorage.removeItem(CLAVE_NEGOCIO_RECORDADO);
+        }
+    } catch {
+        // Sin almacenamiento disponible (modo privado): simplemente no se recuerda.
+    }
+}
+
 export default function Login() {
     useTitulo('Iniciar sesión');
 
@@ -16,7 +38,9 @@ export default function Login() {
     const location = useLocation();
     const destino = (location.state as { desde?: string } | null)?.desde ?? '/dashboard';
 
-    const [datos, setDatos] = useState<Credenciales>({ email: '', password: '', remember: false });
+    const [negocioRecordado] = useState(leerNegocioRecordado);
+    const [datos, setDatos] = useState<Credenciales>({ codigo_negocio: negocioRecordado, username: '', password: '', remember: false });
+    const [recordarNegocio, setRecordarNegocio] = useState(negocioRecordado !== '');
     const [errores, setErrores] = useState<Record<string, string>>({});
     const [error, setError] = useState<string | null>(null);
     const [procesando, setProcesando] = useState(false);
@@ -29,6 +53,7 @@ export default function Login() {
 
         try {
             await login(datos);
+            guardarNegocioRecordado(recordarNegocio ? datos.codigo_negocio.trim().toLowerCase() : null);
             navigate(destino, { replace: true });
         } catch (exception) {
             const validacion = erroresDeValidacion(exception);
@@ -46,7 +71,7 @@ export default function Login() {
     return (
         <>
             <h1 className="h5 mb-1">Iniciar sesión</h1>
-            <p className="text-muted mb-4">Ingresa tus datos para continuar.</p>
+            <p className="text-muted mb-4">Ingresa los datos de tu negocio para continuar.</p>
 
             {error && (
                 <Alert variant="danger" className="small">
@@ -56,16 +81,25 @@ export default function Login() {
 
             <form onSubmit={(event) => void submit(event)} noValidate>
                 <TextField
-                    label="Correo electrónico"
-                    type="email"
-                    inputMode="email"
+                    label="Código de negocio"
+                    autoComplete="organization"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    autoFocus={negocioRecordado === ''}
+                    value={datos.codigo_negocio}
+                    onChange={(event) => setDatos({ ...datos, codigo_negocio: event.target.value })}
+                    error={errores.codigo_negocio}
+                />
+
+                <TextField
+                    label="Usuario"
                     autoComplete="username"
                     autoCapitalize="none"
                     spellCheck={false}
-                    autoFocus
-                    value={datos.email}
-                    onChange={(event) => setDatos({ ...datos, email: event.target.value })}
-                    error={errores.email}
+                    autoFocus={negocioRecordado !== ''}
+                    value={datos.username}
+                    onChange={(event) => setDatos({ ...datos, username: event.target.value })}
+                    error={errores.username}
                 />
 
                 <TextField
@@ -75,6 +109,14 @@ export default function Login() {
                     value={datos.password}
                     onChange={(event) => setDatos({ ...datos, password: event.target.value })}
                     error={errores.password}
+                />
+
+                <Form.Check
+                    id="recordar_negocio"
+                    className="mb-2"
+                    label="Recordar este negocio en este equipo"
+                    checked={recordarNegocio}
+                    onChange={(event) => setRecordarNegocio(event.target.checked)}
                 />
 
                 <Form.Check

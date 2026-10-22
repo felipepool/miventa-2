@@ -1,36 +1,39 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { api, onSesionExpirada, prepararCsrf, web } from '@/lib/http';
-import type { User } from '@/types/user';
+import type { Sesion } from '@/types/user';
 
 export interface Credenciales {
-    email: string;
+    codigo_negocio: string;
+    username: string;
     password: string;
     remember: boolean;
 }
 
 interface AuthContextValue {
     /** `undefined` mientras se consulta la sesión; `null` si no hay sesión. */
-    user: User | null | undefined;
+    sesion: Sesion | null | undefined;
     login: (credenciales: Credenciales) => Promise<void>;
     logout: () => Promise<void>;
     refresh: () => Promise<void>;
+    cambiarSucursal: (sucursalId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 /**
- * Sesión del usuario: la consulta al iniciar la SPA y expone login/logout.
+ * Sesión del usuario: la consulta al iniciar la SPA y expone login/logout y el
+ * cambio de sucursal activa.
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null | undefined>(undefined);
+    const [sesion, setSesion] = useState<Sesion | null | undefined>(undefined);
 
     const refresh = useCallback(async () => {
         try {
-            const response = await api.get<{ data: User }>('/me');
-            setUser(response.data.data);
+            const response = await api.get<{ data: Sesion }>('/me');
+            setSesion(response.data.data);
         } catch {
-            setUser(null);
+            setSesion(null);
         }
     }, []);
 
@@ -47,18 +50,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             await web.post('/logout');
         } finally {
-            setUser(null);
+            setSesion(null);
         }
     }, []);
 
+    const cambiarSucursal = useCallback(async (sucursalId: string) => {
+        const response = await api.put<{ data: Sesion }>(`/sucursal-actual/${sucursalId}`);
+        setSesion(response.data.data);
+    }, []);
+
     useEffect(() => {
-        onSesionExpirada(() => setUser(null));
+        onSesionExpirada(() => setSesion(null));
         void refresh();
 
         return () => onSesionExpirada(null);
     }, [refresh]);
 
-    const value = useMemo(() => ({ user, login, logout, refresh }), [user, login, logout, refresh]);
+    const value = useMemo(() => ({ sesion, login, logout, refresh, cambiarSucursal }), [sesion, login, logout, refresh, cambiarSucursal]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
@@ -74,14 +82,14 @@ export function useAuth(): AuthContextValue {
 }
 
 /**
- * Usuario autenticado en páginas protegidas (RequireAuth garantiza que existe).
+ * Sesión del usuario en páginas protegidas (RequiereSesion garantiza que existe).
  */
-export function useUser(): User {
-    const { user } = useAuth();
+export function useSesion(): Sesion {
+    const { sesion } = useAuth();
 
-    if (!user) {
-        throw new Error('useUser solo se puede usar en rutas protegidas.');
+    if (!sesion) {
+        throw new Error('useSesion solo se puede usar en rutas protegidas.');
     }
 
-    return user;
+    return sesion;
 }

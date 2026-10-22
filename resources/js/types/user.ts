@@ -1,5 +1,29 @@
 export interface User {
-    id: number;
+    /** `public_id` del usuario (ULID); el id numérico nunca sale del servidor. */
+    id: string;
     name: string;
-    email: string;
+    username: string;
+    email: string | null;
+}
+
+export type Rol = 'admin' | 'cajero' | 'cocina' | 'garzon';
+
+export interface SucursalResumen {
+    id: string;
+    nombre: string;
+}
+
+export interface Contexto {
+    negocio: { codigo: string; nombre: string } | null;
+    modulos: string[];
+    sucursal: SucursalResumen | null;
+    sucursales: SucursalResumen[];
+}
+
+/** Respuesta de `GET /api/v1/me`. */
+export interface Sesion {
+    user: User;
+    roles: Rol[];
+    permisos: string[];
+    contexto: Contexto;
 }
