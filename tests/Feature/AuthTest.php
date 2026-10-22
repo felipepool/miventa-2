@@ -3,6 +3,8 @@
 use App\Models\Negocio;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 uses(RefreshDatabase::class);
 
@@ -152,6 +154,12 @@ test('a user deactivated during their session gets 401 on the next api request',
 
     // La sesión de la SPA quedó cerrada.
     $this->assertGuest('web');
+});
+
+test('the spa is stateful on a host other than the app url', function () {
+    $request = Request::create('http://otro-host.test/api/v1/me', server: ['HTTP_REFERER' => 'http://otro-host.test/']);
+
+    expect(EnsureFrontendRequestsAreStateful::fromFrontend($request))->toBeTrue();
 });
 
 test('users log out with json', function () {
