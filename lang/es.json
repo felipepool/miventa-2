@@ -1,10 +1,7 @@
 {
-    "Login": "Iniciar sesión",
-    "Logout": "Cerrar sesión",
-    "Email Address": "Correo electrónico",
-    "Password": "Contraseña",
-    "Remember Me": "Recordarme",
-    "Toggle navigation": "Mostrar navegación",
-    "These credentials do not match our records.": "Correo o contraseña incorrectos.",
-    "Too many login attempts. Please try again in :seconds seconds.": "Demasiados intentos. Vuelve a intentarlo en :seconds segundos."
+    "Hello!": "¡Hola!",
+    "Whoops!": "¡Ups!",
+    "Regards,": "Saludos,",
+    "All rights reserved.": "Todos los derechos reservados.",
+    "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below\ninto your web browser:": "Si el botón \":actionText\" no funciona, copia y pega este enlace en tu navegador:"
 }

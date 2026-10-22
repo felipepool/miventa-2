@@ -1,0 +1,108 @@
+// =============================================================================
+// Ajustes para pantallas táctiles y Safari en iPhone/iPad. Se mantienen aparte
+// de _layout.scss (portado del original) para no mezclar ambos cambios.
+// =============================================================================
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+body {
+    -webkit-tap-highlight-color: transparent;
+}
+
+// El alto visible real: 100vh en Safari incluye la barra del navegador.
+@supports (height: 100dvh) {
+    .app-shell,
+    .auth-wrapper {
+        min-height: 100dvh;
+    }
+
+    .app-sidebar,
+    .ventas-rail {
+        height: 100dvh;
+    }
+
+    .pos {
+        height: calc(100dvh - #{$topbar-height} - 3rem);
+    }
+}
+
+// Con viewport-fit=cover el contenido llega bajo el notch: se respetan los márgenes seguros.
+.app-sidebar {
+    padding-top: calc(1rem + env(safe-area-inset-top));
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    padding-left: calc(0.75rem + env(safe-area-inset-left));
+}
+
+.app-topbar {
+    height: calc(#{$topbar-height} + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
+    padding-right: calc(1.5rem + env(safe-area-inset-right));
+}
+
+.app-content {
+    padding-right: calc(1.5rem + env(safe-area-inset-right));
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+}
+
+@include media-breakpoint-down(lg) {
+    .app-topbar {
+        padding-left: calc(1rem + env(safe-area-inset-left));
+        padding-right: calc(1rem + env(safe-area-inset-right));
+    }
+
+    .app-content {
+        padding-left: calc(1rem + env(safe-area-inset-left));
+        padding-right: calc(1rem + env(safe-area-inset-right));
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    }
+}
+
+.auth-wrapper {
+    padding:
+        calc(1rem + env(safe-area-inset-top))
+        calc(1rem + env(safe-area-inset-right))
+        calc(1rem + env(safe-area-inset-bottom))
+        calc(1rem + env(safe-area-inset-left));
+}
+
+// Dedo en vez de mouse: controles de al menos 44px y textos de 16px (iOS hace
+// zoom al enfocar un campo con letra más chica).
+@media (pointer: coarse) {
+    .form-control,
+    .form-select,
+    .input-group-text {
+        min-height: 2.75rem;
+        font-size: 1rem;
+    }
+
+    .btn:not(.btn-sm, .btn-close),
+    .app-sidebar__link,
+    .dropdown-item {
+        min-height: 2.75rem;
+    }
+
+    .btn:not(.btn-sm, .btn-close),
+    .app-sidebar__link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .app-sidebar__link {
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .form-check-input {
+        width: 1.25em;
+        height: 1.25em;
+    }
+}

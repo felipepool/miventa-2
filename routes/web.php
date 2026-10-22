@@ -1,20 +1,20 @@
 <?php
 
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Solo login/logout: no hay registro público.
-Auth::routes([
-    'register' => false,
-    'reset' => false,
-    'confirm' => false,
-    'verify' => false,
-]);
+// La autenticación (POST /login, /logout, /forgot-password, /reset-password)
+// la registra Fortify sin vistas: responde JSON a la SPA.
 
-Route::redirect('/', '/app');
+Route::redirect('/', '/dashboard');
 
-// Cascarón de la SPA: react-router resuelve las rutas bajo /app.
-Route::view('app/{any?}', 'app')
-    ->where('any', '.*')
-    ->middleware('auth')
-    ->name('app');
+// Destino del enlace del correo de recuperación (sin vistas, Fortify no define esta ruta).
+Route::view('restablecer-contrasena/{token}', 'app')->name('password.reset');
+
+// Cascarón de la SPA: react-router resuelve cualquier otra ruta GET y decide
+// qué es público y qué requiere sesión. La API nunca devuelve el cascarón.
+Route::fallback(function (Request $request) {
+    abort_if($request->is('api/*'), 404);
+
+    return view('app');
+})->name('spa');

@@ -1,0 +1,2335 @@
+// =============================================================================
+// Estructura de la aplicación (sidebar, topbar, contenido) y piezas
+// compartidas que Bootstrap no trae. Solo usa variables de _variables.scss.
+// =============================================================================
+
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.app-sidebar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    width: $sidebar-width;
+    height: 100vh;
+    padding: 1rem 0.75rem;
+    background: $sidebar-bg;
+    color: $sidebar-color;
+
+    &__brand {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem 1.25rem;
+        color: #fff;
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    &__business {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: $sidebar-color;
+    }
+
+    &__nav {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 0.125rem;
+        overflow-y: auto;
+    }
+
+    &__link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5625rem 0.75rem;
+        border-radius: $border-radius-sm;
+        color: $sidebar-color;
+        font-weight: 500;
+        text-decoration: none;
+        transition: background-color 0.15s, color 0.15s;
+
+        .bi {
+            font-size: 1.05rem;
+        }
+
+        &:hover {
+            background: $sidebar-active-bg;
+            color: #fff;
+        }
+
+        &.active {
+            background: $primary;
+            color: #fff;
+        }
+
+        &:focus-visible {
+            outline: 2px solid rgba(255, 255, 255, 0.6);
+            outline-offset: -2px;
+        }
+
+        &--nested {
+            padding-left: 2.5rem;
+            font-size: 0.875rem;
+
+            .bi {
+                font-size: 0.95rem;
+            }
+        }
+    }
+
+    // Grupo desplegable (acordeón)
+    &__group-toggle {
+        width: 100%;
+        border: 0;
+        background: transparent;
+
+        &.has-active {
+            color: #fff;
+        }
+    }
+
+    &__group-items {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+        padding: 0.125rem 0 0.375rem;
+    }
+
+    &__chevron {
+        font-size: 0.75rem !important;
+        transition: transform 0.2s ease;
+
+        &.is-open {
+            transform: rotate(180deg);
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .app-sidebar__chevron {
+        transition: none;
+    }
+}
+
+.app-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.app-topbar {
+    position: sticky;
+    top: 0;
+    z-index: $zindex-sticky;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: $topbar-height;
+    padding: 0 1.5rem;
+    background: #fff;
+    border-bottom: 1px solid $border-color;
+}
+
+.min-w-0 {
+    min-width: 0;
+}
+
+// Código del negocio en la barra superior (con él ingresan los usuarios)
+.codigo-negocio {
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: $border-radius;
+    background: $light;
+    color: $secondary;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+
+    strong {
+        color: $body-color;
+        font-family: $font-family-monospace;
+    }
+}
+
+.app-content {
+    flex: 1;
+    padding: 1.5rem;
+}
+
+.app-sidebar-backdrop {
+    display: none;
+}
+
+@include media-breakpoint-down(lg) {
+    .app-sidebar {
+        position: fixed;
+        z-index: $zindex-offcanvas;
+        max-width: 85vw;
+        transform: translateX(-100%);
+        transition: transform 0.2s ease;
+
+        &.show {
+            transform: none;
+        }
+    }
+
+    .app-sidebar-backdrop.show {
+        position: fixed;
+        inset: 0;
+        z-index: $zindex-offcanvas-backdrop;
+        display: block;
+        background: rgba($brand-dark, 0.5);
+    }
+
+    .app-topbar {
+        padding: 0 1rem;
+    }
+
+    .app-content {
+        padding: 1rem;
+    }
+}
+
+// Menú principal flotante (layout del punto de venta): oculto en todas las
+// pantallas y se despliega sobre el contenido con el botón ☰.
+.app-sidebar.app-sidebar--flotante {
+    position: fixed;
+    z-index: $zindex-offcanvas;
+    max-width: 85vw;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+
+    &.show {
+        transform: none;
+    }
+}
+
+.app-sidebar-backdrop.app-sidebar--flotante.show {
+    position: fixed;
+    inset: 0;
+    z-index: $zindex-offcanvas-backdrop;
+    display: block;
+    background: rgba($brand-dark, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .app-sidebar.app-sidebar--flotante {
+        transition: none;
+    }
+}
+
+// Barra de íconos del punto de venta (escritorio)
+$ventas-rail-width: 4.25rem;
+
+.ventas-rail {
+    position: sticky;
+    top: 0;
+    z-index: $zindex-sticky + 1;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.375rem;
+    width: $ventas-rail-width;
+    height: 100vh;
+    padding: 0.5rem 0;
+    overflow-y: auto;
+    background: #fff;
+    border-right: 1px solid $border-color;
+
+    &__link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        flex-shrink: 0;
+        border: 0;
+        border-radius: $border-radius;
+        background: transparent;
+        color: $secondary;
+        font-size: 1.25rem;
+        text-decoration: none;
+        transition: background-color 0.15s, color 0.15s;
+
+        &:hover {
+            background: $light;
+            color: $body-color;
+        }
+
+        &.active {
+            background: rgba($primary, 0.12);
+            color: $primary;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $primary;
+            outline-offset: 2px;
+        }
+    }
+
+    // El ☰ ocupa el alto de la barra superior, como en el resto de la app.
+    &__menu {
+        height: calc(#{$topbar-height} - 1rem);
+        margin-bottom: 0.5rem;
+    }
+}
+
+// Barra inferior del punto de venta (celular y tablet)
+.ventas-barra {
+    display: none;
+}
+
+@include media-breakpoint-down(lg) {
+    .ventas-rail {
+        display: none;
+    }
+
+    .ventas-barra {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: $zindex-fixed;
+        display: flex;
+        justify-content: space-around;
+        gap: 0.25rem;
+        padding: 0.25rem 0.25rem calc(0.25rem + env(safe-area-inset-bottom));
+        overflow-x: auto;
+        background: #fff;
+        border-top: 1px solid $border-color;
+
+        &__link {
+            display: flex;
+            flex: 1 0 3.75rem;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.125rem;
+            padding: 0.375rem 0.25rem;
+            border-radius: $border-radius;
+            color: $secondary;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            line-height: 1.1;
+            text-align: center;
+            text-decoration: none;
+
+            .bi {
+                font-size: 1.25rem;
+            }
+
+            &.active {
+                color: $primary;
+                background: rgba($primary, 0.1);
+            }
+        }
+    }
+
+    // Espacio para que la barra inferior no tape el final del contenido.
+    .app-shell--ventas .app-content {
+        padding-bottom: 5rem;
+    }
+}
+
+@media print {
+    .ventas-rail,
+    .ventas-barra {
+        display: none !important;
+    }
+}
+
+// Encabezado de página
+.page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    &__title {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+
+    &__subtitle {
+        margin: 0.25rem 0 0;
+        color: $text-muted;
+    }
+
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+}
+
+@include media-breakpoint-down(sm) {
+    .page-header {
+        &__title {
+            font-size: 1.25rem;
+        }
+
+        &__actions {
+            width: 100%;
+
+            .btn {
+                flex: 1 1 auto;
+            }
+        }
+    }
+}
+
+// Barra de búsqueda y filtros de los listados
+.table-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+
+    &__search {
+        flex: 1 1 16rem;
+    }
+
+    &__filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+
+        .form-select {
+            width: auto;
+            min-width: 10rem;
+        }
+    }
+}
+
+@include media-breakpoint-down(sm) {
+    .table-toolbar__filters {
+        width: 100%;
+
+        .form-select {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+    }
+}
+
+// Imagen con vista previa (ImageField) y miniatura en listados
+.image-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+
+    &__preview {
+        display: grid;
+        flex-shrink: 0;
+        place-items: center;
+        width: 5.5rem;
+        height: 5.5rem;
+        overflow: hidden;
+        border: 1px dashed $border-color;
+        border-radius: $border-radius;
+        background: $light;
+        color: $text-muted;
+        font-size: 1.75rem;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+}
+
+.product-thumb {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    overflow: hidden;
+    border-radius: $border-radius-sm;
+    background: $light;
+    color: $text-muted;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+// Botones − cantidad + (QuantityStepper)
+.quantity-stepper {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    .btn {
+        display: grid;
+        place-items: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        padding: 0;
+    }
+
+    &__value {
+        min-width: 2rem;
+        font-weight: 700;
+        text-align: center;
+    }
+}
+
+// Grupo de modificadores (ModificadorGrupoSelector)
+.modificador-grupo {
+    padding: 1rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+
+    &__titulo {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.25rem 1rem;
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    &__cantidad {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.25rem 0;
+    }
+
+    &__pie {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid $border-color;
+        font-size: 0.875rem;
+    }
+}
+
+// Lista ordenable (SortableList)
+.sortable-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    &__item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid $border-color;
+        border-radius: $border-radius;
+    }
+
+    &__position {
+        display: grid;
+        flex-shrink: 0;
+        place-items: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 50%;
+        background: rgba($primary, 0.1);
+        color: $primary;
+        font-size: 0.8125rem;
+        font-weight: 700;
+    }
+}
+
+// Estado de la caja en la barra superior (IndicadorCaja)
+.indicador-caja {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 50rem;
+    background: $light;
+    color: $text-muted;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+
+    &.is-abierta {
+        background: rgba($success, 0.12);
+        color: shade-color($success, 20%);
+    }
+}
+
+// Contador de billetes y monedas (ContadorEfectivo)
+.contador-efectivo {
+    &__cantidad {
+        width: 6.5rem;
+
+        .form-control {
+            text-align: end;
+        }
+    }
+
+    &__total {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: $border-radius;
+        background: rgba($primary, 0.08);
+        font-size: 1.125rem;
+    }
+}
+
+// Pantalla de venta (POS)
+.pos {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 26rem;
+    gap: 1.25rem;
+    height: calc(100vh - #{$topbar-height} - 3rem);
+
+    &__catalogo,
+    &__venta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        min-height: 0;
+    }
+
+    &__catalogo .pos-grilla,
+    &__catalogo .empty-state {
+        overflow-y: auto;
+    }
+}
+
+@include media-breakpoint-down(lg) {
+    .pos {
+        display: block;
+        height: auto;
+    }
+}
+
+.pos-categorias {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+
+    .btn {
+        flex-shrink: 0;
+    }
+}
+
+.pos-grilla {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: 0.75rem;
+    align-content: start;
+}
+
+.pos-producto {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    padding: 0.75rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    background: #fff;
+    text-align: start;
+    transition: border-color 0.15s, box-shadow 0.15s;
+
+    &:hover,
+    &:focus-visible {
+        border-color: $primary;
+        box-shadow: 0 0 0 0.2rem rgba($primary, 0.15);
+    }
+
+    &__imagen {
+        display: grid;
+        place-items: center;
+        width: 100%;
+        height: 4.5rem;
+        overflow: hidden;
+        border-radius: $border-radius-sm;
+        background: $light;
+        color: $text-muted;
+        font-size: 1.5rem;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    &__nombre {
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    &__precio {
+        color: $primary;
+        font-weight: 700;
+    }
+
+    &__stock {
+        color: $text-muted;
+        font-size: 0.75rem;
+
+        &.is-agotado {
+            color: $danger;
+        }
+    }
+
+    &__mods {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        color: $primary;
+    }
+}
+
+.pos-carrito {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    border: 1px solid $border-color;
+    border-radius: $border-radius-lg;
+    background: #fff;
+    box-shadow: $box-shadow-sm;
+
+    &__encabezado {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid $border-color;
+    }
+
+    &__lineas {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    &__pie {
+        padding: 1rem;
+        border-top: 1px solid $border-color;
+    }
+
+    &__detalle {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem;
+    }
+
+    &__total {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 0.75rem;
+        font-size: 1.25rem;
+
+        strong {
+            font-size: 1.75rem;
+        }
+    }
+}
+
+.pos-linea {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid $border-color;
+
+    &__nombre {
+        padding: 0;
+        border: 0;
+        background: none;
+        font-weight: 600;
+        text-align: start;
+
+        &:disabled {
+            color: inherit;
+        }
+    }
+
+    &__detalle {
+        color: $text-muted;
+        font-size: 0.8125rem;
+    }
+
+    &__aviso {
+        color: shade-color($warning, 30%);
+        font-size: 0.75rem;
+    }
+
+    &__descuento {
+        color: $success;
+        font-size: 0.75rem;
+    }
+
+    // Línea recién escaneada.
+    &--destacada {
+        animation: pos-linea-destacada 1.5s ease-out;
+    }
+
+    &__subtotal {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+}
+
+@keyframes pos-linea-destacada {
+    from {
+        background: rgba($success, 0.25);
+    }
+
+    to {
+        background: transparent;
+    }
+}
+
+@include media-breakpoint-down(sm) {
+    .pos-linea {
+        grid-template-columns: minmax(0, 1fr) auto;
+
+        &__cantidad {
+            grid-row: 2;
+        }
+    }
+}
+
+// Opciones elegidas de una línea, agrupadas (carrito y ticket)
+.lista-modificadores {
+    margin: 0.25rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.8125rem;
+
+    > li + li {
+        margin-top: 0.25rem;
+    }
+
+    &__grupo {
+        display: block;
+        color: $secondary;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+    }
+
+    ul {
+        margin: 0;
+        padding-left: 1.125rem;
+        list-style: disc;
+
+        li {
+            display: list-item;
+
+            span + span {
+                margin-left: 0.375rem;
+            }
+        }
+    }
+
+    &__precio {
+        color: $text-muted;
+    }
+}
+
+// Líneas de comanda (cocina y comanda impresa)
+.items-comanda {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    > li + li {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px dashed $border-color;
+    }
+
+    &__producto {
+        font-size: 1.125rem;
+        font-weight: 700;
+    }
+
+    .lista-modificadores {
+        font-size: 0.9375rem;
+    }
+}
+
+.comanda {
+    &__numero {
+        font-size: 1.75rem;
+        font-weight: 800;
+    }
+
+    &__nombre {
+        font-size: 1.375rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+}
+
+// Pantalla de cocina
+.items-comanda__linea {
+    display: flex;
+    align-items: start;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 0.75rem;
+
+    > .items-comanda__producto {
+        flex: 1 1 9rem;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+}
+
+.progreso-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+
+    &__corregir::after {
+        display: none;
+    }
+}
+
+.cocina {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+    align-items: start;
+
+    &__titulo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+    }
+
+    &__tarjetas {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+        gap: 0.75rem;
+        align-items: start;
+    }
+
+    &__columna--listos .cocina__tarjetas {
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    }
+
+    .empty-state {
+        padding: 2rem 1rem;
+    }
+
+    .items-comanda {
+        &__producto {
+            font-size: 1rem;
+        }
+
+        > li + li {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+        }
+
+        .lista-modificadores {
+            font-size: 0.875rem;
+        }
+    }
+}
+
+@include media-breakpoint-down(xl) {
+    .cocina {
+        grid-template-columns: 1fr;
+    }
+}
+
+.tarjeta-pedido {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+    padding: 0.75rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius-lg;
+    background: #fff;
+    box-shadow: $box-shadow-sm;
+
+    &__encabezado {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    &__numero {
+        font-size: 1.25rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    &__nombre {
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    &__tiempo {
+        color: $text-muted;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    &.is-demorado {
+        border-color: $warning;
+
+        .tarjeta-pedido__tiempo {
+            color: shade-color($warning, 30%);
+        }
+    }
+
+    &.is-atrasado {
+        border-color: $danger;
+
+        .tarjeta-pedido__tiempo {
+            color: $danger;
+        }
+    }
+
+    &.is-listo {
+        border-color: $success;
+    }
+}
+
+// Pedidos de comida (pendientes y completados)
+$pedido-llevar: #fd7e14;
+$pedido-servir: #0d6efd;
+$pedido-mesa: #6f42c1;
+
+.pedidos {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.pedido {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: 9rem minmax(10rem, 1fr) minmax(12rem, 2fr) 11rem auto;
+    // Sin overflow: hidden, para no recortar el menú de acciones; el bloque de
+    // color redondea sus propias esquinas.
+    border-radius: $border-radius-lg;
+    background: $white;
+    box-shadow: $box-shadow-sm;
+
+    > div {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        padding: 0.75rem 1rem;
+    }
+
+    &__tipo {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.125rem;
+        border-radius: $border-radius-lg 0 0 $border-radius-lg;
+        color: $white;
+        text-align: center;
+
+        strong {
+            font-size: 1.5rem;
+            line-height: 1.1;
+        }
+    }
+
+    &__nombre {
+        font-size: 0.8125rem;
+        opacity: 0.9;
+    }
+
+    &__info,
+    &__items,
+    &__total {
+        border-right: 1px solid $border-color;
+    }
+
+    &__acciones {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        // Por encima de la barra superior (sticky) y de las demás tarjetas.
+        .dropdown-menu {
+            z-index: $zindex-fixed + 1;
+        }
+    }
+
+    &--llevar .pedido__tipo,
+    &--llevar.pedido-detalle__encabezado {
+        background: $pedido-llevar;
+    }
+
+    &--servir .pedido__tipo,
+    &--servir.pedido-detalle__encabezado {
+        background: $pedido-servir;
+    }
+
+    &--mesa .pedido__tipo,
+    &--mesa.pedido-detalle__encabezado {
+        background: $pedido-mesa;
+    }
+
+    @include media-breakpoint-down(lg) {
+        grid-template-columns: 7rem 1fr;
+
+        &__tipo {
+            grid-row: span 2;
+        }
+
+        &__items,
+        &__total,
+        &__acciones {
+            grid-column: 2;
+        }
+
+        &__info,
+        &__items,
+        &__total {
+            border-right: 0;
+        }
+
+        &__acciones {
+            justify-content: flex-end;
+        }
+    }
+}
+
+.pedido-detalle__encabezado {
+    color: $white;
+
+    .btn-close {
+        filter: invert(1);
+    }
+}
+
+.pedido-etiqueta {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border-radius: $border-radius;
+    color: $white;
+    font-size: 0.8125rem;
+    font-weight: 600;
+
+    &--llevar {
+        background: $pedido-llevar;
+    }
+
+    &--servir {
+        background: $pedido-servir;
+    }
+
+    &--mesa {
+        background: $pedido-mesa;
+    }
+}
+
+// Escáner de códigos con la cámara (celular o tablet)
+.escaner {
+    .modal-content {
+        background: #000;
+        color: #fff;
+    }
+
+    &__encabezado,
+    &__pie {
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    &__pie {
+        flex-wrap: nowrap;
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    }
+
+    &__cuerpo {
+        position: relative;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    &__visor {
+        position: relative;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+    }
+
+    &__video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    // Modo escaneo de la caja: cámara en una franja arriba y la venta debajo.
+    &--franja {
+        position: fixed;
+        inset: 0;
+        z-index: $zindex-fixed + 2;
+        display: flex;
+        flex-direction: column;
+        background: $body-bg;
+    }
+
+    &__franja {
+        position: relative;
+        flex: 0 0 auto;
+        height: 36vh;
+        min-height: 12rem;
+        color: #fff;
+    }
+
+    &__acciones {
+        position: absolute;
+        top: calc(0.5rem + env(safe-area-inset-top));
+        right: 0.5rem;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    &__contenido {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+        padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom));
+    }
+
+    // Recuadro guía: el código debe quedar dentro.
+    &__guia {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: min(80%, 26rem);
+        height: min(30%, 12rem);
+        border: 3px solid rgba(255, 255, 255, 0.85);
+        border-radius: $border-radius-lg;
+        box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.45);
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+    }
+
+    &__estado,
+    &__mensaje {
+        position: absolute;
+        right: 1rem;
+        left: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: $border-radius;
+        background: rgba(0, 0, 0, 0.75);
+        text-align: center;
+    }
+
+    &__estado {
+        top: 1rem;
+
+        &--error {
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba($danger, 0.9);
+        }
+    }
+
+    &__mensaje {
+        bottom: 1rem;
+        font-weight: 600;
+
+        &--ok {
+            background: rgba($success, 0.9);
+        }
+
+        &--error {
+            background: rgba($danger, 0.9);
+        }
+    }
+}
+
+// Línea de mercadería escaneada: campos grandes para el dedo (16px evita el zoom de iOS).
+.ingreso-linea {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid $border-color;
+
+    &__encabezado {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+
+    &__campos {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+
+        .form-control,
+        .input-group-text,
+        .btn {
+            min-height: 2.75rem;
+            font-size: 1rem;
+        }
+    }
+
+    &__subtotal {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+    }
+}
+
+// Tablet en horizontal: cámara a la izquierda y venta a la derecha.
+@include media-breakpoint-up(md) {
+    @media (orientation: landscape) {
+        .escaner--franja {
+            flex-direction: row;
+        }
+
+        .escaner__franja {
+            width: 50%;
+            height: auto;
+        }
+    }
+}
+
+// Modal de cobro
+.cobro {
+    &__total {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        strong {
+            font-size: 2.25rem;
+            line-height: 1.1;
+        }
+    }
+
+    &__medios {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+
+        .btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.75rem 0.5rem;
+            font-weight: 600;
+
+            .bi {
+                font-size: 1.25rem;
+            }
+        }
+    }
+
+    &__efectivo {
+        padding: 1rem;
+        border-radius: $border-radius;
+        background: $light;
+    }
+
+    &__documento {
+        margin-bottom: 1rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid $border-color;
+        border-radius: $border-radius;
+    }
+
+    &__vuelto {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding: 0.75rem 1rem;
+        border-radius: $border-radius;
+        background: rgba($success, 0.12);
+        color: shade-color($success, 30%);
+        font-size: 1.125rem;
+
+        strong {
+            font-size: 1.75rem;
+        }
+    }
+}
+
+// Selector de cliente para facturas
+.selector-cliente {
+    &__elegido {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: $border-radius;
+        background: $light;
+    }
+
+    &__resultados {
+        max-height: 14rem;
+        margin-top: 0.5rem;
+        overflow-y: auto;
+    }
+}
+
+// Ticket de venta (formato angosto para impresora térmica de 80 mm)
+.ticket {
+    max-width: 22rem;
+    font-size: 0.9375rem;
+}
+
+.ticket--anulado {
+    position: relative;
+    overflow: hidden;
+
+    .ticket__sello {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        padding: 0.25rem 1.5rem;
+        border: 3px solid rgba($danger, 0.6);
+        border-radius: $border-radius;
+        color: rgba($danger, 0.6);
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: 0.2em;
+        transform: translate(-50%, -50%) rotate(-18deg);
+        pointer-events: none;
+    }
+}
+
+// Número de pedido en el ticket (para llamar al cliente)
+.ticket__pedido {
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border: 2px dashed $body-color;
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+// Modalidad del pedido destacada también en impresión térmica.
+.ticket__canal {
+    margin: 0.5rem 0;
+    padding: 0.375rem 0.25rem;
+    border-block: 2px solid currentColor;
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1.25;
+    break-inside: avoid;
+}
+
+// Documento tributario dentro del ticket
+.documento-tributario {
+    margin: 0.5rem auto;
+    padding: 0.375rem 0.5rem;
+    border: 2px solid $body-color;
+    text-align: center;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.sin-validez {
+    margin: 0.75rem 0;
+    padding: 0.375rem;
+    border: 2px dashed $danger;
+    color: $danger;
+    text-align: center;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.timbre {
+    margin-top: 1rem;
+    text-align: center;
+
+    &__codigo {
+        display: block;
+        width: 100%;
+        max-width: 18rem;
+        height: auto;
+        margin: 0 auto;
+        image-rendering: pixelated;
+    }
+
+    &__leyenda {
+        margin-top: 0.25rem;
+        font-size: 0.75rem;
+    }
+}
+
+@media print {
+    .ticket {
+        max-width: 72mm;
+        margin: 0;
+        font-size: 11px;
+    }
+}
+
+// Comprobantes imprimibles (cierre de caja, ticket)
+.comprobante {
+    max-width: 28rem;
+    margin: 0 auto;
+
+    &__fila {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.25rem 0;
+    }
+
+    &__total {
+        border-top: 1px dashed $border-color;
+        margin-top: 0.25rem;
+        padding-top: 0.5rem;
+        font-weight: 700;
+    }
+
+    &__firmas {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-top: 3rem;
+        text-align: center;
+
+        span {
+            display: block;
+            padding-top: 0.25rem;
+            border-top: 1px solid $body-color;
+            font-size: 0.8125rem;
+        }
+    }
+}
+
+@media print {
+    .app-sidebar,
+    .app-sidebar-backdrop,
+    .app-topbar,
+    .page-header__actions,
+    .toast-container,
+    .no-print {
+        display: none !important;
+    }
+
+    .app-content {
+        padding: 0;
+    }
+
+    body {
+        background: #fff;
+    }
+
+    .card {
+        border: 0;
+        box-shadow: none;
+    }
+}
+
+// Lista de casillas (CheckboxListField)
+.checkbox-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    gap: 0.375rem 1rem;
+    padding: 0.75rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+
+    &.is-invalid {
+        border-color: $danger;
+    }
+}
+
+// Tablas de mantenedores
+.data-table {
+    margin: 0;
+
+    thead th {
+        background: $light;
+        color: $secondary;
+        font-size: 0.75rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    tbody tr:last-child td {
+        border-bottom: 0;
+    }
+}
+
+// En móvil cada fila de la tabla se convierte en una tarjeta "Etiqueta: valor".
+@include media-breakpoint-down(md) {
+    .data-table {
+        thead {
+            display: none;
+        }
+
+        tbody tr {
+            display: block;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid $border-color;
+        }
+
+        tbody tr:last-child {
+            border-bottom: 0;
+        }
+
+        tbody td {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.25rem 0;
+            border: 0;
+            text-align: end !important;
+
+            &::before {
+                content: attr(data-label);
+                flex-shrink: 0;
+                color: $text-muted;
+                font-size: 0.8125rem;
+                font-weight: 500;
+                text-align: start;
+            }
+        }
+
+        .data-table__cell--title {
+            padding-bottom: 0.5rem;
+            font-weight: 600;
+            text-align: start !important;
+
+            &::before {
+                content: none;
+            }
+        }
+
+        .data-table__cell--hidden {
+            display: none;
+        }
+    }
+}
+
+.empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: $text-muted;
+
+    .bi {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-size: 2.5rem;
+        opacity: 0.5;
+    }
+}
+
+// Tarjeta de indicador (dashboard)
+.stat-card {
+    &__label {
+        color: $text-muted;
+        font-size: 0.8125rem;
+        font-weight: 500;
+    }
+
+    &__value {
+        font-size: 1.625rem;
+        font-weight: 700;
+        color: $headings-color;
+    }
+
+    &__icon {
+        display: grid;
+        place-items: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: $border-radius;
+        background: rgba($primary, 0.1);
+        color: $primary;
+        font-size: 1.25rem;
+    }
+
+    &__detalle {
+        margin-top: 0.25rem;
+        font-size: 0.8125rem;
+    }
+}
+
+// Plan contratado (Mi negocio)
+// Mi plan: funcionalidades, total mensual y adicionales
+.mi-plan {
+    &__lista {
+        display: grid;
+        gap: 0.375rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+
+        li {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+    }
+
+    &__total {
+        color: $primary;
+        font-size: 1.75rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    &__fila {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.25rem 0;
+    }
+
+    &__cargo {
+        padding: 0.75rem 1rem;
+        border-radius: $border-radius;
+        background: rgba($primary, 0.06);
+    }
+}
+
+.adicional {
+    border-color: rgba($primary, 0.25);
+
+    &__icono {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+        height: 3rem;
+        margin-bottom: 0.75rem;
+        border-radius: $border-radius-lg;
+        background: rgba($primary, 0.1);
+        color: $primary;
+        font-size: 1.5rem;
+    }
+
+    &--contratado {
+        border-color: rgba($success, 0.4);
+
+        .adicional__icono {
+            background: rgba($success, 0.12);
+            color: $success;
+        }
+    }
+}
+
+.plan-actual {
+    padding: 1rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    background: rgba($primary, 0.05);
+
+    &__nombre {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: $primary;
+    }
+}
+
+// Gráficos SVG (barras y línea)
+.grafico {
+    &__svg {
+        display: block;
+        width: 100%;
+        height: 12rem;
+        overflow: visible;
+    }
+
+    &__guia {
+        stroke: $border-color;
+        stroke-width: 1;
+        stroke-dasharray: 3 3;
+    }
+
+    &__barra {
+        fill: rgba($primary, 0.55);
+        transition: fill 0.15s ease;
+
+        &:hover,
+        &--destacada {
+            fill: $primary;
+        }
+    }
+
+    &__linea {
+        fill: none;
+        stroke: $primary;
+        stroke-width: 2;
+        stroke-linejoin: round;
+    }
+
+    &__area {
+        fill: rgba($primary, 0.12);
+    }
+
+    &__zona {
+        fill: transparent;
+    }
+
+    &__eje {
+        display: flex;
+        margin-top: 0.375rem;
+        color: $text-muted;
+        font-size: 0.6875rem;
+
+        > span {
+            flex: 1 1 0;
+            min-width: 0;
+            overflow: visible;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        &--linea > span {
+            text-align: left;
+        }
+    }
+
+    @include media-breakpoint-down(sm) {
+        &__svg {
+            height: 9rem;
+        }
+    }
+}
+
+// Ranking con barras horizontales
+.grafico-ranking {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    &__texto {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.25rem;
+        font-size: 0.875rem;
+    }
+
+    &__barra {
+        height: 0.5rem;
+        border-radius: 1rem;
+        background: $light;
+        overflow: hidden;
+
+        > span {
+            display: block;
+            height: 100%;
+            border-radius: 1rem;
+            background: $primary;
+        }
+    }
+}
+
+.variacion {
+    font-size: 0.8125rem;
+}
+
+// Pestañas de reportes: desplazables en móvil
+.reportes-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    .nav-link {
+        white-space: nowrap;
+    }
+}
+
+// Login / páginas públicas
+.auth-wrapper {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 1rem;
+    background: linear-gradient(135deg, $brand-dark 0%, shade-color($primary, 40%) 100%);
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 25rem;
+
+    &--ancho {
+        max-width: 46rem;
+    }
+}
+
+// Registro de negocios
+.registro {
+    &__seccion {
+        margin-bottom: 0.75rem;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: $text-muted;
+    }
+
+    &__planes {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+
+        @include media-breakpoint-down(md) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    &__plan {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.875rem 1rem;
+        border: 2px solid $border-color;
+        border-radius: $border-radius;
+        background: $white;
+        text-align: left;
+        transition: border-color 0.15s ease, background-color 0.15s ease;
+
+        &:hover {
+            border-color: rgba($primary, 0.5);
+        }
+
+        &--activo {
+            border-color: $primary;
+            background: rgba($primary, 0.05);
+        }
+    }
+
+    &__plan-nombre {
+        font-weight: 700;
+        color: $headings-color;
+    }
+
+    &__precio {
+        margin-top: 0.5rem;
+    }
+
+    &__precio-uf {
+        font-size: 1.375rem;
+        font-weight: 800;
+        color: $headings-color;
+    }
+
+    // Prueba gratis destacada al inicio del registro.
+    &__prueba {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        padding: 0.875rem 1rem;
+        border-radius: $border-radius;
+        background: rgba($success, 0.1);
+        color: shade-color($success, 40%);
+    }
+
+    &__prueba-icono {
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    &__adicionales {
+        padding: 0.75rem 1rem;
+        border: 1px dashed $border-color;
+        border-radius: $border-radius;
+    }
+
+    &__adicional {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.5rem 0;
+
+        & + & {
+            border-top: 1px solid $border-color;
+        }
+    }
+
+    &__trampa {
+        position: absolute;
+        left: -10000px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+    }
+}
+
+// Elegir y activar el plan
+.activar-plan {
+    &__tarjeta {
+        border: 2px solid $border-color;
+        background: $white;
+        transition: border-color 0.15s ease, background-color 0.15s ease;
+
+        &:hover {
+            border-color: rgba($primary, 0.5);
+        }
+
+        &--activa {
+            border-color: $primary;
+            background: rgba($primary, 0.04);
+        }
+    }
+
+    &__precio {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: $headings-color;
+    }
+}
+
+// Aviso de prueba o suscripción vencida (sobre el contenido)
+.aviso-suscripcion {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+}
+
+// Selector de tipo de producto (venta, plato, insumo)
+.tipo-producto {
+    height: 100%;
+    margin: 0;
+    padding: 0.625rem 0.75rem 0.625rem 2.25rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+
+    &:has(.form-check-input:checked) {
+        border-color: $primary;
+        background: rgba($primary, 0.05);
+    }
+}
+
+.mesa-cuenta {
+    max-width: max(60rem, calc(var(--mesa-columnas, 1) * 16rem + (var(--mesa-columnas, 1) - 1) * 0.75rem + 2rem));
+    margin-inline: auto;
+    container-type: inline-size;
+
+    .page-header {
+        gap: 0.75rem 1rem;
+        margin-bottom: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .page-header__subtitle { overflow-wrap: anywhere; }
+    .page-header__actions { margin-left: auto; }
+
+    &__comensales {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.75rem;
+        align-items: start;
+    }
+
+    &__comensal {
+        display: none;
+        min-width: 0;
+        overflow-wrap: anywhere;
+
+        &--activo { display: block; }
+    }
+
+    &__selector {
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        padding-bottom: 0.75rem;
+        margin-bottom: 0.5rem;
+        scroll-snap-type: x proximity;
+
+        > .btn {
+            flex: 0 0 10rem;
+            white-space: normal;
+            scroll-snap-align: start;
+        }
+    }
+
+    &__cobro {
+        position: sticky;
+        bottom: 0.5rem;
+        z-index: 5;
+        padding: 0.75rem;
+        border: 1px solid var(--bs-border-color);
+        border-radius: var(--bs-border-radius);
+        background: var(--bs-body-bg);
+        box-shadow: 0 -0.25rem 1rem rgba(0, 0, 0, 0.05);
+    }
+
+    &__acciones-cobro {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+        > small { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 991.98px) {
+        &__cobro { bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+    }
+
+    @media (min-width: 992px) and (max-width: 1279.98px) {
+        &__selector { display: none; }
+        &__comensales { grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
+        &__comensal { display: block; }
+    }
+}
+
+@media (min-width: 1440px) and (pointer: fine) {
+    .mesa-cuenta {
+        max-width: max(96.25rem, calc(var(--mesa-columnas, 1) * 16rem + (var(--mesa-columnas, 1) - 1) * 0.75rem + 2rem));
+    }
+}
+
+@media (min-width: 1280px) {
+    @for $columnas from 1 through 6 {
+        @container (min-width: #{($columnas * 16rem) + (($columnas - 1) * 0.75rem) + 2rem}) {
+            .mesa-cuenta--columnas-#{$columnas} {
+                .mesa-cuenta__selector { display: none; }
+                .mesa-cuenta__comensales { grid-template-columns: repeat(#{$columnas}, minmax(0, 1fr)); }
+                .mesa-cuenta__comensal { display: block; }
+            }
+        }
+    }
+}
+
+@media (min-width: 992px) and (pointer: coarse) {
+    .mesa-cuenta__selector { display: none; }
+    .mesa-cuenta__comensal { display: block; }
+
+    @for $columnas from 1 through 6 {
+        $columnas-tablet: 3;
+        @if $columnas < 3 { $columnas-tablet: $columnas; }
+        .mesa-cuenta--columnas-#{$columnas} .mesa-cuenta__comensales {
+            grid-template-columns: repeat(#{$columnas-tablet}, minmax(0, 1fr));
+        }
+    }
+}
+
+.mesa-pedido {
+    --bs-offcanvas-width: min(100vw, 80rem);
+    height: 100dvh;
+
+    .offcanvas-header {
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+
+    .offcanvas-body {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    &__contenido {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 24rem;
+        flex: 1;
+        min-height: 0;
+    }
+
+    &__catalogo,
+    &__resumen {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+    }
+
+    &__resumen { border-left: 1px solid var(--bs-border-color); }
+
+    &__filtros,
+    &__encabezado,
+    &__totales {
+        flex-shrink: 0;
+        padding: 1rem;
+    }
+
+    &__encabezado { border-bottom: 1px solid var(--bs-border-color); }
+    &__totales { border-top: 1px solid var(--bs-border-color); }
+
+    &__productos,
+    &__lineas {
+        flex: 1;
+        min-height: 0;
+        padding: 0 1rem 1rem;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    &__barra { display: none; }
+
+    @media (max-width: 991.98px) {
+        &__contenido { display: flex; }
+        &__catalogo { width: 100%; }
+        &__resumen { display: none; width: 100%; border-left: 0; }
+        &__barra {
+            display: block;
+            flex-shrink: 0;
+            padding: 0.75rem 1rem max(0.75rem, env(safe-area-inset-bottom));
+            border-top: 1px solid var(--bs-border-color);
+        }
+        &__totales { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+
+        &--resumen {
+            .mesa-pedido__catalogo,
+            .mesa-pedido__barra { display: none; }
+            .mesa-pedido__resumen { display: flex; }
+        }
+    }
+}
+
+.precuenta {
+    overflow-wrap: anywhere;
+
+    &__persona {
+        border-top: 1px dashed var(--bs-border-color);
+        padding-top: 1rem;
+        margin-top: 1rem;
+    }
+
+    &__item,
+    &__totales {
+        break-inside: avoid;
+    }
+
+    @media print {
+        width: 72mm;
+        max-width: 100%;
+        color: #000;
+
+        .card-body { padding: 0; }
+        h3 { break-after: avoid; }
+    }
+}
+
+@media print {
+    body:has(.modal-precuenta) {
+        overflow: visible !important;
+
+        .app-shell,
+        .modal-backdrop { display: none !important; }
+
+        .modal-precuenta {
+            position: static !important;
+            overflow: visible !important;
+            height: auto !important;
+
+            .modal-dialog,
+            .modal-content,
+            .modal-body {
+                position: static;
+                transform: none !important;
+                max-width: none;
+                max-height: none !important;
+                height: auto !important;
+                overflow: visible !important;
+                margin: 0;
+                padding: 0;
+                border: 0;
+                box-shadow: none;
+            }
+
+            .modal-dialog { display: block; }
+            .modal-content { width: 72mm; }
+        }
+    }
+
+    .app-shell:has(.precuenta) {
+        display: block;
+        min-height: auto;
+    }
+
+    .app-content:has(.precuenta) {
+        padding: 0 !important;
+
+        > .aviso-suscripcion {
+            display: none !important;
+        }
+    }
+}
+
+.comprobante-publico {
+    min-height: 100dvh;
+    background: #f3f6f9;
+
+    &__pdf {
+        display: block;
+        width: 100%;
+        height: calc(100dvh - 150px);
+        min-height: 420px;
+        border: 0;
+    }
+}
+
+.mesas-atencion {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    align-items: start;
+
+    > .card {
+        min-height: 11rem;
+
+        > .card-body {
+            display: flex;
+            flex-direction: column;
+
+            > .btn:last-child {
+                margin-top: auto;
+            }
+        }
+    }
+
+    @media (min-width: 576px) {
+        grid-template-columns: repeat(auto-fill, minmax(12rem, 14rem));
+    }
+}
+
+.mesa-acciones {
+    padding: 0.125rem 0.25rem;
+
+    &::after {
+        display: none;
+    }
+}

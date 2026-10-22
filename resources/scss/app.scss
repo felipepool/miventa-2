@@ -1,0 +1,9 @@
+@import 'bootstrap/scss/functions';
+@import 'variables';
+@import 'bootstrap/scss/bootstrap';
+@import 'layout';
+@import 'touch';
+
+.card {
+    box-shadow: $box-shadow-sm;
+}

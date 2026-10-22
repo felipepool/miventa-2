@@ -1,51 +1,35 @@
-import { Outlet, NavLink } from 'react-router-dom';
-import Container from 'react-bootstrap/Container';
-import Nav from 'react-bootstrap/Nav';
-import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
-import type { User } from '@/types/user';
+import { useEffect } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import BarraSuperior from '@/components/layout/BarraSuperior';
+import MenuLateral from '@/components/layout/MenuLateral';
+import { useMenuLateral } from '@/components/layout/useMenuLateral';
 
-interface Props {
-    user: User;
-}
+/**
+ * Estructura de las páginas de administración: menú lateral fijo y barra
+ * superior. Las páginas solo aportan su contenido.
+ */
+export default function AppLayout() {
+    const menu = useMenuLateral();
+    const { pathname } = useLocation();
+    const { cerrar } = menu;
 
-function csrfToken(): string {
-    return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
-}
+    // Al navegar (incluido el botón atrás) el menú desplegable se cierra.
+    // Solo depende de la ruta: `cerrar` se recrea en cada render.
+    useEffect(() => {
+        cerrar();
+    }, [pathname]);
 
-export default function AppLayout({ user }: Props) {
     return (
-        <>
-            <Navbar expand="md" bg="white" className="shadow-sm" collapseOnSelect>
-                <Container>
-                    <Navbar.Brand as={NavLink} to="/">
-                        {import.meta.env.VITE_APP_NAME}
-                    </Navbar.Brand>
-                    <Navbar.Toggle aria-controls="main-nav" />
-                    <Navbar.Collapse id="main-nav">
-                        <Nav className="me-auto">
-                            <Nav.Link as={NavLink} to="/" end eventKey="home">
-                                Inicio
-                            </Nav.Link>
-                        </Nav>
-                        <Nav>
-                            <NavDropdown title={user.name} align="end">
-                                <form method="POST" action="/logout">
-                                    <input type="hidden" name="_token" value={csrfToken()} />
-                                    <button type="submit" className="dropdown-item">
-                                        Cerrar sesión
-                                    </button>
-                                </form>
-                            </NavDropdown>
-                        </Nav>
-                    </Navbar.Collapse>
-                </Container>
-            </Navbar>
-            <main className="py-4">
-                <Container>
+        <div className="app-shell">
+            <MenuLateral abierto={menu.abierto} onCerrar={menu.cerrar} />
+
+            <div className="app-main">
+                <BarraSuperior onAbrirMenu={menu.alternar} />
+
+                <main className="app-content">
                     <Outlet />
-                </Container>
-            </main>
-        </>
+                </main>
+            </div>
+        </div>
     );
 }
