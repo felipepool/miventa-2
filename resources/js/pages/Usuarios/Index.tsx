@@ -25,6 +25,7 @@ export default function UsuariosIndex() {
     const buscar = parametros.get('buscar') ?? '';
     const rol = parametros.get('rol') ?? '';
     const estado = parametros.get('estado') ?? '';
+    const hayFiltros = Boolean(buscar || rol || estado);
     const roles = catalogo.datos?.data ?? [];
     const meta = listado.datos?.meta;
     const error = listado.error ?? catalogo.error;
@@ -147,7 +148,7 @@ export default function UsuariosIndex() {
         <>
             <PageHeader
                 title="Usuarios"
-                subtitle="Personas que pueden ingresar a tu negocio."
+                subtitle="Consulta quién puede ingresar al negocio, qué funciones tiene y en qué sucursales trabaja."
                 actions={<Link to={`/usuarios/nuevo${location.search}`} className="btn btn-primary"><Icon name="plus-lg" className="me-2" />Nuevo usuario</Link>}
             />
             <DataTable
@@ -159,30 +160,48 @@ export default function UsuariosIndex() {
                 busy={cargando}
                 meta={meta}
                 onPageChange={cambiarPagina}
-                emptyMessage="No encontramos usuarios con estos filtros."
+                emptyMessage={hayFiltros ? 'No encontramos usuarios con estos filtros. Prueba con otro nombre o amplía la búsqueda.' : 'Aún no hay usuarios para mostrar. Agrega a una persona de tu equipo para darle acceso.'}
+                emptyAction={hayFiltros
+                    ? <Button variant="outline-secondary" onClick={limpiarFiltros}>Ver todos los usuarios</Button>
+                    : <Link to={`/usuarios/nuevo${location.search}`} className="btn btn-primary">Nuevo usuario</Link>}
                 toolbar={
-                    <div className="table-toolbar" role="search" aria-label="Buscar y filtrar usuarios">
-                        <div className="table-toolbar__search">
-                            <SearchInput
-                                key={reiniciosBusqueda}
-                                value={buscar}
-                                onChange={(valor) => filtrar('buscar', valor)}
-                                label="Buscar usuarios por nombre, usuario o correo"
-                                placeholder="Nombre, usuario o correo"
-                                maxLength={100}
-                            />
+                    <div role="search" aria-label="Buscar y filtrar usuarios">
+                        <div className="table-toolbar align-items-end">
+                            <div className="table-toolbar__search">
+                                <Form.Label htmlFor="usuarios-buscar">Buscar usuario</Form.Label>
+                                <SearchInput
+                                    id="usuarios-buscar"
+                                    key={reiniciosBusqueda}
+                                    value={buscar}
+                                    onChange={(valor) => filtrar('buscar', valor)}
+                                    label="Buscar usuario por nombre, usuario o correo"
+                                    placeholder="Nombre, usuario o correo"
+                                    maxLength={100}
+                                />
+                            </div>
+                            <div className="table-toolbar__filters">
+                                <Form.Group controlId="usuarios-filtro-rol" className="col-12 col-sm-auto">
+                                    <Form.Label>Rol</Form.Label>
+                                    <Form.Select className="w-100" value={rol} onChange={(event) => filtrar('rol', event.target.value)}>
+                                        <option value="">Todos los roles</option>
+                                        {roles.map((opcion) => <option key={opcion.value} value={opcion.value}>{opcion.label}</option>)}
+                                    </Form.Select>
+                                </Form.Group>
+                                <Form.Group controlId="usuarios-filtro-estado" className="col-12 col-sm-auto">
+                                    <Form.Label>Estado</Form.Label>
+                                    <Form.Select className="w-100" value={estado} onChange={(event) => filtrar('estado', event.target.value)}>
+                                        <option value="">Todos los estados</option>
+                                        <option value="activo">Activos</option>
+                                        <option value="inactivo">Inactivos</option>
+                                    </Form.Select>
+                                </Form.Group>
+                            </div>
                         </div>
-                        <div className="table-toolbar__filters">
-                            <Form.Select aria-label="Filtrar por rol" value={rol} onChange={(event) => filtrar('rol', event.target.value)}>
-                                <option value="">Todos los roles</option>
-                                {roles.map((opcion) => <option key={opcion.value} value={opcion.value}>{opcion.label}</option>)}
-                            </Form.Select>
-                            <Form.Select aria-label="Filtrar por estado" value={estado} onChange={(event) => filtrar('estado', event.target.value)}>
-                                <option value="">Todos los estados</option>
-                                <option value="activo">Activos</option>
-                                <option value="inactivo">Inactivos</option>
-                            </Form.Select>
-                            {consulta && <Button variant="outline-secondary" onClick={limpiarFiltros}>Limpiar filtros</Button>}
+                        <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3">
+                            <p className="small text-body-secondary mb-0" role="status">
+                                {cargando ? 'Buscando usuarios…' : error ? 'Listado no disponible' : `${meta?.total ?? 0} ${meta?.total === 1 ? 'usuario' : 'usuarios'}${hayFiltros ? ' con los filtros actuales' : ' en tu negocio'}`}
+                            </p>
+                            {hayFiltros && <Button variant="link" className="p-0" onClick={limpiarFiltros}>Limpiar filtros</Button>}
                         </div>
                     </div>
                 }

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useEffect, useId, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
-import { Button, Card, Col, Row, Spinner } from 'react-bootstrap';
+import { Button, Col, Row, Spinner } from 'react-bootstrap';
 import { CheckboxListField, FormDialog, TextField } from '@/components/ui';
 import { useSesion } from '@/lib/auth';
 import { api, erroresDeValidacion, mensajeDeError } from '@/lib/http';
@@ -122,38 +122,36 @@ export default function NuevoUsuario() {
             <form ref={formularioRef} id={formId} className="usuario-form" onSubmit={(event) => void guardar(event)} noValidate aria-busy={procesando}>
                 <fieldset disabled={procesando}>
                     <legend className="visually-hidden">Datos del nuevo usuario</legend>
-                    <Card className="mb-3" as="section" aria-labelledby="datos-usuario">
-                        <Card.Header className="py-3"><h2 id="datos-usuario" className="h6 mb-0">Datos personales y de acceso</h2></Card.Header>
-                        <Card.Body>
-                            <Row>
+                    <section className="usuario-form__section" aria-labelledby="datos-usuario">
+                        <h2 id="datos-usuario" className="h6 mb-2">Datos personales</h2>
+                            <Row className="g-2">
                                 <Col md={6}>
-                                    <TextField label="Nombre" value={datos.name} required maxLength={255} autoComplete="off" error={errores.name}
+                                    <TextField label="Nombre" className="mb-0" value={datos.name} required maxLength={255} autoComplete="off" error={errores.name}
                                         onChange={(event) => setDatos({ ...datos, name: event.target.value })} />
                                 </Col>
                                 <Col md={6}>
-                                    <TextField label="Usuario" value={datos.username} required minLength={3} maxLength={30} autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false}
-                                        hint="De 3 a 30 caracteres: letras, números, punto o guion bajo." error={errores.username}
+                                    <TextField label="Usuario" className="mb-0" value={datos.username} required minLength={3} maxLength={30} autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false}
+                                        hint="3–30 caracteres: letras, números, punto o guion bajo." error={errores.username}
                                         onChange={(event) => setDatos({ ...datos, username: event.target.value })} />
                                 </Col>
-                                <Col md={6}>
+                                <Col xs={12}>
                                     <TextField label="Correo electrónico (opcional)" type="email" inputMode="email" autoComplete="off" autoCapitalize="none" maxLength={255}
                                         value={datos.email} error={errores.email} className="mb-0"
+                                        hint="Permite recuperar la contraseña si la olvida."
                                         onChange={(event) => setDatos({ ...datos, email: event.target.value })} />
                                 </Col>
                             </Row>
-                        </Card.Body>
-                    </Card>
-                    <Card className="mb-3" as="section" aria-labelledby="acceso-usuario">
-                        <Card.Header className="py-3"><h2 id="acceso-usuario" className="h6 mb-0">Roles y sucursales</h2></Card.Header>
-                        <Card.Body>
+                    </section>
+                    <section className="usuario-form__section" aria-labelledby="acceso-usuario">
+                        <h2 id="acceso-usuario" className="h6 mb-2">Acceso y sucursales</h2>
                             {catalogo.cargando && <p role="status"><Spinner as="span" animation="border" size="sm" aria-hidden="true" className="me-2" />Cargando roles…</p>}
                             <CheckboxListField
-                                label="Roles del usuario"
+                                label="Roles"
                                 options={catalogo.datos?.data ?? []}
                                 value={datos.roles}
                                 onChange={seleccionarRoles}
                                 error={errorDeCampo('roles')}
-                                hint="Puedes combinar Cajero, Cocina y Garzón. Administrador tiene todos los permisos y se elige solo."
+                                hint="Combina funciones o elige Administrador para dar todos los permisos."
                                 disabled={catalogo.cargando || Boolean(catalogo.error)}
                             />
                             {esAdmin ? (
@@ -162,7 +160,7 @@ export default function NuevoUsuario() {
                                 <p className="text-warning-emphasis mb-0">No hay sucursales activas para asignar a este usuario.</p>
                             ) : (
                                 <CheckboxListField
-                                    label="Sucursales donde puede trabajar"
+                                    label="Sucursales"
                                     options={contexto.sucursales.map((sucursal) => ({ value: sucursal.id, label: sucursal.nombre }))}
                                     value={datos.sucursales}
                                     onChange={(sucursales) => setDatos({ ...datos, sucursales })}
@@ -170,25 +168,23 @@ export default function NuevoUsuario() {
                                     hint="Elige al menos una sucursal."
                                 />
                             )}
-                        </Card.Body>
-                    </Card>
-                    <Card className="mb-3" as="section" aria-labelledby="contrasena-usuario">
-                        <Card.Header className="py-3"><h2 id="contrasena-usuario" className="h6 mb-0">Contraseña</h2></Card.Header>
-                        <Card.Body>
-                            <Row>
+                    </section>
+                    <section className="usuario-form__section" aria-labelledby="contrasena-usuario">
+                        <h2 id="contrasena-usuario" className="h6 mb-2">Contraseña de ingreso</h2>
+                            <Row className="g-2">
                                 <Col md={6}>
-                                    <TextField label="Contraseña" type="password" autoComplete="new-password" required minLength={8}
+                                    <TextField label="Contraseña" className="mb-0" type="password" autoComplete="new-password" required minLength={8}
                                         hint="Usa al menos 8 caracteres." value={datos.password} error={errores.password}
                                         onChange={(event) => setDatos({ ...datos, password: event.target.value })} />
                                 </Col>
                                 <Col md={6}>
-                                    <TextField label="Confirmar contraseña" type="password" autoComplete="new-password" required minLength={8}
+                                    <TextField label="Confirmar contraseña" className="mb-0" type="password" autoComplete="new-password" required minLength={8}
                                         value={datos.password_confirmation} error={errores.password_confirmation}
                                         onChange={(event) => setDatos({ ...datos, password_confirmation: event.target.value })} />
                                 </Col>
                             </Row>
-                        </Card.Body>
-                    </Card>
+                        {contexto.negocio && <p className="small text-body-secondary mt-2 mb-0">Para ingresar: código <strong>{contexto.negocio.codigo}</strong>, usuario y contraseña.</p>}
+                    </section>
                 </fieldset>
             </form>
         </FormDialog>

@@ -19,19 +19,21 @@ interface DataTableProps<T> {
     status?: ReactNode;
     busy?: boolean;
     emptyMessage?: string;
+    emptyAction?: ReactNode;
     meta?: PaginationMeta;
     onPageChange: (page: number) => void;
 }
 
 /** Tabla de escritorio que usa las tarjetas del diseño original en pantallas pequeñas. */
-export default function DataTable<T>({ columns, rows, rowKey, caption, toolbar, status, busy, emptyMessage, meta, onPageChange }: DataTableProps<T>) {
+export default function DataTable<T>({ columns, rows, rowKey, caption, toolbar, status, busy, emptyMessage, emptyAction, meta, onPageChange }: DataTableProps<T>) {
     return (
         <Card aria-busy={busy}>
             {toolbar && <Card.Header className="py-3">{toolbar}</Card.Header>}
             {status ?? (rows.length === 0 ? (
                 <div className="empty-state" role="status">
                     <Icon name="people" />
-                    {emptyMessage ?? 'No hay registros para mostrar.'}
+                    <p className="mb-0">{emptyMessage ?? 'No hay registros para mostrar.'}</p>
+                    {emptyAction && <div className="mt-3">{emptyAction}</div>}
                 </div>
             ) : (
                 <Table hover className="data-table align-middle">

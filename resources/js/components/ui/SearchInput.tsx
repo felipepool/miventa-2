@@ -3,6 +3,7 @@ import { Form, InputGroup } from 'react-bootstrap';
 import Icon from '@/components/ui/Icon';
 
 interface SearchInputProps {
+    id?: string;
     value: string;
     onChange: (value: string) => void;
     label: string;
@@ -11,7 +12,7 @@ interface SearchInputProps {
 }
 
 /** Espera una pausa al escribir; la tecla Buscar del teclado táctil aplica de inmediato. */
-export default function SearchInput({ value, onChange, label, placeholder = 'Buscar…', maxLength }: SearchInputProps) {
+export default function SearchInput({ id, value, onChange, label, placeholder = 'Buscar…', maxLength }: SearchInputProps) {
     const [texto, setTexto] = useState(value);
     const temporizador = useRef<number | undefined>(undefined);
     const onChangeRef = useRef(onChange);
@@ -39,6 +40,7 @@ export default function SearchInput({ value, onChange, label, placeholder = 'Bus
         <InputGroup>
             <InputGroup.Text className="bg-white"><Icon name="search" /></InputGroup.Text>
             <Form.Control
+                id={id}
                 type="search"
                 enterKeyHint="search"
                 autoComplete="off"

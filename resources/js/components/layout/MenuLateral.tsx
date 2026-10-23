@@ -35,7 +35,7 @@ export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
     const { pathname } = useLocation();
     const administracion = ADMINISTRACION.filter((item) => !item.permiso || permisos.includes(item.permiso));
     const administracionActiva = administracion.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
-    const [administracionAbierta, setAdministracionAbierta] = useState(administracionActiva);
+    const [administracionAbierta, setAdministracionAbierta] = useState(true);
 
     useEffect(() => {
         if (administracionActiva) {
