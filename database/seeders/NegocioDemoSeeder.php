@@ -34,5 +34,7 @@ class NegocioDemoSeeder extends Seeder
             'es_principal' => true,
             'activa' => true,
         ])->save();
+
+        $sucursal->asegurarCajaInicial();
     }
 }

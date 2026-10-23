@@ -14,6 +14,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call([TarifasSeeder::class, CajasInicialesSeeder::class]);
+
         if (app()->isProduction()) {
             $this->call(RolesYPermisosSeeder::class);
 

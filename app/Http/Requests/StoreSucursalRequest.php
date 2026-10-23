@@ -36,6 +36,8 @@ class StoreSucursalRequest extends FormRequest
             ],
             'direccion' => ['nullable', 'string', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:30'],
+            'acepto_cobro' => ['sometimes', 'boolean'],
+            'cotizacion' => ['nullable', 'string', 'size:64'],
         ];
     }
 

@@ -23,6 +23,7 @@ const ITEMS: ItemMenu[] = [
 
 const ADMINISTRACION: ItemMenu[] = [
     { href: '/usuarios', label: 'Usuarios', icon: 'person-badge', permiso: 'gestionar_usuarios' },
+    { href: '/sucursales', label: 'Sucursales', icon: 'shop', permiso: 'gestionar_sucursales' },
 ];
 
 /**

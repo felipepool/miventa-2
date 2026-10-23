@@ -12,6 +12,8 @@ import SinAcceso from '@/pages/SinAcceso';
 import UsuariosIndex from '@/pages/Usuarios/Index';
 import NuevoUsuario from '@/pages/Usuarios/Nuevo';
 import EditarUsuario from '@/pages/Usuarios/Editar';
+import SucursalesIndex from '@/pages/Sucursales/Index';
+import SucursalFormulario from '@/pages/Sucursales/Formulario';
 
 function Cargando() {
     return (
@@ -83,6 +85,12 @@ export default function App() {
                         <Route path="usuarios" element={<UsuariosIndex />}>
                             <Route path="nuevo" element={<NuevoUsuario />} />
                             <Route path=":usuarioId/editar" element={<EditarUsuario />} />
+                        </Route>
+                    </Route>
+                    <Route element={<RequierePermiso permiso="gestionar_sucursales" />}>
+                        <Route path="sucursales" element={<SucursalesIndex />}>
+                            <Route path="nueva" element={<SucursalFormulario />} />
+                            <Route path=":sucursalId/editar" element={<SucursalFormulario />} />
                         </Route>
                     </Route>
                     <Route path="*" element={<NotFoundPage />} />

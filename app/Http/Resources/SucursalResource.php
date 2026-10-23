@@ -21,6 +21,7 @@ class SucursalResource extends JsonResource
         return [
             ...$this->datosPublicos('nombre', 'direccion', 'telefono', 'es_principal', 'activa'),
             'usuarios_count' => $this->whenCounted('usuarios'),
+            'cajas_count' => $this->whenCounted('cajas'),
         ];
     }
 }

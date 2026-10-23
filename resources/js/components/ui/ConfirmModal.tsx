@@ -9,11 +9,12 @@ interface ConfirmModalProps {
     variant?: 'danger' | 'primary';
     processing?: boolean;
     error?: string;
+    confirmDisabled?: boolean;
     onConfirm: () => void;
     onCancel: () => void;
 }
 
-export default function ConfirmModal({ title, children, confirmLabel, variant = 'primary', processing = false, error, onConfirm, onCancel }: ConfirmModalProps) {
+export default function ConfirmModal({ title, children, confirmLabel, variant = 'primary', processing = false, error, confirmDisabled = false, onConfirm, onCancel }: ConfirmModalProps) {
     const titleId = useId();
     const descriptionId = useId();
 
@@ -29,7 +30,7 @@ export default function ConfirmModal({ title, children, confirmLabel, variant = 
             </Modal.Body>
             <Modal.Footer className="form-dialog__footer">
                 <Button autoFocus variant="outline-secondary" disabled={processing} onClick={onCancel}>Cancelar</Button>
-                <Button variant={variant} disabled={processing} onClick={onConfirm}>
+                <Button variant={variant} disabled={processing || confirmDisabled} onClick={onConfirm}>
                     {processing && <Spinner as="span" animation="border" size="sm" className="me-2" aria-hidden="true" />}
                     {processing ? 'Guardando…' : confirmLabel}
                 </Button>

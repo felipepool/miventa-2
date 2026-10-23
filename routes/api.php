@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\CambiarEstadoSucursalController;
 use App\Http\Controllers\Api\V1\CambiarEstadoUsuarioController;
+use App\Http\Controllers\Api\V1\CotizacionSucursalController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\RolController;
 use App\Http\Controllers\Api\V1\SucursalActualController;
@@ -23,8 +24,9 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api'
 
     Route::middleware('can:gestionar_sucursales')->group(function () {
         Route::apiResource('sucursales', SucursalController::class)
-            ->only(['index', 'store', 'update'])
+            ->only(['index', 'show', 'store', 'update'])
             ->parameters(['sucursales' => 'sucursal']);
         Route::patch('sucursales/{sucursal}/estado', CambiarEstadoSucursalController::class)->name('sucursales.estado');
+        Route::get('sucursales/{sucursal}/cotizacion', CotizacionSucursalController::class)->name('sucursales.cotizacion');
     });
 });

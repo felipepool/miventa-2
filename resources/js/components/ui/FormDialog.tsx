@@ -8,12 +8,13 @@ interface FormDialogProps {
     processing?: boolean;
     children: ReactNode;
     actions: ReactNode;
+    size?: 'md' | 'lg' | 'xl';
 }
 
 const consultaTactil = '(max-width: 1199.98px), (any-pointer: coarse)';
 
 /** Mantiene el mismo formulario al alternar entre escritorio y pantallas táctiles. */
-export default function FormDialog({ title, onHide, processing = false, children, actions }: FormDialogProps) {
+export default function FormDialog({ title, onHide, processing = false, children, actions, size = 'lg' }: FormDialogProps) {
     const titleId = useId();
     const [tactil, setTactil] = useState(() => window.matchMedia(consultaTactil).matches);
 
@@ -46,7 +47,7 @@ export default function FormDialog({ title, onHide, processing = false, children
     }
 
     return (
-        <Modal show centered scrollable size="lg" onHide={cerrar} keyboard={!processing} backdrop={processing ? 'static' : true}
+        <Modal show centered scrollable size={size === 'md' ? undefined : size} onHide={cerrar} keyboard={!processing} backdrop={processing ? 'static' : true}
             className="form-dialog" aria-labelledby={titleId}>
             <Modal.Header closeButton={!processing} closeLabel="Cerrar">
                 <Modal.Title as="h2" id={titleId}>{title}</Modal.Title>
