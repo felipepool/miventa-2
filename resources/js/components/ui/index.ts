@@ -12,3 +12,4 @@ export { default as PageHeader } from './PageHeader';
 export { default as SearchInput } from './SearchInput';
 export { default as CheckboxListField } from './CheckboxListField';
 export { default as FormDialog } from './FormDialog';
+export { default as ConfirmModal } from './ConfirmModal';

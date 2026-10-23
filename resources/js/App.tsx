@@ -11,6 +11,7 @@ import NotFoundPage from '@/pages/NotFoundPage';
 import SinAcceso from '@/pages/SinAcceso';
 import UsuariosIndex from '@/pages/Usuarios/Index';
 import NuevoUsuario from '@/pages/Usuarios/Nuevo';
+import EditarUsuario from '@/pages/Usuarios/Editar';
 
 function Cargando() {
     return (
@@ -81,6 +82,7 @@ export default function App() {
                     <Route element={<RequierePermiso permiso="gestionar_usuarios" />}>
                         <Route path="usuarios" element={<UsuariosIndex />}>
                             <Route path="nuevo" element={<NuevoUsuario />} />
+                            <Route path=":usuarioId/editar" element={<EditarUsuario />} />
                         </Route>
                     </Route>
                     <Route path="*" element={<NotFoundPage />} />

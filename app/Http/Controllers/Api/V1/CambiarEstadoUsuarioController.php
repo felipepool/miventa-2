@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UsuarioResource;
+use App\Models\Negocio;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class CambiarEstadoUsuarioController extends Controller
@@ -18,15 +20,23 @@ class CambiarEstadoUsuarioController extends Controller
     {
         $activo = $request->validate(['activo' => ['required', 'boolean']])['activo'];
 
-        if (! $activo && $usuario->is($request->user())) {
-            throw ValidationException::withMessages(['activo' => 'No puedes desactivar tu propio usuario.']);
-        }
+        DB::transaction(function () use ($request, $usuario, $activo): void {
+            Negocio::whereKey($usuario->negocio_id)->lockForUpdate()->firstOrFail();
+            $usuario->refresh()->unsetRelation('roles');
 
-        if (! $activo && $usuario->esUltimoAdminActivo()) {
-            throw ValidationException::withMessages(['activo' => 'El negocio debe tener al menos un administrador activo.']);
-        }
+            $editor = $request->user()->fresh();
+            abort_unless($editor->puedeIniciarSesion() && $editor->can('gestionar_usuarios'), 403);
 
-        $usuario->update(['activo' => $activo]);
+            if (! $activo && $usuario->is($editor)) {
+                throw ValidationException::withMessages(['activo' => 'No puedes desactivar tu propio usuario.']);
+            }
+
+            if (! $activo && $usuario->esUltimoAdminActivo()) {
+                throw ValidationException::withMessages(['activo' => 'El negocio debe tener al menos un administrador activo.']);
+            }
+
+            $usuario->update(['activo' => $activo]);
+        });
 
         return new UsuarioResource($usuario->load(['roles', 'sucursales' => fn ($query) => $query->orderBy('nombre')]));
     }

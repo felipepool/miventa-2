@@ -1,18 +1,20 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import { Badge, Button, Form, Spinner } from 'react-bootstrap';
-import { DataTable, Icon, PageHeader, SearchInput } from '@/components/ui';
+import { ConfirmModal, DataTable, Icon, PageHeader, SearchInput } from '@/components/ui';
 import type { Column } from '@/components/ui';
-import { erroresDeValidacion, mensajeDeError } from '@/lib/http';
+import { api, erroresDeValidacion, mensajeDeError } from '@/lib/http';
+import { useAuth } from '@/lib/auth';
 import { useConsultaApi } from '@/lib/useConsultaApi';
 import { notificar } from '@/lib/notificaciones';
 import type { Paginated } from '@/types/api';
 import type { OpcionRol, Usuario } from '@/types/user';
 
 export interface UsuariosContexto {
-    onCreado: (usuario: Usuario) => void;
+    onGuardado: (usuario: Usuario, operacion: 'creado' | 'actualizado') => void;
+    catalogo: ReturnType<typeof useConsultaApi<{ data: OpcionRol[] }>>;
 }
 
 export default function UsuariosIndex() {
@@ -22,6 +24,11 @@ export default function UsuariosIndex() {
     const consulta = parametros.toString();
     const listado = useConsultaApi<Paginated<Usuario>>(`/usuarios${consulta ? `?${consulta}` : ''}`);
     const catalogo = useConsultaApi<{ data: OpcionRol[] }>('/roles');
+    const { actualizarUsuario } = useAuth();
+    const [usuarioPorCambiar, setUsuarioPorCambiar] = useState<Usuario | null>(null);
+    const [cambiandoEstado, setCambiandoEstado] = useState(false);
+    const [errorEstado, setErrorEstado] = useState('');
+    const cambioEnCurso = useRef(false);
     const buscar = parametros.get('buscar') ?? '';
     const rol = parametros.get('rol') ?? '';
     const estado = parametros.get('estado') ?? '';
@@ -85,6 +92,34 @@ export default function UsuariosIndex() {
         });
     };
 
+    const guardarEstado = async () => {
+        if (!usuarioPorCambiar || cambioEnCurso.current) {
+            return;
+        }
+
+        cambioEnCurso.current = true;
+        setCambiandoEstado(true);
+        setErrorEstado('');
+
+        try {
+            const response = await api.patch<{ data: Usuario }>(`/usuarios/${usuarioPorCambiar.id}/estado`, { activo: !usuarioPorCambiar.activo });
+            notificar(`Usuario ${response.data.data.activo ? 'activado' : 'desactivado'} correctamente.`);
+            setUsuarioPorCambiar(null);
+            listado.recargar();
+        } catch (exception) {
+            const mensaje = Object.values(erroresDeValidacion(exception)).join(' ')
+                || (axios.isAxiosError(exception) && exception.response?.status === 403
+                    ? 'No tienes permiso para cambiar el estado de usuarios.'
+                    : axios.isAxiosError(exception) && exception.response?.status === 404
+                        ? 'Este usuario ya no está disponible. Actualiza el listado.'
+                        : mensajeDeError(exception));
+            setErrorEstado(mensaje);
+        } finally {
+            cambioEnCurso.current = false;
+            setCambiandoEstado(false);
+        }
+    };
+
     const columnas: Column<Usuario>[] = [
         {
             header: 'Nombre',
@@ -122,6 +157,24 @@ export default function UsuariosIndex() {
                 <Badge pill bg={usuario.activo ? 'success-subtle' : 'secondary-subtle'} text={usuario.activo ? 'success' : 'secondary'}>
                     {usuario.activo ? 'Activo' : 'Inactivo'}
                 </Badge>
+            ),
+        },
+        {
+            header: 'Acciones',
+            mobile: 'actions',
+            cell: (usuario) => (
+                <div className="usuario-acciones">
+                    <Link to={`/usuarios/${usuario.id}/editar${location.search}`} className="btn btn-outline-secondary" aria-label={`Editar a ${usuario.name}`}>
+                        <Icon name="pencil" className="me-2" />Editar
+                    </Link>
+                    <Button variant="outline-secondary" disabled={usuario.es_usuario_actual}
+                        aria-label={`${usuario.activo ? 'Desactivar' : 'Activar'} a ${usuario.name}`}
+                        title={usuario.es_usuario_actual ? 'No puedes desactivar tu propio usuario.' : undefined}
+                        onClick={() => { setErrorEstado(''); setUsuarioPorCambiar(usuario); }}>
+                        <Icon name={usuario.activo ? 'person-dash' : 'person-check'} className="me-2" />
+                        {usuario.activo ? 'Desactivar' : 'Activar'}
+                    </Button>
+                </div>
             ),
         },
     ];
@@ -206,7 +259,21 @@ export default function UsuariosIndex() {
                     </div>
                 }
             />
-            <Outlet context={{ onCreado: (usuario) => { notificar(`Usuario ${usuario.name} creado correctamente.`); listado.recargar(); } } satisfies UsuariosContexto} />
+            <Outlet context={{ catalogo, onGuardado: (usuario, operacion) => {
+                actualizarUsuario(usuario);
+                notificar(`Usuario ${usuario.name} ${operacion} correctamente.`);
+                listado.recargar();
+            } } satisfies UsuariosContexto} />
+            {usuarioPorCambiar && (
+                <ConfirmModal title={usuarioPorCambiar.activo ? '¿Desactivar usuario?' : '¿Activar usuario?'}
+                    confirmLabel={usuarioPorCambiar.activo ? 'Desactivar' : 'Activar'}
+                    variant={usuarioPorCambiar.activo ? 'danger' : 'primary'} processing={cambiandoEstado} error={errorEstado}
+                    onConfirm={() => void guardarEstado()} onCancel={() => setUsuarioPorCambiar(null)}>
+                    <p className="mb-0"><strong>{usuarioPorCambiar.name}</strong> {usuarioPorCambiar.activo
+                        ? 'perderá el acceso al sistema, incluida su sesión actual. Su historial se conservará.'
+                        : 'podrá volver a ingresar al sistema con sus roles y sucursales asignados.'}</p>
+                </ConfirmModal>
+            )}
         </>
     );
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUsuarioRequest;
 use App\Http\Requests\UpdateUsuarioRequest;
 use App\Http\Resources\UsuarioResource;
+use App\Models\Negocio;
 use App\Models\Sucursal;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class UsuarioController extends Controller
 {
@@ -48,6 +50,11 @@ class UsuarioController extends Controller
         return UsuarioResource::collection($usuarios);
     }
 
+    public function show(User $usuario): JsonResponse
+    {
+        return $this->respuesta($usuario);
+    }
+
     public function store(StoreUsuarioRequest $request): JsonResponse
     {
         $usuario = DB::transaction(function () use ($request): User {
@@ -63,6 +70,22 @@ class UsuarioController extends Controller
     public function update(UpdateUsuarioRequest $request, User $usuario): JsonResponse
     {
         DB::transaction(function () use ($request, $usuario): void {
+            Negocio::whereKey($usuario->negocio_id)->lockForUpdate()->firstOrFail();
+            $usuario->refresh()->unsetRelation('roles');
+
+            $editor = $request->user()->fresh();
+            abort_unless($editor->puedeIniciarSesion() && $editor->can('gestionar_usuarios'), 403);
+
+            if (! $request->esSoloAdmin() && $usuario->esAdmin()) {
+                if ($usuario->is($editor)) {
+                    throw ValidationException::withMessages(['roles' => 'No puedes quitarte el rol de administrador.']);
+                }
+
+                if ($usuario->esUltimoAdminActivo()) {
+                    throw ValidationException::withMessages(['roles' => 'El negocio debe tener al menos un administrador activo.']);
+                }
+            }
+
             $usuario->fill($request->safe()->only(['name', 'username', 'email']));
 
             if ($request->filled('password')) {

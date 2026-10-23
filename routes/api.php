@@ -17,7 +17,7 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api'
 
     Route::middleware('can:gestionar_usuarios')->group(function () {
         Route::get('roles', RolController::class)->name('roles.index');
-        Route::apiResource('usuarios', UsuarioController::class)->only(['index', 'store', 'update']);
+        Route::apiResource('usuarios', UsuarioController::class)->only(['index', 'show', 'store', 'update']);
         Route::patch('usuarios/{usuario}/estado', CambiarEstadoUsuarioController::class)->name('usuarios.estado');
     });
 

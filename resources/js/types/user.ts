@@ -16,7 +16,7 @@ export interface OpcionRol {
 export interface Usuario extends User {
     activo: boolean;
     roles: Rol[];
-    sucursales: SucursalResumen[];
+    sucursales: (SucursalResumen & { activa: boolean })[];
     es_usuario_actual: boolean;
 }
 

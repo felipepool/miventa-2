@@ -24,7 +24,7 @@ class UsuarioResource extends JsonResource
             ...$this->datosPublicos('name', 'username', 'email', 'activo'),
             'roles' => array_map(fn (Rol $rol) => $rol->value, $this->rolesAsignados()),
             'sucursales' => $this->whenLoaded('sucursales', fn () => $this->sucursales
-                ->map(fn (Sucursal $sucursal) => $sucursal->datosPublicos('nombre'))
+                ->map(fn (Sucursal $sucursal) => $sucursal->datosPublicos('nombre', 'activa'))
                 ->values()),
             'es_usuario_actual' => $this->resource->is($request->user()),
         ];

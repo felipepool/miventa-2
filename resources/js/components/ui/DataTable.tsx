@@ -7,7 +7,7 @@ import type { PaginationMeta } from '@/types/api';
 export interface Column<T> {
     header: string;
     cell: (row: T) => ReactNode;
-    mobile?: 'title' | 'hidden';
+    mobile?: 'title' | 'hidden' | 'actions';
 }
 
 interface DataTableProps<T> {

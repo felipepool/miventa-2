@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { api, onSesionExpirada, prepararCsrf, web } from '@/lib/http';
-import type { Sesion } from '@/types/user';
+import type { Sesion, User } from '@/types/user';
 
 export interface Credenciales {
     codigo_negocio: string;
@@ -17,6 +17,7 @@ interface AuthContextValue {
     logout: () => Promise<void>;
     refresh: () => Promise<void>;
     cambiarSucursal: (sucursalId: string) => Promise<void>;
+    actualizarUsuario: (usuario: User) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -66,7 +67,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => onSesionExpirada(null);
     }, [refresh]);
 
-    const value = useMemo(() => ({ sesion, login, logout, refresh, cambiarSucursal }), [sesion, login, logout, refresh, cambiarSucursal]);
+    const actualizarUsuario = useCallback((usuario: User) => {
+        setSesion((actual) => actual?.user.id === usuario.id ? {
+            ...actual,
+            user: { id: usuario.id, name: usuario.name, username: usuario.username, email: usuario.email },
+        } : actual);
+    }, []);
+
+    const value = useMemo(() => ({ sesion, login, logout, refresh, cambiarSucursal, actualizarUsuario }), [sesion, login, logout, refresh, cambiarSucursal, actualizarUsuario]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
