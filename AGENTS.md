@@ -20,6 +20,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, and naming.
 - Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
 - Check for existing components to reuse before writing a new one.
+- Keep CRUD flows consistent across the system, using Usuarios as the reference. For editing, use the shared `EditDialog` to show the initial loading dialog, then mount the populated form in `FormDialog`; share error, retry, and unavailable-record behavior too. A different flow requires a concrete functional reason and explicit user approval before implementation.
 
 ## Verification Scripts
 

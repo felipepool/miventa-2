@@ -13,4 +13,5 @@ export { default as PageHeader } from './PageHeader';
 export { default as SearchInput } from './SearchInput';
 export { default as CheckboxListField } from './CheckboxListField';
 export { default as FormDialog } from './FormDialog';
+export { default as EditDialog } from './EditDialog';
 export { default as ConfirmModal } from './ConfirmModal';
