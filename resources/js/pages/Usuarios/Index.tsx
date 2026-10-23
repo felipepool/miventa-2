@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import { Badge, Button, Form, Spinner } from 'react-bootstrap';
-import { ConfirmModal, DataTable, Icon, PageHeader, SearchInput } from '@/components/ui';
+import { ConfirmModal, DataTable, Icon, PageHeader, SearchInput, TableActions } from '@/components/ui';
 import type { Column } from '@/components/ui';
 import { api, erroresDeValidacion, mensajeDeError } from '@/lib/http';
 import { useAuth } from '@/lib/auth';
@@ -136,7 +136,7 @@ export default function UsuariosIndex() {
         {
             header: 'Roles',
             cell: (usuario) => (
-                <div className="d-flex flex-wrap justify-content-end justify-content-md-start gap-1">
+                <div className="data-table__badges">
                     {usuario.roles.map((asignado) => (
                         <Badge key={asignado} pill bg={asignado === 'admin' ? 'primary' : 'info'} text={asignado === 'admin' ? undefined : 'dark'}>
                             {roles.find((opcion) => opcion.value === asignado)?.label ?? asignado}
@@ -163,18 +163,16 @@ export default function UsuariosIndex() {
             header: 'Acciones',
             mobile: 'actions',
             cell: (usuario) => (
-                <div className="usuario-acciones">
-                    <Link to={`/usuarios/${usuario.id}/editar${location.search}`} className="btn btn-outline-secondary" aria-label={`Editar a ${usuario.name}`}>
-                        <Icon name="pencil" className="me-2" />Editar
-                    </Link>
-                    <Button variant="outline-secondary" disabled={usuario.es_usuario_actual}
-                        aria-label={`${usuario.activo ? 'Desactivar' : 'Activar'} a ${usuario.name}`}
-                        title={usuario.es_usuario_actual ? 'No puedes desactivar tu propio usuario.' : undefined}
-                        onClick={() => { setErrorEstado(''); setUsuarioPorCambiar(usuario); }}>
-                        <Icon name={usuario.activo ? 'person-dash' : 'person-check'} className="me-2" />
-                        {usuario.activo ? 'Desactivar' : 'Activar'}
-                    </Button>
-                </div>
+                <TableActions recordLabel={usuario.name}
+                    primaryAction={{ label: 'Editar', icon: 'pencil', to: `/usuarios/${usuario.id}/editar${location.search}` }}
+                    actions={[{
+                        label: usuario.activo ? 'Desactivar' : 'Activar',
+                        icon: usuario.activo ? 'person-dash' : 'person-check',
+                        variant: usuario.activo ? 'danger' : undefined,
+                        disabled: usuario.es_usuario_actual,
+                        disabledReason: 'No puedes desactivar tu propio usuario.',
+                        onClick: () => { setErrorEstado(''); setUsuarioPorCambiar(usuario); },
+                    }]} />
             ),
         },
     ];

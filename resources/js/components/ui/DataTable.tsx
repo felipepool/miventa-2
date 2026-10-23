@@ -40,7 +40,11 @@ export default function DataTable<T>({ columns, rows, rowKey, caption, toolbar, 
                     <caption className="visually-hidden">{caption}</caption>
                     <thead>
                         <tr>
-                            {columns.map((column) => <th key={column.header} scope="col">{column.header}</th>)}
+                            {columns.map((column) => (
+                                <th key={column.header} scope="col" className={column.mobile === 'actions' ? 'data-table__cell--actions' : undefined}>
+                                    {column.header}
+                                </th>
+                            ))}
                         </tr>
                     </thead>
                     <tbody>
