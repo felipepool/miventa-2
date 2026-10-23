@@ -43,6 +43,8 @@ test('the listing is paginated isolated and filtered with the main branch first'
     Sucursal::factory()->for($admin->negocio)->count(16)->create();
     Sucursal::factory()->for($admin->negocio)->inactiva()->create(['nombre' => 'Cerrada', 'direccion' => 'Matta 123']);
     $ajena = Sucursal::factory()->create(['nombre' => 'Ajena']);
+    $principal = $admin->negocio->sucursales()->where('es_principal', true)->firstOrFail();
+    $this->actingAs($admin)->putJson('/api/v1/sucursal-actual/'.$principal->public_id)->assertOk();
     $this->actingAs($admin)->getJson('/api/v1/sucursales')->assertOk()
         ->assertJsonCount(15, 'data')->assertJsonPath('meta.total', 18)->assertJsonPath('data.0.es_principal', true)
         ->assertJsonPath('data.0.cajas_count', 1)->assertJsonMissing(['id' => $ajena->public_id]);
@@ -55,14 +57,13 @@ test('invalid branch filters return 422', function (string $consulta, string $ca
         ->assertUnprocessable()->assertJsonValidationErrors($campo);
 })->with([['estado=otro', 'estado'], ['page=0', 'page'], ['page=no', 'page'], ['buscar='.str_repeat('a', 101), 'buscar']]);
 
-test('all plans include the first branch and one register without an extra contract', function (Plan $plan) {
+test('all plans require an available branch before using the branch creation endpoint', function (Plan $plan) {
     $admin = User::factory()->for(Negocio::factory()->plan($plan))->admin()->create();
     $this->actingAs($admin)->postJson('/api/v1/sucursales', ['nombre' => ' Primera ', 'es_principal' => false, 'activa' => false, 'negocio_id' => 999])
-        ->assertCreated()->assertJsonPath('data.nombre', 'Primera')->assertJsonPath('data.es_principal', true)
-        ->assertJsonPath('data.activa', true)->assertJsonPath('data.cajas_count', 1);
+        ->assertStatus(409)->assertJsonPath('code', 'sucursal_requerida');
     expect(SucursalAdicional::count())->toBe(0);
-    expect(Caja::sole()->nombre)->toBe('Caja 1');
-    expect(Caja::sole()->negocio_id)->toBe($admin->negocio_id);
+    expect(Caja::count())->toBe(0);
+    expect(Sucursal::count())->toBe(0);
 })->with(Plan::cases());
 
 test('an extra branch requires acceptance and includes one register for all plans', function (Plan $plan) {
@@ -111,6 +112,7 @@ test('editing preserves the included register and the agreed price', function ()
     $sucursal = Sucursal::factory()->for($admin->negocio)->create();
     $periodo = SucursalAdicional::factory()->for($sucursal)->create();
     $caja = $sucursal->cajas()->sole();
+    $this->actingAs($admin)->putJson('/api/v1/sucursal-actual/'.$sucursal->public_id)->assertOk();
     $this->actingAs($admin)->putJson('/api/v1/sucursales/'.$sucursal->public_id, [
         'nombre' => 'Nuevo nombre', 'direccion' => 'Av. Central 123', 'telefono' => null, 'activa' => false, 'es_principal' => true, 'precio_uf' => '0.0000',
     ])->assertOk()->assertJsonPath('data.nombre', 'Nuevo nombre')->assertJsonPath('data.es_principal', false)->assertJsonPath('data.activa', true);
@@ -132,6 +134,7 @@ test('deactivation preserves assignments closes contracts and updates accessible
     $sucursal = Sucursal::factory()->for($admin->negocio)->create();
     $cajero = User::factory()->for($admin->negocio)->cajero()->create();
     $cajero->sucursales()->attach($sucursal);
+    $this->actingAs($admin)->putJson('/api/v1/sucursal-actual/'.$sucursal->public_id)->assertOk();
     $periodo = SucursalAdicional::factory()->for($sucursal)->create();
     $this->actingAs($admin)->patchJson('/api/v1/sucursales/'.$sucursal->public_id.'/estado', ['activa' => false])->assertOk()->assertJsonPath('data.activa', false);
     expect($periodo->fresh()->hasta)->not->toBeNull();

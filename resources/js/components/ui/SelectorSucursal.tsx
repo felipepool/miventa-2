@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import Icon from '@/components/ui/Icon';
 import { useAuth, useSesion } from '@/lib/auth';
+import { mensajeDeError } from '@/lib/http';
+import { notificar } from '@/lib/notificaciones';
 
 /**
  * Muestra la sucursal activa y permite cambiarla.
@@ -9,7 +11,7 @@ import { useAuth, useSesion } from '@/lib/auth';
  */
 export default function SelectorSucursal() {
     const { sucursal, sucursales } = useSesion().contexto;
-    const { cambiarSucursal } = useAuth();
+    const { cambiarSucursal, refresh } = useAuth();
     const [cambiando, setCambiando] = useState(false);
 
     if (!sucursal) {
@@ -39,6 +41,9 @@ export default function SelectorSucursal() {
 
         try {
             await cambiarSucursal(sucursalId);
+        } catch (error) {
+            notificar(`No se pudo cambiar la sucursal. ${mensajeDeError(error)}`, 'error');
+            await refresh().catch(() => {});
         } finally {
             setCambiando(false);
         }
@@ -62,6 +67,7 @@ export default function SelectorSucursal() {
                         key={opcion.id}
                         as="button"
                         active={opcion.id === sucursal.id}
+                        disabled={cambiando}
                         onClick={() => void cambiar(opcion.id)}
                     >
                         {opcion.nombre}

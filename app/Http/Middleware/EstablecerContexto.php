@@ -68,7 +68,7 @@ class EstablecerContexto
 
     /**
      * Sucursal guardada en la sesión si el usuario aún tiene acceso a ella;
-     * de lo contrario la principal (o la primera disponible).
+     * de lo contrario solo se elige automáticamente si queda una disponible.
      */
     private function resolverSucursal(Request $request, User $user): ?Sucursal
     {
@@ -76,12 +76,13 @@ class EstablecerContexto
         $request->attributes->set(self::SUCURSALES_ACCESIBLES, $sucursales);
 
         if (! $request->hasSession()) {
-            return $sucursales->first();
+            return $sucursales->count() === 1 ? $sucursales->first() : null;
         }
 
         $sucursalId = $request->session()->get(SucursalActual::CLAVE_SESION);
 
-        $sucursal = $sucursales->firstWhere('id', $sucursalId) ?? $sucursales->first();
+        $sucursal = $sucursales->firstWhere('id', $sucursalId)
+            ?? ($sucursales->count() === 1 ? $sucursales->first() : null);
 
         $request->session()->put(SucursalActual::CLAVE_SESION, $sucursal?->id);
 

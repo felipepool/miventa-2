@@ -1,6 +1,8 @@
 import { Button, Dropdown } from 'react-bootstrap';
 import { Icon, SelectorSucursal } from '@/components/ui';
 import { useAuth, useSesion } from '@/lib/auth';
+import { mensajeDeError } from '@/lib/http';
+import { notificar } from '@/lib/notificaciones';
 
 interface BarraSuperiorProps {
     onAbrirMenu: () => void;
@@ -40,7 +42,7 @@ export default function BarraSuperior({ onAbrirMenu }: BarraSuperiorProps) {
                     <Dropdown.Menu>
                         <Dropdown.Header>@{user.username}</Dropdown.Header>
                         <Dropdown.Divider />
-                        <Dropdown.Item as="button" onClick={() => void logout()}>
+                        <Dropdown.Item as="button" onClick={() => void logout().catch((error: unknown) => notificar(`No se pudo cerrar la sesión. ${mensajeDeError(error)}`, 'error'))}>
                             <Icon name="box-arrow-right" className="me-2" />
                             Cerrar sesión
                         </Dropdown.Item>

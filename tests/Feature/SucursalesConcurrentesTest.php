@@ -68,7 +68,7 @@ test('simultaneous branch requests preserve included capacity and contract count
             $procesos[] = $proceso;
         }
         $limite = microtime(true) + 15;
-        while (! file_exists($directorio.'/listo-0') || ! file_exists($directorio.'/listo-1')) {
+        while ($escenario !== 'incluida' && (! file_exists($directorio.'/listo-0') || ! file_exists($directorio.'/listo-1'))) {
             foreach ($procesos as $proceso) {
                 if (! $proceso->isRunning()) {
                     throw new RuntimeException($proceso->getErrorOutput().$proceso->getOutput());
@@ -107,7 +107,7 @@ test('simultaneous branch requests preserve included capacity and contract count
         rmdir($directorio);
     }
 })->with([
-    'one included branch' => ['incluida', [201, 422], 1, 0],
+    'no branch selected' => ['incluida', [409, 409], 0, 0],
     'two paid branches' => ['adicionales', [201, 201], 3, 2],
     'duplicate names' => ['duplicada', [201, 422], 2, 1],
     'same reactivation twice' => ['reactivar', [200, 200], 2, 1],

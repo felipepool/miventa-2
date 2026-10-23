@@ -38,6 +38,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 ## Documentation Files
 
 - You must only create documentation files if explicitly requested by the user.
+- For every plan explicitly approved by the user, save its numbered steps and agreed behavior in an independent Markdown file under `docs/`, using a sequential numeric prefix and a descriptive filename (starting with `01-seleccion-sucursal-login.md`, then `02-...md`). Continue after the highest existing plan number; keep an existing plan's number when updating it. The user has requested this documentation for all future approved plans. Include only the approved plan, without conversation history, implementation logs, or unapproved additions.
 
 === boost rules ===
 

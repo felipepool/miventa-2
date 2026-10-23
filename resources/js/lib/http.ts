@@ -27,6 +27,10 @@ function crearCliente(baseURL: string): AxiosInstance {
                 alExpirarSesion?.();
             }
 
+            if (axios.isAxiosError(error) && error.response?.status === 409 && error.response.data?.code === 'sucursal_requerida') {
+                alRequerirSucursal?.();
+            }
+
             return Promise.reject(error);
         },
     );
@@ -35,6 +39,11 @@ function crearCliente(baseURL: string): AxiosInstance {
 }
 
 let alExpirarSesion: (() => void) | null = null;
+let alRequerirSucursal: (() => void) | null = null;
+
+export function onSucursalRequerida(callback: (() => void) | null): void {
+    alRequerirSucursal = callback;
+}
 
 /**
  * Registra qué hacer cuando el servidor indica que no hay sesión (lo usa el AuthProvider).

@@ -1,9 +1,11 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import Spinner from 'react-bootstrap/Spinner';
+import { Alert, Button } from 'react-bootstrap';
 import AppLayout from '@/layouts/AppLayout';
 import GuestLayout from '@/layouts/GuestLayout';
 import { useAuth, useSesion } from '@/lib/auth';
 import Login from '@/pages/Auth/Login';
+import SeleccionarSucursal from '@/pages/Auth/SeleccionarSucursal';
 import OlvideContrasena from '@/pages/Auth/OlvideContrasena';
 import RestablecerContrasena from '@/pages/Auth/RestablecerContrasena';
 import Dashboard from '@/pages/Dashboard';
@@ -17,6 +19,10 @@ import SucursalFormulario from '@/pages/Sucursales/Formulario';
 import EditarSucursal from '@/pages/Sucursales/Editar';
 
 function Cargando() {
+    const { errorSesion, refresh } = useAuth();
+    if (errorSesion) {
+        return <div className="p-4"><Alert variant="danger">No se pudo cargar tu sesión. {errorSesion}</Alert><Button onClick={() => void refresh().catch(() => {})}>Reintentar</Button></div>;
+    }
     return (
         <div className="d-flex justify-content-center py-5">
             <Spinner animation="border" role="status">
@@ -50,6 +56,14 @@ function RequierePermiso({ permiso }: { permiso: string }) {
     return permisos.includes(permiso) ? <Outlet /> : <SinAcceso />;
 }
 
+function RequiereSucursal() {
+    const { contexto } = useSesion();
+    const location = useLocation();
+
+    return contexto.sucursal ? <Outlet key={contexto.sucursal.id} />
+        : <Navigate to="/seleccionar-sucursal" replace state={{ desde: location.pathname + location.search }} />;
+}
+
 /**
  * Rutas solo para invitados (login, recuperar contraseña): con sesión, al inicio.
  */
@@ -79,22 +93,27 @@ export default function App() {
             </Route>
 
             <Route element={<RequiereSesion />}>
-                <Route element={<AppLayout />}>
-                    <Route index element={<Navigate to="/dashboard" replace />} />
-                    <Route path="dashboard" element={<Dashboard />} />
-                    <Route element={<RequierePermiso permiso="gestionar_usuarios" />}>
-                        <Route path="usuarios" element={<UsuariosIndex />}>
-                            <Route path="nuevo" element={<NuevoUsuario />} />
-                            <Route path=":usuarioId/editar" element={<EditarUsuario />} />
+                <Route element={<GuestLayout />}>
+                    <Route path="seleccionar-sucursal" element={<SeleccionarSucursal />} />
+                </Route>
+                <Route element={<RequiereSucursal />}>
+                    <Route element={<AppLayout />}>
+                        <Route index element={<Navigate to="/dashboard" replace />} />
+                        <Route path="dashboard" element={<Dashboard />} />
+                        <Route element={<RequierePermiso permiso="gestionar_usuarios" />}>
+                            <Route path="usuarios" element={<UsuariosIndex />}>
+                                <Route path="nuevo" element={<NuevoUsuario />} />
+                                <Route path=":usuarioId/editar" element={<EditarUsuario />} />
+                            </Route>
                         </Route>
-                    </Route>
-                    <Route element={<RequierePermiso permiso="gestionar_sucursales" />}>
-                        <Route path="sucursales" element={<SucursalesIndex />}>
-                            <Route path="nueva" element={<SucursalFormulario />} />
-                            <Route path=":sucursalId/editar" element={<EditarSucursal />} />
+                        <Route element={<RequierePermiso permiso="gestionar_sucursales" />}>
+                            <Route path="sucursales" element={<SucursalesIndex />}>
+                                <Route path="nueva" element={<SucursalFormulario />} />
+                                <Route path=":sucursalId/editar" element={<EditarSucursal />} />
+                            </Route>
                         </Route>
+                        <Route path="*" element={<NotFoundPage />} />
                     </Route>
-                    <Route path="*" element={<NotFoundPage />} />
                 </Route>
             </Route>
         </Routes>

@@ -46,6 +46,8 @@ test('the list exposes public user data and all assigned roles and branches', fu
     $sucursal = Sucursal::factory()->for($admin->negocio)->create(['nombre' => 'Norte']);
     $usuario->sucursales()->attach($sucursal);
 
+    $this->actingAs($admin)->putJson('/api/v1/sucursal-actual/'.$sucursal->public_id)->assertOk();
+
     $this->actingAs($admin)->getJson('/api/v1/usuarios')
         ->assertOk()
         ->assertJsonCount(2, 'data')
@@ -170,6 +172,8 @@ test('an admin creates a user with several roles and branches and a hashed passw
     $admin = User::factory()->admin()->create();
     $matriz = $admin->negocio->sucursales()->firstOrFail();
     $norte = Sucursal::factory()->for($admin->negocio)->create(['nombre' => 'Norte']);
+
+    $this->actingAs($admin)->putJson('/api/v1/sucursal-actual/'.$matriz->public_id)->assertOk();
 
     $response = $this->actingAs($admin)->postJson('/api/v1/usuarios', datosCreacionUsuario([
         'username' => '  JPerez  ',
@@ -365,6 +369,8 @@ test('an admin updates personal data roles and branches without changing an omit
     $usuario = User::factory()->for($admin->negocio)->cajero()->create();
     $norte = Sucursal::factory()->for($admin->negocio)->create();
     $hashAnterior = $usuario->password;
+
+    $this->actingAs($admin)->putJson('/api/v1/sucursal-actual/'.$norte->public_id)->assertOk();
 
     $this->actingAs($admin)->putJson("/api/v1/usuarios/{$usuario->public_id}", datosEdicionUsuario($usuario, [
         'name' => 'Nombre actualizado', 'username' => ' ACTUALIZADO ', 'email' => ' actualizado@example.com ',

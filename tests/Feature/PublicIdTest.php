@@ -27,6 +27,7 @@ test('urls do not accept internal numeric ids', function () {
 });
 
 test('the session only exposes public ids', function () {
+    $this->actingAs($this->admin)->putJson('/api/v1/sucursal-actual/'.$this->sucursal->public_id)->assertOk();
     $respuesta = $this->actingAs($this->admin)->getJson('/api/v1/me')->assertOk();
 
     $ids = [

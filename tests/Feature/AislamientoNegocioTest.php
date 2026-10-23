@@ -59,7 +59,7 @@ test('the session only exposes the current business and its branches', function 
         ->getJson('/api/v1/me')
         ->assertOk()
         ->assertJsonPath('data.contexto.negocio', ['codigo' => $negocio->codigo, 'nombre' => $negocio->nombre])
-        ->assertJsonPath('data.contexto.sucursal.nombre', 'Casa Matriz')
+        ->assertJsonPath('data.contexto.sucursal', null)
         ->assertJsonCount(2, 'data.contexto.sucursales')
         ->assertJsonPath('data.contexto.sucursales.1.id', $sucursalNorte->public_id)
         ->assertJsonMissing(['nombre' => 'Ajena']);

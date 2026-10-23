@@ -10,8 +10,11 @@ use App\Http\Middleware\EstablecerContexto;
 use App\Http\Responses\RespuestaEnlaceRestablecer;
 use App\Models\Negocio;
 use App\Models\User;
+use App\Support\Contexto\SucursalActual;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -38,6 +41,12 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Event::listen(Login::class, function (Login $event): void {
+            if ($event->guard === 'web' && request()->hasSession()) {
+                request()->session()->forget(SucursalActual::CLAVE_SESION);
+            }
+        });
+
         Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);

@@ -29,7 +29,7 @@ export interface Contexto {
     negocio: { codigo: string; nombre: string } | null;
     modulos: string[];
     sucursal: SucursalResumen | null;
-    sucursales: SucursalResumen[];
+    sucursales: (SucursalResumen & { direccion: string | null })[];
 }
 
 /** Respuesta de `GET /api/v1/me`. */

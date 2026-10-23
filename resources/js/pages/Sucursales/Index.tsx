@@ -54,7 +54,7 @@ export default function SucursalesIndex() {
         }, { replace: campo === 'buscar' });
     };
     const limpiarFiltros = () => { setReiniciosBusqueda((actual) => actual + 1); setParametros({}); };
-    const actualizarContexto = () => { listado.recargar(); void refresh(); };
+    const actualizarContexto = () => { listado.recargar(); void refresh().catch(() => {}); };
 
     const cambiarEstado = async () => {
         if (!sucursalPorCambiar || envioEnCurso.current) { return; }
