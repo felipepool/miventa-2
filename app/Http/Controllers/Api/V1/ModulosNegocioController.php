@@ -6,7 +6,10 @@ use App\Enums\Modulo;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateModulosNegocioRequest;
 use App\Http\Resources\NegocioResource;
+use App\Models\Negocio;
 use App\Support\Contexto\NegocioActual;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ModulosNegocioController extends Controller
 {
@@ -16,11 +19,18 @@ class ModulosNegocioController extends Controller
      */
     public function __invoke(UpdateModulosNegocioRequest $request, NegocioActual $negocioActual): NegocioResource
     {
-        $negocio = $negocioActual->obtener();
-        $negocio->update([
-            'modulos' => array_map(Modulo::from(...), $request->validated('modulos')),
-        ]);
+        return DB::transaction(function () use ($request, $negocioActual): NegocioResource {
+            $negocio = Negocio::whereKey($negocioActual->id())->lockForUpdate()->firstOrFail();
+            $modulos = array_map(Modulo::from(...), $request->validated('modulos'));
+            foreach ($modulos as $modulo) {
+                if (! $negocio->plan->incluye($modulo)) {
+                    throw ValidationException::withMessages(['modulos' => 'El plan cambió. Recarga la página para revisar sus módulos.']);
+                }
+            }
+            $negocio->update(['modulos' => $modulos]);
+            $negocioActual->obtener()->refresh();
 
-        return new NegocioResource($negocio);
+            return new NegocioResource($negocio);
+        }, 3);
     }
 }

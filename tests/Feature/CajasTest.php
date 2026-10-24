@@ -34,7 +34,7 @@ test('operational users receive 403 when managing registers', function (string $
 })->with(['cajero', 'cocina', 'garzon']);
 
 test('register routes require a confirmed branch when several are available', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     Sucursal::factory()->for($admin->negocio)->create();
     $this->actingAs($admin)->getJson('/api/v1/cajas')->assertStatus(409)->assertJsonPath('code', 'sucursal_requerida');
     $this->postJson('/api/v1/cajas', ['nombre' => 'No creada'])->assertStatus(409);
@@ -42,7 +42,7 @@ test('register routes require a confirmed branch when several are available', fu
 });
 
 test('registers are paginated ordered by branch and filterable without leaking another business', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $principal = $admin->negocio->sucursales()->sole();
     $otra = Sucursal::factory()->for($admin->negocio)->create(['nombre' => 'Alameda']);
     Caja::factory()->for($otra)->count(16)->create();
@@ -59,7 +59,7 @@ test('registers are paginated ordered by branch and filterable without leaking a
 });
 
 test('foreign register and branch requests return 404', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $ajena = Caja::factory()->create();
     $sucursalAjena = $ajena->sucursal->public_id;
     $this->actingAs($admin)->getJson('/api/v1/cajas/'.$ajena->public_id)->assertNotFound();
@@ -71,7 +71,7 @@ test('foreign register and branch requests return 404', function () {
 });
 
 test('an additional register requires acceptance and snapshots the catalog price for every plan', function (Plan $plan) {
-    $admin = User::factory()->for(Negocio::factory()->plan($plan)->conSucursalPrincipal())->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->plan($plan)->conSucursalPrincipal())->admin()->create();
     $sucursal = $admin->negocio->sucursales()->sole();
     $this->actingAs($admin);
     $cotizacion = $this->getJson('/api/v1/cajas/cotizacion?sucursal='.$sucursal->public_id)->assertOk()
@@ -91,7 +91,7 @@ test('an additional register requires acceptance and snapshots the catalog price
 })->with(Plan::cases());
 
 test('invalid names and filters return 422', function (array $datos, string $campo) {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $sucursal = $admin->negocio->sucursales()->sole();
     $this->actingAs($admin)->postJson('/api/v1/cajas', ['sucursal' => $sucursal->public_id, ...$datos])
         ->assertUnprocessable()->assertJsonValidationErrors($campo);
@@ -102,7 +102,7 @@ test('invalid names and filters return 422', function (array $datos, string $cam
 ]);
 
 test('renaming a register keeps its branch inclusion and contracted price', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $sucursal = $admin->negocio->sucursales()->sole();
     $caja = Caja::factory()->for($sucursal)->create();
     $contrato = CajaAdicional::factory()->for($caja)->create();
@@ -117,7 +117,7 @@ test('renaming a register keeps its branch inclusion and contracted price', func
 
 test('deactivating the included register promotes another active register and closes its charge', function () {
     $this->travelTo(now()->setTimezone(config('facturacion.timezone'))->setDate(2026, 10, 15)->startOfDay());
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $sucursal = $admin->negocio->sucursales()->sole();
     $incluida = $sucursal->cajas()->sole();
     $extra = Caja::factory()->for($sucursal)->create();
@@ -131,7 +131,7 @@ test('deactivating the included register promotes another active register and cl
 });
 
 test('reactivating an old included register bills it without displacing the current included register', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $sucursal = $admin->negocio->sucursales()->sole();
     $antigua = $sucursal->cajas()->sole();
     $otra = Caja::factory()->for($sucursal)->create();
@@ -146,7 +146,7 @@ test('reactivating an old included register bills it without displacing the curr
 });
 
 test('an additional register can stop billing and reactivate at the new accepted price without duplicate contracts', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $sucursal = $admin->negocio->sucursales()->sole();
     $caja = Caja::factory()->for($sucursal)->create();
     $anterior = CajaAdicional::factory()->for($caja)->create();
@@ -163,7 +163,7 @@ test('an additional register can stop billing and reactivate at the new accepted
 });
 
 test('creating or reactivating the only register is included without acceptance', function (bool $reactivar) {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $sucursal = $admin->negocio->sucursales()->sole();
     $caja = $sucursal->cajas()->sole();
     $this->actingAs($admin)->patchJson('/api/v1/cajas/'.$caja->public_id.'/estado', ['activa' => false])->assertOk();
@@ -178,7 +178,7 @@ test('creating or reactivating the only register is included without acceptance'
 })->with([true, false]);
 
 test('missing or stale tariffs and quotations prevent contracting', function (string $escenario, string $campo) {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $sucursal = $admin->negocio->sucursales()->sole();
     $cotizacion = app(CobroCajas::class)->resumen($admin->negocio, $sucursal)['cotizacion'];
     if ($escenario === 'precio') {
@@ -195,7 +195,7 @@ test('missing or stale tariffs and quotations prevent contracting', function (st
 })->with([['precio', 'cotizacion'], ['sin tarifa', 'tarifa'], ['manipulada', 'cotizacion']]);
 
 test('inactive branches reject new registers and activations', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $sucursal = Sucursal::factory()->for($admin->negocio)->inactiva()->create();
     $caja = $sucursal->cajas()->sole();
     $caja->forceFill(['activa' => false, 'es_incluida' => false])->save();
@@ -208,19 +208,19 @@ test('inactive branches reject new registers and activations', function () {
 
 test('quotations prorate the current month in the billing timezone', function () {
     $this->travelTo(now()->setTimezone(config('facturacion.timezone'))->setDate(2026, 10, 24)->startOfDay());
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $sucursal = $admin->negocio->sucursales()->sole();
     $this->actingAs($admin)->getJson('/api/v1/cajas/cotizacion?sucursal='.$sucursal->public_id)
         ->assertOk()->assertJsonPath('data.este_mes.dias', 8)->assertJsonPath('data.este_mes.monto_uf', '0.0645');
 });
 
 test('register filters reject invalid values with 422', function (string $consulta, string $campo) {
-    $this->actingAs(User::factory()->admin()->create())->getJson('/api/v1/cajas?'.$consulta)
+    $this->actingAs(User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create())->getJson('/api/v1/cajas?'.$consulta)
         ->assertUnprocessable()->assertJsonValidationErrors($campo);
 })->with([['estado=otro', 'estado'], ['page=0', 'page'], ['sucursal=123', 'sucursal'], ['buscar='.str_repeat('a', 101), 'buscar']]);
 
 test('register names can repeat across branches but updates cannot duplicate a name in their own branch', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $principal = $admin->negocio->sucursales()->sole();
     $norte = Sucursal::factory()->for($admin->negocio)->create();
     $extra = Caja::factory()->for($principal)->create(['nombre' => 'Mostrador']);
@@ -233,7 +233,7 @@ test('register names can repeat across branches but updates cannot duplicate a n
 });
 
 test('deactivating and reactivating a branch preserves its included register and starts new accepted extra periods', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $principal = $admin->negocio->sucursales()->sole();
     $sucursal = Sucursal::factory()->for($admin->negocio)->create();
     $antigua = $sucursal->cajas()->sole();

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Actions\Planes\CambioPlan;
 use App\Actions\Planes\CobroSucursales;
+use App\Actions\Planes\EstadoPlan;
 use App\Enums\ConceptoTarifa;
 use App\Enums\Plan;
 use App\Http\Controllers\Controller;
@@ -36,8 +37,12 @@ class MiPlanController extends Controller
             'plan' => ['required', 'string', Rule::enum(Plan::class)],
             'acepto_cobro' => ['sometimes', 'boolean'],
             'cotizacion' => ['nullable', 'string', 'size:64'],
+            'adicionales' => ['present', 'array'],
+            'excluir' => ['sometimes', 'array'],
+            'excluir.*' => ['string', 'distinct', 'regex:/^(sucursal|caja):[a-z0-9]{26}$/i'],
+            'adicionales.*' => ['string', 'distinct', Rule::in(array_map(fn ($concepto) => $concepto->value, ConceptoTarifa::adicionales()))],
         ]);
-        $cambio->cambiar($this->negocioActual->obtener(), Plan::from($datos['plan']), $request->user(), $request->boolean('acepto_cobro'), $datos['cotizacion'] ?? null);
+        $cambio->cambiar($this->negocioActual->obtener(), Plan::from($datos['plan']), $request->user(), $request->boolean('acepto_cobro'), $datos['cotizacion'] ?? null, $datos['adicionales'], $datos['excluir'] ?? []);
 
         return response()->json(['data' => $this->datos($this->negocioActual->obtener()->refresh())]);
     }
@@ -50,23 +55,27 @@ class MiPlanController extends Controller
     private function datos(Negocio $negocio): array
     {
         $suscripcion = Suscripcion::whereNull('hasta')->latest('desde')->first();
-        $precioPlan = $suscripcion?->precio_uf
-            ?? Tarifa::where('concepto', ConceptoTarifa::Plan)->where('plan', $negocio->plan)->value('precio_uf');
+        $precioPlan = $suscripcion?->precio_uf;
         $sucursales = SucursalAdicional::with('sucursal')->whereNull('hasta')->orderBy('desde')->orderBy('id')->get();
         $cajas = CajaAdicional::with('caja.sucursal')->whereNull('hasta')->orderBy('desde')->orderBy('id')->get();
         $lineas = [
-            ['concepto' => 'Plan '.$negocio->plan->etiqueta(), 'detalle' => $suscripcion ? null : 'Precio de lista', 'precio_uf' => $precioPlan],
+            ['concepto' => 'Plan '.$negocio->plan->etiqueta(), 'detalle' => $suscripcion ? null : 'Pendiente de contratación', 'precio_uf' => $precioPlan],
             ...$sucursales->map(fn (SucursalAdicional $contrato) => [
                 'concepto' => 'Sucursal adicional', 'detalle' => $contrato->sucursal->nombre, 'precio_uf' => $contrato->precio_uf,
             ]),
             ...$cajas->map(fn (CajaAdicional $contrato) => [
                 'concepto' => 'Caja adicional', 'detalle' => $contrato->caja->nombre.' · '.$contrato->caja->sucursal->nombre, 'precio_uf' => $contrato->precio_uf,
             ]),
+            ...$negocio->adicionales()->whereNull('hasta')->get()->map(fn ($contrato) => [
+                'concepto' => $contrato->concepto->etiqueta(), 'detalle' => null, 'precio_uf' => $contrato->precio_uf,
+            ]),
         ];
         $completo = collect($lineas)->every(fn (array $linea) => $linea['precio_uf'] !== null);
         $precios = Tarifa::where('concepto', ConceptoTarifa::Plan)->get()->mapWithKeys(fn (Tarifa $tarifa) => [$tarifa->plan->value => $tarifa->precio_uf]);
 
         return [
+            'estado' => app(EstadoPlan::class)->resumen($negocio),
+            'adicionales_contratados' => $negocio->adicionales()->whereNull('hasta')->get()->map(fn ($contrato) => $contrato->concepto->value)->all(),
             'plan' => [
                 'value' => $negocio->plan->value,
                 'label' => $negocio->plan->etiqueta(),
@@ -82,7 +91,7 @@ class MiPlanController extends Controller
                 'value' => $plan->value,
                 'label' => $plan->etiqueta(),
                 'descripcion' => $plan->descripcion(),
-                'precio_uf' => $precios[$plan->value] ?? null,
+                'precio_uf' => $suscripcion?->plan === $plan ? $suscripcion->precio_uf : ($precios[$plan->value] ?? null),
                 'actual' => $plan === $negocio->plan,
             ], Plan::disponibles($negocio->plan)),
         ];
@@ -90,8 +99,12 @@ class MiPlanController extends Controller
 
     public function cotizacion(Request $request, CambioPlan $cambio): JsonResponse
     {
-        $datos = $request->validate(['plan' => ['required', 'string', Rule::enum(Plan::class)]]);
+        $datos = $request->validate(['plan' => ['required', 'string', Rule::enum(Plan::class)],
+            'adicionales' => ['sometimes', 'array'],
+            'excluir' => ['sometimes', 'array'],
+            'excluir.*' => ['string', 'distinct', 'regex:/^(sucursal|caja):[a-z0-9]{26}$/i'],
+            'adicionales.*' => ['string', 'distinct', Rule::in(array_map(fn ($concepto) => $concepto->value, ConceptoTarifa::adicionales()))]]);
 
-        return response()->json(['data' => $cambio->resumen($this->negocioActual->obtener(), Plan::from($datos['plan']))]);
+        return response()->json(['data' => $cambio->resumen($this->negocioActual->obtener(), Plan::from($datos['plan']), adicionales: $datos['adicionales'] ?? [], excluir: $datos['excluir'] ?? [])]);
     }
 }

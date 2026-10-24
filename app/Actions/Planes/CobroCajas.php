@@ -32,7 +32,8 @@ class CobroCajas
             $caja?->public_id, $caja?->activa, $activas->toArray(), $tarifa?->public_id, $precio, $hoy->toDateString()];
 
         return [
-            'requiere_aceptacion' => $generaCobro, 'precio_caja_uf' => $precio, 'total_mensual_uf' => $total,
+            'en_prueba' => $negocio->enPrueba(),
+            'requiere_aceptacion' => $generaCobro && (! $negocio->enPrueba() || $negocio->suscripciones()->whereNull('hasta')->exists()), 'precio_caja_uf' => $precio, 'total_mensual_uf' => $total,
             'este_mes' => ['dias' => $dias, 'monto_uf' => $total !== null
                 ? Tarifa::importe(intdiv(Tarifa::unidades($total) * $dias + intdiv($hoy->daysInMonth, 2), $hoy->daysInMonth)) : null],
             'cotizacion' => hash_hmac('sha256', json_encode($condiciones, JSON_THROW_ON_ERROR), config('app.key')),
@@ -63,6 +64,9 @@ class CobroCajas
     public function contratar(Negocio $negocio, Sucursal $sucursal, Caja $caja, User $usuario): void
     {
         $incluida = $this->asegurarIncluida($sucursal);
+        if ($negocio->enPrueba() && ! $negocio->suscripciones()->whereNull('hasta')->exists()) {
+            return;
+        }
         if ($incluida?->id === $caja->id || ! $caja->activa || ! $sucursal->activa) {
             return;
         }
@@ -73,13 +77,13 @@ class CobroCajas
         $periodo = new CajaAdicional;
         $periodo->forceFill([
             'negocio_id' => $negocio->id, 'caja_id' => $caja->id, 'tarifa_id' => $tarifa->id,
-            'desde' => now(), 'aceptado_por_id' => $usuario->id, 'aceptado_at' => now(),
+            'desde' => $negocio->enPrueba() ? $negocio->prueba_hasta : now(), 'aceptado_por_id' => $usuario->id, 'aceptado_at' => now(),
         ])->save();
     }
 
     public function cerrar(Caja $caja): void
     {
-        $caja->contratacionVigente()->withoutGlobalScopes()->update(['hasta' => now()]);
+        $caja->contratacionVigente()->withoutGlobalScopes()->get()->each(fn ($contrato) => $contrato->update(['hasta' => $contrato->desde->max(now())]));
     }
 
     /** Conserva la incluida activa y, cuando falta, libera la primera activa disponible. */

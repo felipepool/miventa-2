@@ -15,6 +15,8 @@ export interface OpcionPlan {
 
 /** Respuesta de `GET /api/v1/plan`. */
 export interface MiPlan {
+    estado: EstadoPlan;
+    adicionales_contratados: string[];
     plan: {
         value: string;
         label: string;
@@ -32,6 +34,11 @@ export interface MiPlan {
 
 /** Respuesta de `GET /api/v1/plan/cotizacion`. */
 export interface CotizacionPlan {
+    recursos: { value: string; sucursal: string; concepto: string; detalle: string; precio_uf: string | null }[];
+    adicionales: { value: string; label: string; precio_uf: string | null; seleccionado: boolean }[];
+    lineas: LineaCobro[];
+    total_mensual_uf: string | null;
+    cobro_desde: string;
     plan: string;
     precio_uf: string | null;
     modulos_agregados: { value: string; label: string }[];
@@ -39,4 +46,15 @@ export interface CotizacionPlan {
     /** El plan actual (Mixto) ya no se ofrece: no se podrá volver a él. */
     sin_retorno: boolean;
     cotizacion: string;
+}
+
+export interface EstadoPlan {
+    en_prueba: boolean;
+    prueba_hasta: string | null;
+    dias_restantes: number;
+    solo_lectura: boolean;
+    contratado: boolean;
+    cobro_desde: string | null;
+    adicionales_activos: string[];
+    facturacion: { ambiente: 'certificacion'; valor_tributario: false; aviso: string };
 }

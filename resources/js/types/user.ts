@@ -26,6 +26,7 @@ export interface SucursalResumen {
 }
 
 export interface Contexto {
+    suscripcion: import('./plan').EstadoPlan | null;
     negocio: { codigo: string; nombre: string } | null;
     modulos: string[];
     sucursal: SucursalResumen | null;

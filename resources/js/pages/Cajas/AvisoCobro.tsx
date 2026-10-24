@@ -14,13 +14,16 @@ interface AvisoCobroProps {
 
 export default function AvisoCobro({ cobro, aceptado, onChange, disabled = false, error }: AvisoCobroProps) {
     const id = useId();
+    if (cobro.en_prueba && !cobro.requiere_aceptacion) {
+        return <Alert variant="info" className="small">Sin cobro durante los 14 días de prueba. Cada sucursal incluye una caja; las cajas extras que mantengas activas costarán {cobro.precio_caja_uf === null ? 'una tarifa por confirmar' : formatoUf(cobro.precio_caja_uf)+' UF/mes + IVA'} cada una al contratar.</Alert>;
+    }
     return <>
         <Alert variant={cobro.requiere_aceptacion ? 'warning' : 'info'} className="small mb-2">
             <p className="fw-semibold mb-1">{cobro.requiere_aceptacion ? 'Caja adicional' : 'Caja incluida'}</p>
             {cobro.total_mensual_uf === null ? <p className="mb-0">La tarifa no está configurada. Contacta a soporte antes de contratar.</p>
                 : cobro.requiere_aceptacion ? <>
                     <p className="mb-1">Esta sucursal ya tiene una caja activa incluida. Esta caja cuesta <strong>{formatoUf(cobro.total_mensual_uf)} UF/mes + IVA.</strong></p>
-                    <p className="mb-1">Este mes: {formatoUf(cobro.este_mes.monto_uf!)} UF + IVA por los {cobro.este_mes.dias} días restantes.</p>
+                    <p className="mb-1">{cobro.en_prueba ? 'El cobro comienza al finalizar la prueba.' : `Este mes: ${formatoUf(cobro.este_mes.monto_uf!)} UF + IVA por los ${cobro.este_mes.dias} días restantes.`}</p>
                     <p className="mb-0">El precio aceptado se conserva mientras siga contratada. Al desactivarla deja de cobrarse desde ese día.</p>
                 </> : <p className="mb-0">Cada sucursal incluye una caja activa. Esta caja no genera un costo adicional.</p>}
         </Alert>

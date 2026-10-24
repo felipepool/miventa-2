@@ -35,7 +35,7 @@ function cambioAceptado(Plan $plan): array
 {
     $cotizacion = test()->getJson('/api/v1/plan/cotizacion?plan='.$plan->value)->assertOk()->json('data.cotizacion');
 
-    return ['plan' => $plan->value, 'acepto_cobro' => true, 'cotizacion' => $cotizacion];
+    return ['plan' => $plan->value, 'adicionales' => [], 'acepto_cobro' => true, 'cotizacion' => $cotizacion];
 }
 
 test('plan endpoints return 401 without a session', function (string $metodo, string $ruta) {
@@ -68,10 +68,10 @@ test('the plan shows its contracted price and the monthly charge of its own busi
         ->assertJsonCount(2, 'data.opciones');
 });
 
-test('a business without a contract shows the list price and no total while it is unconfigured', function () {
+test('a business without a contract shows its charge as pending even when catalog prices exist', function () {
     $admin = User::factory()->for(Negocio::factory()->plan(Plan::Retail)->conSucursalPrincipal())->admin()->create();
     $this->actingAs($admin)->getJson('/api/v1/plan')->assertOk()
-        ->assertJsonPath('data.plan.desde', null)->assertJsonPath('data.lineas.0.detalle', 'Precio de lista')->assertJsonPath('data.total_mensual_uf', '0.5000');
+        ->assertJsonPath('data.plan.desde', null)->assertJsonPath('data.lineas.0.detalle', 'Pendiente de contratación')->assertJsonPath('data.total_mensual_uf', null);
     Tarifa::where('concepto', 'plan')->update(['precio_uf' => null]);
     $this->getJson('/api/v1/plan')->assertOk()->assertJsonPath('data.total_mensual_uf', null);
 });
@@ -121,7 +121,7 @@ test('a repeated submission does not open a second contract', function () {
     $this->actingAs($admin);
     $payload = cambioAceptado(Plan::Comida);
     $this->putJson('/api/v1/plan', $payload)->assertOk();
-    $this->putJson('/api/v1/plan', $payload)->assertUnprocessable()->assertJsonValidationErrors('plan');
+    $this->putJson('/api/v1/plan', $payload)->assertUnprocessable()->assertJsonValidationErrors('cotizacion');
     expect(Suscripcion::count())->toBe(2)->and(Suscripcion::whereNull('hasta')->count())->toBe(1);
 });
 

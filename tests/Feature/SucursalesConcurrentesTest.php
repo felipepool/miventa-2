@@ -6,6 +6,7 @@ use App\Models\Negocio;
 use App\Models\Sucursal;
 use App\Models\SucursalAdicional;
 use App\Models\User;
+use Database\Seeders\TarifasSeeder;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\DB;
@@ -13,13 +14,16 @@ use Symfony\Component\Process\Process;
 
 if (($_ENV['DB_CONNECTION'] ?? getenv('DB_CONNECTION')) === 'mysql') {
     uses(DatabaseTruncation::class);
+    beforeEach(function () {
+        $this->seed(TarifasSeeder::class);
+    });
     afterEach(function () {
         RefreshDatabaseState::$migrated = false;
     });
 }
 
 test('simultaneous branch requests preserve included capacity and contract counts on mysql', function (string $escenario, array $estadosEsperados, int $sucursalesEsperadas, int $contratosEsperados) {
-    $factory = Negocio::factory();
+    $factory = Negocio::factory()->conPlanContratado();
     if ($escenario !== 'incluida') {
         $factory = $factory->conSucursalPrincipal();
     }

@@ -10,6 +10,7 @@ export interface Sucursal extends SucursalResumen {
 }
 
 export interface CobroSucursal {
+    en_prueba: boolean;
     incluidas: number;
     cajas_incluidas_por_sucursal: number;
     activas: number;

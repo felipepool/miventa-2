@@ -29,7 +29,7 @@ test('operational users receive 403 when managing branches', function (string $r
 })->with(['cajero', 'cocina', 'garzon']);
 
 test('reading editing quoting and changing another business branch returns 404', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $ajena = Sucursal::factory()->create();
     $this->actingAs($admin)->getJson('/api/v1/sucursales/'.$ajena->public_id)->assertNotFound();
     $this->putJson('/api/v1/sucursales/'.$ajena->public_id, ['nombre' => 'Ajena modificada'])->assertNotFound();
@@ -39,7 +39,7 @@ test('reading editing quoting and changing another business branch returns 404',
 });
 
 test('the listing is paginated isolated and filtered with the main branch first', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     Sucursal::factory()->for($admin->negocio)->count(16)->create();
     Sucursal::factory()->for($admin->negocio)->inactiva()->create(['nombre' => 'Cerrada', 'direccion' => 'Matta 123']);
     $ajena = Sucursal::factory()->create(['nombre' => 'Ajena']);
@@ -53,12 +53,12 @@ test('the listing is paginated isolated and filtered with the main branch first'
 });
 
 test('invalid branch filters return 422', function (string $consulta, string $campo) {
-    $this->actingAs(User::factory()->admin()->create())->getJson('/api/v1/sucursales?'.$consulta)
+    $this->actingAs(User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create())->getJson('/api/v1/sucursales?'.$consulta)
         ->assertUnprocessable()->assertJsonValidationErrors($campo);
 })->with([['estado=otro', 'estado'], ['page=0', 'page'], ['page=no', 'page'], ['buscar='.str_repeat('a', 101), 'buscar']]);
 
 test('all plans require an available branch before using the branch creation endpoint', function (Plan $plan) {
-    $admin = User::factory()->for(Negocio::factory()->plan($plan))->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->plan($plan))->admin()->create();
     $this->actingAs($admin)->postJson('/api/v1/sucursales', ['nombre' => ' Primera ', 'es_principal' => false, 'activa' => false, 'negocio_id' => 999])
         ->assertStatus(409)->assertJsonPath('code', 'sucursal_requerida');
     expect(SucursalAdicional::count())->toBe(0);
@@ -67,7 +67,7 @@ test('all plans require an available branch before using the branch creation end
 })->with(Plan::cases());
 
 test('an extra branch requires acceptance and includes one register for all plans', function (Plan $plan) {
-    $admin = User::factory()->for(Negocio::factory()->plan($plan)->conSucursalPrincipal())->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->plan($plan)->conSucursalPrincipal())->admin()->create();
     $this->actingAs($admin);
     $cotizacion = $this->getJson('/api/v1/sucursales')->assertOk()->assertJsonPath('cobro_sucursal.precio_sucursal_uf', '0.2500')->json('cobro_sucursal.cotizacion');
     $this->postJson('/api/v1/sucursales', ['nombre' => 'Norte'])->assertUnprocessable()->assertJsonValidationErrors('acepto_cobro');
@@ -81,7 +81,7 @@ test('an extra branch requires acceptance and includes one register for all plan
 })->with(Plan::cases());
 
 test('invalid branch fields return 422 before any branch or register is created', function (array $campos, string $campo) {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $this->actingAs($admin)->postJson('/api/v1/sucursales', [...['nombre' => 'Nueva'], ...$campos])
         ->assertUnprocessable()->assertJsonValidationErrors($campo);
     expect(Sucursal::count())->toBe(1);
@@ -93,7 +93,7 @@ test('invalid branch fields return 422 before any branch or register is created'
 ]);
 
 test('a changed price or forged quote returns 422 without creating a branch', function (bool $cambiarPrecio) {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $this->actingAs($admin);
     $cotizacion = $this->getJson('/api/v1/sucursales')->json('cobro_sucursal.cotizacion');
     if ($cambiarPrecio) {
@@ -108,7 +108,7 @@ test('a changed price or forged quote returns 422 without creating a branch', fu
 })->with([true, false]);
 
 test('editing preserves the included register and the agreed price', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $sucursal = Sucursal::factory()->for($admin->negocio)->create();
     $periodo = SucursalAdicional::factory()->for($sucursal)->create();
     $caja = $sucursal->cajas()->sole();
@@ -121,7 +121,7 @@ test('editing preserves the included register and the agreed price', function ()
 });
 
 test('the main branch and numeric internal ids are protected', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $principal = $admin->negocio->sucursales()->sole();
     $this->actingAs($admin)->patchJson('/api/v1/sucursales/'.$principal->public_id.'/estado', ['activa' => false])
         ->assertUnprocessable()->assertJsonValidationErrors(['activa' => 'La sucursal principal no se puede desactivar.']);
@@ -130,7 +130,7 @@ test('the main branch and numeric internal ids are protected', function () {
 });
 
 test('deactivation preserves assignments closes contracts and updates accessible branches', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $sucursal = Sucursal::factory()->for($admin->negocio)->create();
     $cajero = User::factory()->for($admin->negocio)->cajero()->create();
     $cajero->sucursales()->attach($sucursal);
@@ -144,7 +144,7 @@ test('deactivation preserves assignments closes contracts and updates accessible
 });
 
 test('reactivation requires a new acceptance and takes a new price snapshot only once', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $sucursal = Sucursal::factory()->for($admin->negocio)->inactiva()->create();
     Tarifa::where('concepto', 'sucursal')->where('plan', $admin->negocio->plan)->update(['precio_uf' => '0.4000']);
     $this->actingAs($admin)->patchJson('/api/v1/sucursales/'.$sucursal->public_id.'/estado', ['activa' => true])->assertUnprocessable()->assertJsonValidationErrors('acepto_cobro');
@@ -157,7 +157,7 @@ test('reactivation requires a new acceptance and takes a new price snapshot only
 });
 
 test('reactivation quotes and contracts only registers above the one included in that branch', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $sucursal = Sucursal::factory()->for($admin->negocio)->inactiva()->create();
     Caja::factory()->for($sucursal)->count(2)->create();
     Caja::factory()->for($sucursal)->inactiva()->create();
@@ -171,7 +171,7 @@ test('reactivation quotes and contracts only registers above the one included in
 });
 
 test('missing tariffs prevent an additional contract without creating partial records', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     Tarifa::where('concepto', 'sucursal')->where('plan', $admin->negocio->plan)->update(['precio_uf' => null]);
     $this->actingAs($admin)->postJson('/api/v1/sucursales', ['nombre' => 'Norte', 'acepto_cobro' => true])
         ->assertUnprocessable()->assertJsonValidationErrors('tarifa');
@@ -180,7 +180,7 @@ test('missing tariffs prevent an additional contract without creating partial re
 });
 
 test('editing a catalog price only changes contracts accepted afterwards', function () {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $this->actingAs($admin);
     $primeraCotizacion = $this->getJson('/api/v1/sucursales')->json('cobro_sucursal.cotizacion');
     $this->postJson('/api/v1/sucursales', ['nombre' => 'Norte', 'acepto_cobro' => true, 'cotizacion' => $primeraCotizacion])->assertCreated();

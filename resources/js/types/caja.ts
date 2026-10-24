@@ -15,6 +15,7 @@ export interface Caja {
 }
 
 export interface CobroCaja {
+    en_prueba: boolean;
     requiere_aceptacion: boolean;
     precio_caja_uf: string | null;
     total_mensual_uf: string | null;

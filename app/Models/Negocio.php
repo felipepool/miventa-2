@@ -27,6 +27,38 @@ class Negocio extends Model
     /** @use HasFactory<NegocioFactory> */
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::creating(function (Negocio $negocio): void {
+            if ($negocio->prueba_desde === null && $negocio->prueba_hasta === null) {
+                $negocio->prueba_desde = $negocio->created_at ?? now();
+                $negocio->prueba_hasta = $negocio->prueba_desde->addDays(14);
+            }
+        });
+    }
+
+    public function enPrueba(): bool
+    {
+        return $this->prueba_desde !== null && $this->prueba_desde->lte(now())
+            && $this->prueba_hasta !== null && $this->prueba_hasta->gt(now());
+    }
+
+    public function suscripciones(): HasMany
+    {
+        return $this->hasMany(Suscripcion::class);
+    }
+
+    public function adicionales(): HasMany
+    {
+        return $this->hasMany(NegocioAdicional::class);
+    }
+
+    public function soloLectura(): bool
+    {
+        return ! $this->enPrueba() && ! $this->suscripciones()->where('desde', '<=', now())
+            ->where(fn ($query) => $query->whereNull('hasta')->orWhere('hasta', '>', now()))->exists();
+    }
+
     /**
      * @return HasMany<Sucursal, $this>
      */
@@ -79,6 +111,8 @@ class Negocio extends Model
     protected function casts(): array
     {
         return [
+            'prueba_desde' => 'immutable_datetime',
+            'prueba_hasta' => 'immutable_datetime',
             'plan' => Plan::class,
             'modulos' => AsEnumCollection::of(Modulo::class),
             'cierre_ciego' => 'boolean',

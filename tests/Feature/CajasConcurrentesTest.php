@@ -5,6 +5,7 @@ use App\Models\Caja;
 use App\Models\CajaAdicional;
 use App\Models\Negocio;
 use App\Models\User;
+use Database\Seeders\TarifasSeeder;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\DB;
@@ -12,13 +13,16 @@ use Symfony\Component\Process\Process;
 
 if (($_ENV['DB_CONNECTION'] ?? getenv('DB_CONNECTION')) === 'mysql') {
     uses(DatabaseTruncation::class);
+    beforeEach(function () {
+        $this->seed(TarifasSeeder::class);
+    });
     afterEach(function () {
         RefreshDatabaseState::$migrated = false;
     });
 }
 
 test('simultaneous register operations preserve one included register and exact contract counts on mysql', function (string $escenario, array $estadosEsperados, int $cajasEsperadas, int $contratosEsperados) {
-    $admin = User::factory()->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
     $sucursal = $admin->negocio->sucursales()->sole();
     $base = $sucursal->cajas()->sole();
     $objetivo = null;

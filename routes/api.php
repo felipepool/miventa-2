@@ -15,12 +15,13 @@ use App\Http\Controllers\Api\V1\RolController;
 use App\Http\Controllers\Api\V1\SucursalActualController;
 use App\Http\Controllers\Api\V1\SucursalController;
 use App\Http\Controllers\Api\V1\UsuarioController;
+use App\Http\Middleware\RequerirNegocioOperativo;
 use App\Http\Middleware\RequerirSucursalActual;
 use Illuminate\Support\Facades\Route;
 
 // API JSON versionada. Hoy la consume la SPA con la cookie de sesión (Sanctum en
 // modo SPA); más adelante también terceros con tokens de Sanctum.
-Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api'])->group(function () {
+Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api', RequerirNegocioOperativo::class])->group(function () {
     Route::get('me', MeController::class)->name('me');
     Route::put('sucursal-actual/{sucursal}', SucursalActualController::class)->name('sucursal-actual');
 

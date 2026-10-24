@@ -24,6 +24,10 @@ class NegocioDemoSeeder extends Seeder
             'modulos' => Plan::Mixto->modulos(),
         ]);
 
+        if ($negocio->wasRecentlyCreated && $negocio->prueba_desde === null) {
+            $negocio->forceFill(['prueba_desde' => $negocio->created_at, 'prueba_hasta' => $negocio->created_at->copy()->addDays(14)])->save();
+        }
+
         $sucursal = Sucursal::withoutGlobalScopes()->firstOrNew([
             'negocio_id' => $negocio->id,
             'nombre' => 'Casa Matriz',

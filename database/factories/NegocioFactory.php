@@ -6,6 +6,8 @@ use App\Enums\Modulo;
 use App\Enums\Plan;
 use App\Models\Negocio;
 use App\Models\Sucursal;
+use App\Models\Suscripcion;
+use App\Models\Tarifa;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -59,6 +61,19 @@ class NegocioFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'activo' => false,
         ]);
+    }
+
+    /** Negocio fuera de prueba, con un contrato de precio conocido para pruebas de cobro. */
+    public function conPlanContratado(): static
+    {
+        return $this->afterCreating(function (Negocio $negocio): void {
+            $negocio->forceFill(['prueba_desde' => now()->subDays(30), 'prueba_hasta' => now()->subDays(16)])->save();
+            $tarifa = Tarifa::where('concepto', 'plan')->where('plan', $negocio->plan)->sole();
+            if ($tarifa->precio_uf === null) {
+                $tarifa->update(['precio_uf' => '1.0000']);
+            }
+            Suscripcion::factory()->for($negocio)->create();
+        });
     }
 
     /**

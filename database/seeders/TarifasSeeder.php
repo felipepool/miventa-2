@@ -14,7 +14,7 @@ class TarifasSeeder extends Seeder
         foreach (Plan::cases() as $plan) {
             foreach (ConceptoTarifa::cases() as $concepto) {
                 Tarifa::firstOrCreate(['concepto' => $concepto->value, 'plan' => $plan->value], [
-                    'precio_uf' => $concepto === ConceptoTarifa::Plan ? null : '0.2500',
+                    'precio_uf' => $concepto === ConceptoTarifa::Plan ? null : (in_array($concepto, ConceptoTarifa::adicionales(), true) ? '0.5000' : '0.2500'),
                 ]);
             }
         }

@@ -43,9 +43,10 @@ class CobroSucursales
             $tarifaSucursal?->public_id, $precioSucursal, $tarifaCaja?->public_id, $precioCaja, $hoy->toDateString()];
 
         return [
+            'en_prueba' => $negocio->enPrueba(),
             'incluidas' => self::INCLUIDAS, 'cajas_incluidas_por_sucursal' => 1, 'activas' => $activas,
             'adicionales' => max(0, $activas - self::INCLUIDAS), 'genera_cobro' => $generaCobro,
-            'cajas_adicionales' => $cajasAdicionales, 'requiere_aceptacion' => $generaCobro || $cajasAdicionales > 0,
+            'cajas_adicionales' => $cajasAdicionales, 'requiere_aceptacion' => ($generaCobro || $cajasAdicionales > 0) && (! $negocio->enPrueba() || $negocio->suscripciones()->whereNull('hasta')->exists()),
             'precio_sucursal_uf' => $precioSucursal, 'precio_caja_uf' => $precioCaja,
             'total_mensual_uf' => $total !== null ? Tarifa::importe($total) : null,
             'este_mes' => ['dias' => $dias, 'dias_mes' => $hoy->daysInMonth,
@@ -74,6 +75,9 @@ class CobroSucursales
 
     public function contratar(Negocio $negocio, Sucursal $sucursal, User $usuario): void
     {
+        if ($negocio->enPrueba() && ! $negocio->suscripciones()->whereNull('hasta')->exists()) {
+            return;
+        }
         $otrasActivas = $negocio->sucursales()->withoutGlobalScopes()->where('activa', true)->whereKeyNot($sucursal->id)->count();
         $tarifas = Tarifa::where('plan', $negocio->plan)->get();
 
@@ -82,7 +86,7 @@ class CobroSucursales
             $periodo->forceFill([
                 'negocio_id' => $negocio->id, 'sucursal_id' => $sucursal->id,
                 'tarifa_id' => $tarifas->firstWhere('concepto', ConceptoTarifa::Sucursal)->id,
-                'desde' => now(), 'aceptado_por_id' => $usuario->id, 'aceptado_at' => now(),
+                'desde' => $negocio->enPrueba() ? $negocio->prueba_hasta : now(), 'aceptado_por_id' => $usuario->id, 'aceptado_at' => now(),
             ])->save();
         }
 
@@ -93,7 +97,7 @@ class CobroSucursales
 
     public function cerrar(Sucursal $sucursal): void
     {
-        SucursalAdicional::where('negocio_id', $sucursal->negocio_id)->where('sucursal_id', $sucursal->id)->whereNull('hasta')->update(['hasta' => now()]);
-        CajaAdicional::where('negocio_id', $sucursal->negocio_id)->whereHas('caja', fn ($query) => $query->where('sucursal_id', $sucursal->id))->whereNull('hasta')->update(['hasta' => now()]);
+        SucursalAdicional::where('negocio_id', $sucursal->negocio_id)->where('sucursal_id', $sucursal->id)->whereNull('hasta')->get()->each(fn ($contrato) => $contrato->update(['hasta' => $contrato->desde->max(now())]));
+        CajaAdicional::where('negocio_id', $sucursal->negocio_id)->whereHas('caja', fn ($query) => $query->where('sucursal_id', $sucursal->id))->whereNull('hasta')->get()->each(fn ($contrato) => $contrato->update(['hasta' => $contrato->desde->max(now())]));
     }
 }

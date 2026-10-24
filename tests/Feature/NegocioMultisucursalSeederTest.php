@@ -1,5 +1,7 @@
 <?php
 
+use App\Actions\Planes\ContratarPlan;
+use App\Actions\Planes\RecursosContratacion;
 use App\Enums\ConceptoTarifa;
 use App\Enums\Plan;
 use App\Models\Caja;
@@ -19,7 +21,7 @@ beforeEach(function () {
     config(['app.admin.password' => 'demo-test-password']);
 });
 
-test('the seeded admin has three branches with one included register each and paid extras', function () {
+test('the seeded admin has three branches with one included register each and free trial extras', function () {
     $this->seed(NegocioMultisucursalSeeder::class);
 
     $admin = User::where('username', 'admin')->sole();
@@ -29,14 +31,17 @@ test('the seeded admin has three branches with one included register each and pa
         ->toBe(['Casa Matriz', 'Sucursal Norte', 'Sucursal Sur']);
     expect(Caja::withoutGlobalScopes()->count())->toBe(6);
     expect(Caja::withoutGlobalScopes()->where('es_incluida', true)->count())->toBe(3);
-    expect(CajaAdicional::withoutGlobalScopes()->pluck('precio_uf')->all())->toBe(['0.2500', '0.2500', '0.2500']);
-    expect(SucursalAdicional::withoutGlobalScopes()->pluck('precio_uf')->all())->toBe(['0.2500', '0.2500']);
+    expect(CajaAdicional::withoutGlobalScopes()->count())->toBe(0);
+    expect(SucursalAdicional::withoutGlobalScopes()->count())->toBe(0);
     expect(Hash::check('demo-test-password', $admin->password))->toBeTrue();
 });
 
 test('repeating the seed preserves data and contracted prices without duplicates', function () {
     $this->seed(NegocioMultisucursalSeeder::class);
     $admin = User::where('username', 'admin')->sole();
+    Tarifa::where('concepto', 'plan')->where('plan', Plan::Mixto)->update(['precio_uf' => '1.0000']);
+    app(ContratarPlan::class)->ejecutar($admin->negocio, Plan::Mixto, $admin, '1.0000');
+    app(RecursosContratacion::class)->contratar($admin->negocio, Plan::Mixto, $admin);
     $admin->forceFill(['name' => 'Nombre editado', 'password' => 'changed-password'])->save();
     Tarifa::where('plan', Plan::Mixto)->where('concepto', ConceptoTarifa::Sucursal)->update(['precio_uf' => '0.5000']);
     Tarifa::where('plan', Plan::Mixto)->where('concepto', ConceptoTarifa::Caja)->update(['precio_uf' => '0.5000']);

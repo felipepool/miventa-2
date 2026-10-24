@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Actions\Planes\EstadoPlan;
 use App\Enums\Modulo;
 use App\Enums\Permiso;
 use App\Enums\Rol;
@@ -35,6 +36,7 @@ class SesionResource extends JsonResource
             'roles' => array_map(fn (Rol $rol) => $rol->value, $this->resource->rolesAsignados()),
             'permisos' => array_map(fn (Permiso $permiso) => $permiso->value, $this->resource->permisos()),
             'contexto' => [
+                'suscripcion' => $negocio ? app(EstadoPlan::class)->resumen($negocio) : null,
                 'negocio' => $negocio?->only('codigo', 'nombre'),
                 'modulos' => array_map(fn (Modulo $modulo) => $modulo->value, $negocio?->modulosActivos() ?? []),
                 'sucursal' => app(SucursalActual::class)->obtener()?->datosPublicos('nombre'),

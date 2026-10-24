@@ -26,7 +26,7 @@ enum Modulo: string
         return match ($this) {
             self::VentaPorPeso => 'Productos por kilo, como queso, jamón o alimento a granel.',
             self::Modificadores => 'Opciones al vender: tipo de pan, agregados, salsas…',
-            self::Comanda => 'Comanda para la cocina y pantalla de pedidos pendientes y listos.',
+            self::Comanda => 'Comanda para la cocina. La pantalla KDS se contrata como adicional.',
         };
     }
 }

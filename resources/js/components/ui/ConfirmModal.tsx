@@ -19,7 +19,7 @@ export default function ConfirmModal({ title, children, confirmLabel, variant = 
     const descriptionId = useId();
 
     return (
-        <Modal show centered onHide={() => { if (!processing) { onCancel(); } }} keyboard={!processing}
+        <Modal show centered scrollable onHide={() => { if (!processing) { onCancel(); } }} keyboard={!processing}
             backdrop={processing ? 'static' : true} aria-labelledby={titleId} aria-describedby={descriptionId} className="form-dialog">
             <Modal.Header closeButton={!processing} closeLabel="Cerrar">
                 <Modal.Title as="h2" id={titleId}>{title}</Modal.Title>

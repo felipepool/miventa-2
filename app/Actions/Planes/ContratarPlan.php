@@ -30,13 +30,16 @@ class ContratarPlan
                 throw ValidationException::withMessages(['precio_uf' => 'Configura y confirma el precio vigente del plan antes de contratar.']);
             }
 
-            $vigente?->update(['hasta' => now()]);
+            $desde = $negocio->enPrueba() ? $negocio->prueba_hasta : now();
+            $vigente?->update(['hasta' => $desde]);
             $suscripcion = new Suscripcion;
             $suscripcion->forceFill([
-                'negocio_id' => $negocio->id, 'tarifa_id' => $tarifa->id, 'desde' => now(),
+                'negocio_id' => $negocio->id, 'tarifa_id' => $tarifa->id, 'desde' => $desde,
                 'aceptado_por_id' => $aceptadoPor->id, 'aceptado_at' => now(),
             ])->save();
-            $negocio->update(['plan' => $plan, 'modulos' => $plan->modulos()]);
+            if ($negocio->plan !== $plan) {
+                $negocio->update(['plan' => $plan, 'modulos' => $plan->modulos()]);
+            }
 
             return $suscripcion;
         }, 3);
