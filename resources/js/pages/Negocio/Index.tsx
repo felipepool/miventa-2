@@ -1,5 +1,6 @@
 import { useCallback, useId, useState } from 'react';
 import { Badge, Button, Col, Form, Row, Spinner } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import { PageHeader, TextField } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { mensajeDeError } from '@/lib/http';
@@ -72,7 +73,7 @@ function SeccionModulos({ negocio }: { negocio: Negocio }) {
                         <div className="small text-body-secondary">Tu plan</div>
                         <div className="h5 mb-1">{negocio.plan.label}</div>
                         <p className="small text-body-secondary mb-2">{negocio.plan.descripcion}</p>
-                        <p className="small mb-0">El cambio de plan estará disponible en <strong>Mi plan</strong>.</p>
+                        <Link to="/plan" className="small">Ver cobro o cambiar de plan en Mi plan</Link>
                     </div>
                 </Col>
                 <Col md={7}>

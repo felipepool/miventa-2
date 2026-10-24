@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\CambiarEstadoUsuarioController;
 use App\Http\Controllers\Api\V1\CotizacionCajaController;
 use App\Http\Controllers\Api\V1\CotizacionSucursalController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\MiPlanController;
 use App\Http\Controllers\Api\V1\ModulosNegocioController;
 use App\Http\Controllers\Api\V1\NegocioController;
 use App\Http\Controllers\Api\V1\PreferenciasNegocioController;
@@ -28,6 +29,9 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api'
         Route::put('negocio', [NegocioController::class, 'update'])->name('negocio.update');
         Route::put('negocio/modulos', ModulosNegocioController::class)->name('negocio.modulos');
         Route::put('negocio/preferencias', PreferenciasNegocioController::class)->name('negocio.preferencias');
+        Route::get('plan', [MiPlanController::class, 'show'])->name('plan.show');
+        Route::get('plan/cotizacion', [MiPlanController::class, 'cotizacion'])->name('plan.cotizacion');
+        Route::put('plan', [MiPlanController::class, 'update'])->name('plan.update');
     });
 
     Route::middleware([RequerirSucursalActual::class, 'can:gestionar_cajas'])->group(function () {

@@ -21,6 +21,7 @@ import CajasIndex from '@/pages/Cajas/Index';
 import CajaFormulario from '@/pages/Cajas/Formulario';
 import EditarCaja from '@/pages/Cajas/Editar';
 import NegocioIndex from '@/pages/Negocio/Index';
+import PlanIndex from '@/pages/Plan/Index';
 
 function Cargando() {
     const { errorSesion, refresh } = useAuth();
@@ -106,6 +107,7 @@ export default function App() {
                         <Route path="dashboard" element={<Dashboard />} />
                         <Route element={<RequierePermiso permiso="gestionar_negocio" />}>
                             <Route path="negocio" element={<NegocioIndex />} />
+                            <Route path="plan" element={<PlanIndex />} />
                         </Route>
                         <Route element={<RequierePermiso permiso="gestionar_cajas" />}>
                             <Route path="cajas" element={<CajasIndex />}>
