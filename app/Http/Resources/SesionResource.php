@@ -38,7 +38,7 @@ class SesionResource extends JsonResource
                 'negocio' => $negocio?->only('codigo', 'nombre'),
                 'modulos' => array_map(fn (Modulo $modulo) => $modulo->value, $negocio?->modulosActivos() ?? []),
                 'sucursal' => app(SucursalActual::class)->obtener()?->datosPublicos('nombre'),
-                'sucursales' => $sucursales->map(fn (Sucursal $sucursal) => $sucursal->datosPublicos('nombre', 'direccion'))->values()->all(),
+                'sucursales' => $sucursales->map(fn (Sucursal $sucursal) => $sucursal->datosPublicos('nombre', 'direccion', 'es_principal'))->values()->all(),
             ],
         ];
     }

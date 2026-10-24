@@ -5,7 +5,7 @@
    - **Varias disponibles:** mostrar «¿En qué sucursal trabajarás?».
    - **Ninguna disponible:** mostrar un mensaje claro para contactar al administrador y permitir cerrar sesión.
 
-3. **Crear una pantalla de selección simple.** Mostrar nombre y dirección, cuando exista, con una única selección y botón **«Ingresar a esta sucursal»**. Recordar la última sucursal válida y dejarla preseleccionada, pero pedir confirmación en cada nuevo inicio de sesión cuando haya varias.
+3. **Crear una pantalla de selección simple.** Mostrar nombre y dirección, cuando exista, con una única selección y botón **«Ingresar a esta sucursal»**. Preseleccionar la última sucursal utilizada si continúa activa y autorizada para ese usuario; si no hay una recordada válida, preseleccionar la sucursal con `es_principal = true` siempre que esté activa y autorizada. Si ninguna cumple, dejar la selección vacía. Pedir confirmación en cada nuevo inicio de sesión cuando haya varias sucursales, aunque una esté preseleccionada.
 
 4. **Aplicar los permisos desde el servidor.** El administrador podrá elegir cualquier sucursal activa de su negocio; los demás usuarios, solo las que tengan asignadas. Volver a validar el acceso al confirmar, por si la sucursal fue desactivada o cambió la asignación.
 

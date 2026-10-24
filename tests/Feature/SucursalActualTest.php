@@ -18,7 +18,9 @@ test('logging in with several accessible branches requires an explicit selection
     ])->assertOk();
 
     $this->getJson('/api/v1/me')->assertOk()->assertJsonPath('data.contexto.sucursal', null)
-        ->assertJsonCount(2, 'data.contexto.sucursales');
+        ->assertJsonCount(2, 'data.contexto.sucursales')
+        ->assertJsonPath('data.contexto.sucursales.0.es_principal', true)
+        ->assertJsonPath('data.contexto.sucursales.1.es_principal', false);
 });
 
 test('an admin can switch to any active branch of the business', function () {

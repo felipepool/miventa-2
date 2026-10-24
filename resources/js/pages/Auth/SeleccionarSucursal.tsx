@@ -16,7 +16,9 @@ export default function SeleccionarSucursal() {
     const [procesando, setProcesando] = useState(false);
     const [error, setError] = useState('');
     const enCurso = useRef(false);
-    const seleccionValida = contexto.sucursales.some((sucursal) => sucursal.id === seleccion) ? seleccion : '';
+    const seleccionValida = contexto.sucursales.some((sucursal) => sucursal.id === seleccion)
+        ? seleccion
+        : contexto.sucursales.find((sucursal) => sucursal.es_principal)?.id ?? '';
     const destino = (location.state as { desde?: string } | null)?.desde;
 
     if (contexto.sucursal) {
