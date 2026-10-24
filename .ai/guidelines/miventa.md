@@ -1,0 +1,4 @@
+# MiVenta
+
+- Keep CRUD flows consistent across the system, using Usuarios as the reference. For editing, use the shared `EditDialog` to show the initial loading dialog, then mount the populated form in `FormDialog`; share error, retry, and unavailable-record behavior too. A different flow requires a concrete functional reason and explicit user approval before implementation.
+- For every plan explicitly approved by the user, save its numbered steps and agreed behavior in an independent Markdown file under `docs/`, using a sequential numeric prefix and a descriptive filename (starting with `01-seleccion-sucursal-login.md`, then `02-...md`). Continue after the highest existing plan number; keep an existing plan's number when updating it. The user has requested this documentation for all future approved plans. Include only the approved plan, without conversation history, implementation logs, or unapproved additions.

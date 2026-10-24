@@ -1,11 +1,18 @@
 <laravel-boost-guidelines>
+=== .ai/miventa rules ===
+
+# MiVenta
+
+- Keep CRUD flows consistent across the system, using Usuarios as the reference. For editing, use the shared `EditDialog` to show the initial loading dialog, then mount the populated form in `FormDialog`; share error, retry, and unavailable-record behavior too. A different flow requires a concrete functional reason and explicit user approval before implementation.
+- For every plan explicitly approved by the user, save its numbered steps and agreed behavior in an independent Markdown file under `docs/`, using a sequential numeric prefix and a descriptive filename (starting with `01-seleccion-sucursal-login.md`, then `02-...md`). Continue after the highest existing plan number; keep an existing plan's number when updating it. The user has requested this documentation for all future approved plans. Include only the approved plan, without conversation history, implementation logs, or unapproved additions.
+
 === foundation rules ===
 
 # Laravel Boost Guidelines
 
 ## Foundational Context
 
-This application is a Laravel application running on PHP 8.5. Always use the APIs that match the installed major version of each package — do not assume a version.
+This application is a Laravel application running on PHP 8.6. Always use the APIs that match the installed major version of each package — do not assume a version.
 
 Before relying on a package's API, confirm its installed version:
 - PHP packages: run `composer show --direct` to list direct dependencies with versions, or `composer show <vendor/package>` for a single package.
@@ -20,7 +27,6 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, and naming.
 - Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
 - Check for existing components to reuse before writing a new one.
-- Keep CRUD flows consistent across the system, using Usuarios as the reference. For editing, use the shared `EditDialog` to show the initial loading dialog, then mount the populated form in `FormDialog`; share error, retry, and unavailable-record behavior too. A different flow requires a concrete functional reason and explicit user approval before implementation.
 
 ## Verification Scripts
 
@@ -38,7 +44,6 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 ## Documentation Files
 
 - You must only create documentation files if explicitly requested by the user.
-- For every plan explicitly approved by the user, save its numbered steps and agreed behavior in an independent Markdown file under `docs/`, using a sequential numeric prefix and a descriptive filename (starting with `01-seleccion-sucursal-login.md`, then `02-...md`). Continue after the highest existing plan number; keep an existing plan's number when updating it. The user has requested this documentation for all future approved plans. Include only the approved plan, without conversation history, implementation logs, or unapproved additions.
 
 === boost rules ===
 
@@ -99,6 +104,13 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 - Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
 - Activate the `deploying-to-cloud` skill whenever deploying to Laravel Cloud, configuring Cloud environments or resources, using the Cloud CLI, or troubleshooting Cloud deployments.
+
+=== herd rules ===
+
+# Laravel Herd
+
+- The application is served by Laravel Herd at `https?://[kebab-case-project-dir].test`. Use the `get-absolute-url` tool to generate valid URLs. Never run commands to serve the site. It is always available.
+- Use the `herd` CLI to manage services, PHP versions, and sites (e.g. `herd sites`, `herd services:start <service>`, `herd php:list`). Run `herd list` to discover all available commands.
 
 === tests rules ===
 
