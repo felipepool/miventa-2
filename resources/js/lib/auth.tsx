@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react';
 import { api, mensajeDeError, onSesionExpirada, onSucursalRequerida, prepararCsrf, web } from '@/lib/http';
 import { guardarSucursalRecordada } from '@/lib/sucursalRecordada';
+import type { Negocio } from '@/types/negocio';
 import type { Sesion, User } from '@/types/user';
 
 export interface Credenciales {
@@ -21,6 +22,8 @@ interface AuthContextValue {
     refresh: () => Promise<void>;
     cambiarSucursal: (sucursalId: string) => Promise<void>;
     actualizarUsuario: (usuario: User) => void;
+    /** Refleja en la cabecera y el menú el nombre y los módulos guardados en Mi negocio. */
+    actualizarNegocio: (negocio: Negocio) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -100,7 +103,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } : actual);
     }, []);
 
-    const value = useMemo(() => ({ sesion, errorSesion, login, logout, refresh, cambiarSucursal, actualizarUsuario }), [sesion, errorSesion, login, logout, refresh, cambiarSucursal, actualizarUsuario]);
+    const actualizarNegocio = useCallback((negocio: Negocio) => {
+        setSesion((actual) => actual?.contexto.negocio?.codigo === negocio.codigo ? {
+            ...actual,
+            contexto: {
+                ...actual.contexto,
+                negocio: { codigo: negocio.codigo, nombre: negocio.nombre },
+                modulos: negocio.modulos.filter((modulo) => modulo.activo).map((modulo) => modulo.value),
+            },
+        } : actual);
+    }, []);
+
+    const value = useMemo(() => ({ sesion, errorSesion, login, logout, refresh, cambiarSucursal, actualizarUsuario, actualizarNegocio }), [sesion, errorSesion, login, logout, refresh, cambiarSucursal, actualizarUsuario, actualizarNegocio]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

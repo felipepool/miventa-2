@@ -17,9 +17,11 @@ use Illuminate\Support\Str;
 
 /**
  * @property Collection<int, Modulo>|null $modulos
+ * @property bool $cierre_ciego
+ * @property int $descuento_maximo_cajero
  */
 #[Table('negocios')]
-#[Fillable(['codigo', 'nombre', 'plan', 'modulos', 'rut', 'razon_social', 'giro', 'direccion', 'telefono', 'email', 'activo'])]
+#[Fillable(['codigo', 'nombre', 'plan', 'modulos', 'cierre_ciego', 'descuento_maximo_cajero', 'rut', 'razon_social', 'giro', 'direccion', 'telefono', 'email', 'activo'])]
 class Negocio extends Model
 {
     /** @use HasFactory<NegocioFactory> */
@@ -79,6 +81,8 @@ class Negocio extends Model
         return [
             'plan' => Plan::class,
             'modulos' => AsEnumCollection::of(Modulo::class),
+            'cierre_ciego' => 'boolean',
+            'descuento_maximo_cajero' => 'integer',
             'activo' => 'boolean',
         ];
     }

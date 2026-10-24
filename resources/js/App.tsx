@@ -20,6 +20,7 @@ import EditarSucursal from '@/pages/Sucursales/Editar';
 import CajasIndex from '@/pages/Cajas/Index';
 import CajaFormulario from '@/pages/Cajas/Formulario';
 import EditarCaja from '@/pages/Cajas/Editar';
+import NegocioIndex from '@/pages/Negocio/Index';
 
 function Cargando() {
     const { errorSesion, refresh } = useAuth();
@@ -103,6 +104,9 @@ export default function App() {
                     <Route element={<AppLayout />}>
                         <Route index element={<Navigate to="/dashboard" replace />} />
                         <Route path="dashboard" element={<Dashboard />} />
+                        <Route element={<RequierePermiso permiso="gestionar_negocio" />}>
+                            <Route path="negocio" element={<NegocioIndex />} />
+                        </Route>
                         <Route element={<RequierePermiso permiso="gestionar_cajas" />}>
                             <Route path="cajas" element={<CajasIndex />}>
                                 <Route path="nueva" element={<CajaFormulario />} />

@@ -22,6 +22,7 @@ const ITEMS: ItemMenu[] = [
 ];
 
 const ADMINISTRACION: ItemMenu[] = [
+    { href: '/negocio', label: 'Mi negocio', icon: 'building-gear', permiso: 'gestionar_negocio' },
     { href: '/usuarios', label: 'Usuarios', icon: 'person-badge', permiso: 'gestionar_usuarios' },
     { href: '/sucursales', label: 'Sucursales', icon: 'shop', permiso: 'gestionar_sucursales' },
     { href: '/cajas', label: 'Cajas', icon: 'cash-stack', permiso: 'gestionar_cajas' },

@@ -7,6 +7,9 @@ use App\Http\Controllers\Api\V1\CambiarEstadoUsuarioController;
 use App\Http\Controllers\Api\V1\CotizacionCajaController;
 use App\Http\Controllers\Api\V1\CotizacionSucursalController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\ModulosNegocioController;
+use App\Http\Controllers\Api\V1\NegocioController;
+use App\Http\Controllers\Api\V1\PreferenciasNegocioController;
 use App\Http\Controllers\Api\V1\RolController;
 use App\Http\Controllers\Api\V1\SucursalActualController;
 use App\Http\Controllers\Api\V1\SucursalController;
@@ -19,6 +22,13 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('me', MeController::class)->name('me');
     Route::put('sucursal-actual/{sucursal}', SucursalActualController::class)->name('sucursal-actual');
+
+    Route::middleware([RequerirSucursalActual::class, 'can:gestionar_negocio'])->group(function () {
+        Route::get('negocio', [NegocioController::class, 'show'])->name('negocio.show');
+        Route::put('negocio', [NegocioController::class, 'update'])->name('negocio.update');
+        Route::put('negocio/modulos', ModulosNegocioController::class)->name('negocio.modulos');
+        Route::put('negocio/preferencias', PreferenciasNegocioController::class)->name('negocio.preferencias');
+    });
 
     Route::middleware([RequerirSucursalActual::class, 'can:gestionar_cajas'])->group(function () {
         Route::get('cajas/cotizacion', CotizacionCajaController::class)->name('cajas.cotizacion');
