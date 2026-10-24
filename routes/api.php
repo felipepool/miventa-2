@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\V1\CajaController;
+use App\Http\Controllers\Api\V1\CambiarEstadoCajaController;
 use App\Http\Controllers\Api\V1\CambiarEstadoSucursalController;
 use App\Http\Controllers\Api\V1\CambiarEstadoUsuarioController;
+use App\Http\Controllers\Api\V1\CotizacionCajaController;
 use App\Http\Controllers\Api\V1\CotizacionSucursalController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\RolController;
@@ -16,6 +19,12 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('me', MeController::class)->name('me');
     Route::put('sucursal-actual/{sucursal}', SucursalActualController::class)->name('sucursal-actual');
+
+    Route::middleware([RequerirSucursalActual::class, 'can:gestionar_cajas'])->group(function () {
+        Route::get('cajas/cotizacion', CotizacionCajaController::class)->name('cajas.cotizacion');
+        Route::apiResource('cajas', CajaController::class)->only(['index', 'show', 'store', 'update']);
+        Route::patch('cajas/{caja}/estado', CambiarEstadoCajaController::class)->name('cajas.estado');
+    });
 
     Route::middleware([RequerirSucursalActual::class, 'can:gestionar_usuarios'])->group(function () {
         Route::get('roles', RolController::class)->name('roles.index');

@@ -38,7 +38,7 @@ class Sucursal extends Model
             self::withoutGlobalScopes()->whereKey($this->id)->lockForUpdate()->firstOrFail();
             if (! $this->cajas()->withoutGlobalScopes()->exists()) {
                 $caja = new Caja(['nombre' => 'Caja 1']);
-                $caja->forceFill(['negocio_id' => $this->negocio_id, 'sucursal_id' => $this->id])->save();
+                $caja->forceFill(['negocio_id' => $this->negocio_id, 'sucursal_id' => $this->id, 'es_incluida' => true])->save();
             }
         });
     }

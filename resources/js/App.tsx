@@ -17,6 +17,9 @@ import EditarUsuario from '@/pages/Usuarios/Editar';
 import SucursalesIndex from '@/pages/Sucursales/Index';
 import SucursalFormulario from '@/pages/Sucursales/Formulario';
 import EditarSucursal from '@/pages/Sucursales/Editar';
+import CajasIndex from '@/pages/Cajas/Index';
+import CajaFormulario from '@/pages/Cajas/Formulario';
+import EditarCaja from '@/pages/Cajas/Editar';
 
 function Cargando() {
     const { errorSesion, refresh } = useAuth();
@@ -100,6 +103,12 @@ export default function App() {
                     <Route element={<AppLayout />}>
                         <Route index element={<Navigate to="/dashboard" replace />} />
                         <Route path="dashboard" element={<Dashboard />} />
+                        <Route element={<RequierePermiso permiso="gestionar_cajas" />}>
+                            <Route path="cajas" element={<CajasIndex />}>
+                                <Route path="nueva" element={<CajaFormulario />} />
+                                <Route path=":cajaId/editar" element={<EditarCaja />} />
+                            </Route>
+                        </Route>
                         <Route element={<RequierePermiso permiso="gestionar_usuarios" />}>
                             <Route path="usuarios" element={<UsuariosIndex />}>
                                 <Route path="nuevo" element={<NuevoUsuario />} />

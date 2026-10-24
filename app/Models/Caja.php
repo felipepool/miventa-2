@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Table('cajas')]
 #[Fillable(['nombre', 'activa'])]
@@ -24,8 +25,14 @@ class Caja extends Model
         return $this->belongsTo(Sucursal::class);
     }
 
+    /** @return HasOne<CajaAdicional, $this> */
+    public function contratacionVigente(): HasOne
+    {
+        return $this->hasOne(CajaAdicional::class)->whereNull('hasta');
+    }
+
     protected function casts(): array
     {
-        return ['activa' => 'boolean'];
+        return ['activa' => 'boolean', 'es_incluida' => 'boolean'];
     }
 }

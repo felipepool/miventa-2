@@ -86,13 +86,8 @@ class CobroSucursales
             ])->save();
         }
 
-        foreach ($sucursal->cajas()->where('activa', true)->orderBy('id')->get()->skip(1) as $caja) {
-            $periodo = new CajaAdicional;
-            $periodo->forceFill([
-                'negocio_id' => $negocio->id, 'caja_id' => $caja->id,
-                'tarifa_id' => $tarifas->firstWhere('concepto', ConceptoTarifa::Caja)->id,
-                'desde' => now(), 'aceptado_por_id' => $usuario->id, 'aceptado_at' => now(),
-            ])->save();
+        foreach ($sucursal->cajas()->where('activa', true)->orderBy('id')->get() as $caja) {
+            app(CobroCajas::class)->contratar($negocio, $sucursal, $caja, $usuario);
         }
     }
 

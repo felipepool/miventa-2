@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Actions\Planes\CobroCajas;
 use App\Actions\Planes\CobroSucursales;
 use App\Enums\Plan;
 use App\Enums\Rol;
+use App\Models\Caja;
 use App\Models\Negocio;
 use App\Models\Sucursal;
 use App\Models\User;
@@ -65,6 +67,16 @@ class NegocioMultisucursalSeeder extends Seeder
 
                 if ($sucursal->wasRecentlyCreated) {
                     app(CobroSucursales::class)->contratar($negocio, $sucursal, $admin);
+                }
+
+                $adicionales = $datos['es_principal'] ? ['Caja 2', 'Caja 3'] : ($datos['nombre'] === 'Sucursal Norte' ? ['Caja 2'] : []);
+                foreach ($adicionales as $nombre) {
+                    $caja = Caja::withoutGlobalScopes()->firstOrCreate([
+                        'negocio_id' => $negocio->id, 'sucursal_id' => $sucursal->id, 'nombre' => $nombre,
+                    ], ['activa' => true]);
+                    if ($caja->wasRecentlyCreated) {
+                        app(CobroCajas::class)->contratar($negocio, $sucursal, $caja, $admin);
+                    }
                 }
             }
         });
