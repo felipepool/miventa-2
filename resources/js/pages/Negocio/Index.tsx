@@ -79,16 +79,14 @@ function SeccionModulos({ negocio }: { negocio: Negocio }) {
                     <fieldset aria-describedby={errorModulos ? grupoId+'-error' : undefined}>
                         <legend className="form-label fs-6 mb-2">Módulos</legend>
                         {negocio.modulos.map((modulo) => (
-                            <Form.Check key={modulo.value} type="switch" id={grupoId+'-'+modulo.value} className="mb-3"
-                                disabled={!modulo.incluido} isInvalid={Boolean(errorModulos)} aria-invalid={errorModulos ? true : undefined}
-                                checked={modulo.incluido && activos.includes(modulo.value)}
-                                onChange={(event) => setActivos((actual) => event.target.checked ? [...actual, modulo.value] : actual.filter((valor) => valor !== modulo.value))}
-                                label={<>
-                                    <span className="d-flex flex-wrap align-items-center gap-2">{modulo.label}
-                                        {!modulo.incluido && <Badge bg="secondary-subtle" text="secondary" className="fw-normal">No incluido en tu plan</Badge>}
-                                    </span>
-                                    <span className="d-block small text-body-secondary">{modulo.descripcion}</span>
-                                </>} />
+                            <Form.Check key={modulo.value} type="switch" id={grupoId+'-'+modulo.value} className="mb-3">
+                                <Form.Check.Input type="checkbox" disabled={!modulo.incluido} isInvalid={Boolean(errorModulos)} aria-invalid={errorModulos ? true : undefined}
+                                    aria-describedby={grupoId+'-'+modulo.value+'-ayuda'} checked={modulo.incluido && activos.includes(modulo.value)}
+                                    onChange={(event) => setActivos((actual) => event.target.checked ? [...actual, modulo.value] : actual.filter((valor) => valor !== modulo.value))} />
+                                <Form.Check.Label>{modulo.label}</Form.Check.Label>
+                                {!modulo.incluido && <Badge bg="secondary-subtle" text="secondary" className="fw-normal ms-2">No incluido en tu plan</Badge>}
+                                <div id={grupoId+'-'+modulo.value+'-ayuda'} className="small text-body-secondary">{modulo.descripcion}</div>
+                            </Form.Check>
                         ))}
                         {errorModulos && <div id={grupoId+'-error'} className="invalid-feedback d-block mb-3">{errorModulos}</div>}
                     </fieldset>
@@ -116,8 +114,11 @@ function SeccionPreferencias({ negocio }: { negocio: Negocio }) {
         <Seccion title="Preferencias de operación" description="Cómo se cierran los turnos de caja y cuánto pueden descontar los cajeros. Se aplicarán en los turnos de caja y las ventas."
             submitLabel="Guardar preferencias" processing={procesando} errores={errores} errorGeneral={errorGeneral}
             onSubmit={() => void guardar({ cierre_ciego: cierreCiego, descuento_maximo_cajero: descuento.trim() === '' ? null : Number(descuento) })}>
-            <Form.Check type="switch" id={cierreId} className="mb-3" checked={cierreCiego} onChange={(event) => setCierreCiego(event.target.checked)}
-                label={<>Cierre ciego de caja<span className="d-block small text-body-secondary">El cajero cuenta el efectivo sin ver cuánto debería haber. Solo los administradores ven el monto esperado y la diferencia.</span></>} />
+            <Form.Check type="switch" id={cierreId} className="mb-3">
+                <Form.Check.Input type="checkbox" aria-describedby={cierreId+'-ayuda'} checked={cierreCiego} onChange={(event) => setCierreCiego(event.target.checked)} />
+                <Form.Check.Label>Cierre ciego de caja</Form.Check.Label>
+                <div id={cierreId+'-ayuda'} className="small text-body-secondary">El cajero cuenta el efectivo sin ver cuánto debería haber. Solo los administradores ven el monto esperado y la diferencia.</div>
+            </Form.Check>
             <TextField label="Descuento máximo del cajero (%)" type="number" inputMode="numeric" min={0} max={100} step={1} required style={{ maxWidth: '10rem' }}
                 hint="Entre 0 % y 100 % del total de la venta. Los administradores descuentan sin límite. Con 0 %, los cajeros no pueden descontar."
                 value={descuento} error={errores.descuento_maximo_cajero ?? errores.cierre_ciego} onChange={(event) => setDescuento(event.target.value)} />

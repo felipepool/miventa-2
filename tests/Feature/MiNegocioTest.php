@@ -107,6 +107,6 @@ test('operation preferences are saved within 0 and 100 percent', function () {
 test('operation preferences are validated', function (mixed $descuento) {
     $admin = User::factory()->admin()->create();
     $this->actingAs($admin)->putJson('/api/v1/negocio/preferencias', ['cierre_ciego' => false, 'descuento_maximo_cajero' => $descuento])
-        ->assertUnprocessable()->assertJsonValidationErrors('descuento_maximo_cajero');
+        ->assertUnprocessable()->assertJsonValidationErrors(['descuento_maximo_cajero' => 'descuento máximo del cajero']);
     expect($admin->negocio->fresh())->cierre_ciego->toBeTrue()->descuento_maximo_cajero->toBe(10);
 })->with([-1, 101, 12.5, null]);
