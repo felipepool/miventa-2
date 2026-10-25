@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Table('productos')]
-#[Fillable(['sku', 'codigo_barras', 'nombre', 'descripcion', 'unidad_venta', 'precio', 'costo', 'controla_stock', 'activo'])]
+#[Fillable(['sku', 'codigo_barras', 'nombre', 'descripcion', 'se_vende', 'es_insumo', 'unidad_venta', 'precio', 'costo', 'controla_stock', 'activo'])]
 class Producto extends Model
 {
     /** @use HasFactory<ProductoFactory> */
@@ -34,6 +34,8 @@ class Producto extends Model
     protected function casts(): array
     {
         return [
+            'se_vende' => 'boolean',
+            'es_insumo' => 'boolean',
             'unidad_venta' => UnidadVenta::class,
             'precio' => 'integer',
             'costo' => 'integer',

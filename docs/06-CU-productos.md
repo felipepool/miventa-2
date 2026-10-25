@@ -13,7 +13,7 @@ Permitir al negocio crear y mantener su catálogo de productos para usarlo en op
 
 ### Flujo principal
 1. El usuario lista productos con búsqueda por nombre, SKU o código de barras, filtros opcionales de categoría, marca y estado, y paginación.
-2. El usuario crea o edita un producto con nombre, categoría opcional, unidad de venta, precio entero en pesos con IVA incluido y los demás campos permitidos.
+2. El usuario crea o edita un producto con nombre, categoría opcional, uso (se vende, es insumo o ambos), unidad de medida, precio entero en pesos con IVA incluido (obligatorio solo si se vende) y los demás campos permitidos.
 3. El usuario cambia el estado con `PATCH /api/v1/productos/{id}/estado` y `{ "activo": false }`.
 4. El servidor verifica permiso, unicidad y pertenencia al negocio de las relaciones, y responde con el producto y sus nombres de categoría y marca.
 
@@ -27,14 +27,14 @@ Permitir al negocio crear y mantener su catálogo de productos para usarlo en op
 - La categoría y la marca son opcionales; cuando se informan, deben pertenecer al mismo negocio y estar activas. Un producto sin categoría se muestra como «Sin categoría».
 - Categoría o marca desactivada puede conservarse en un producto existente mientras no se cambie.
 - SKU y código de barras, cuando se informan, son únicos dentro del negocio.
-- Precio y costo son montos enteros en pesos; el precio incluye IVA.
+- Precio y costo son montos enteros en pesos; el precio incluye IVA y es opcional en los insumos que no se venden (ver `09-CU-tipo-producto` y `09-CU-unidades-medida`).
 - Los productos no se eliminan; se activan o desactivan.
-- Tipo venta/insumo, recetas, imágenes, importación/exportación, modificadores e inventario quedan fuera de este alcance.
+- Recetas, imágenes, importación/exportación, modificadores e inventario quedan fuera de este alcance.
 
 ### Endpoints
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/api/v1/productos?buscar=&categoria=&marca=&estado=&page=` | Listar, buscar y filtrar productos. |
+| GET | `/api/v1/productos?buscar=&categoria=&marca=&estado=&tipo=&page=` | Listar, buscar y filtrar productos. |
 | GET | `/api/v1/productos/opciones` | Obtener opciones de categoría y marca para filtros y formulario. |
 | POST | `/api/v1/productos` | Crear producto. |
 | GET | `/api/v1/productos/{id}` | Consultar producto. |
@@ -50,6 +50,8 @@ Permitir al negocio crear y mantener su catálogo de productos para usarlo en op
     "sku": "AGUA-01",
     "codigo_barras": null,
     "descripcion": null,
+    "se_vende": true,
+    "es_insumo": false,
     "unidad_venta": "unidad",
     "precio": 1200,
     "costo": null,
@@ -73,7 +75,7 @@ Permitir al negocio crear y mantener su catálogo de productos para usarlo en op
 ```
 
 ### Tablas y columnas
-- `productos`: `id`, `public_id`, `negocio_id`, `categoria_id` (opcional), `marca_id` (opcional), `sku`, `codigo_barras`, `nombre`, `descripcion`, `unidad_venta`, `precio`, `costo`, `controla_stock`, `activo`, `created_at`, `updated_at`.
+- `productos`: `id`, `public_id`, `negocio_id`, `categoria_id` (opcional), `marca_id` (opcional), `sku`, `codigo_barras`, `nombre`, `descripcion`, `se_vende`, `es_insumo`, `unidad_venta`, `precio` (nullable), `costo`, `controla_stock`, `activo`, `created_at`, `updated_at`.
 - `categorias`: `id`, `public_id`, `negocio_id`, `nombre`, `activa`.
 - `marcas`: `id`, `public_id`, `negocio_id`, `nombre`, `activa`.
 

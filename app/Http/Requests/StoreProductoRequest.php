@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\UnidadVenta;
 use App\Models\Producto;
 use App\Support\Contexto\NegocioActual;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Http\FormRequest;
@@ -37,8 +38,11 @@ class StoreProductoRequest extends FormRequest
             'sku' => ['nullable', 'string', 'max:30', $this->unicoEnNegocio()],
             'codigo_barras' => ['nullable', 'string', 'max:50', $this->unicoEnNegocio()],
             'descripcion' => ['nullable', 'string', 'max:1000'],
+            'se_vende' => ['required', 'boolean', fn (string $atributo, mixed $valor, Closure $fallar) => $valor || $this->boolean('es_insumo')
+                ? null : $fallar('Indica si el producto se vende, es un insumo o ambos.')],
+            'es_insumo' => ['required', 'boolean'],
             'unidad_venta' => ['required', Rule::enum(UnidadVenta::class)],
-            'precio' => ['required', 'integer', 'min:0', 'max:'.self::MONTO_MAXIMO],
+            'precio' => [Rule::requiredIf(fn () => $this->boolean('se_vende')), 'nullable', 'integer', 'min:0', 'max:'.self::MONTO_MAXIMO],
             'costo' => ['nullable', 'integer', 'min:0', 'max:'.self::MONTO_MAXIMO],
             'controla_stock' => ['required', 'boolean'],
         ];

@@ -22,12 +22,19 @@ class ProductoFactory extends Factory
             'codigo_barras' => null,
             'nombre' => 'Producto '.fake()->unique()->bothify('##??'),
             'descripcion' => null,
+            'se_vende' => true,
+            'es_insumo' => false,
             'unidad_venta' => UnidadVenta::Unidad,
             'precio' => fake()->numberBetween(5, 200) * 100,
             'costo' => null,
             'controla_stock' => true,
             'activo' => true,
         ];
+    }
+
+    public function insumo(): static
+    {
+        return $this->state(fn (array $attributes) => ['se_vende' => false, 'es_insumo' => true, 'precio' => null]);
     }
 
     public function inactivo(): static

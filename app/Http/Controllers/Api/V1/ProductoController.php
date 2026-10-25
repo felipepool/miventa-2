@@ -22,7 +22,7 @@ use Illuminate\Validation\ValidationException;
 
 class ProductoController extends Controller
 {
-    private const array CAMPOS = ['nombre', 'sku', 'codigo_barras', 'descripcion', 'unidad_venta', 'precio', 'costo', 'controla_stock'];
+    private const array CAMPOS = ['nombre', 'sku', 'codigo_barras', 'descripcion', 'se_vende', 'es_insumo', 'unidad_venta', 'precio', 'costo', 'controla_stock'];
 
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -31,6 +31,7 @@ class ProductoController extends Controller
             'categoria' => ['nullable', 'string', 'ulid'],
             'marca' => ['nullable', 'string', 'ulid'],
             'estado' => ['nullable', Rule::in(['activo', 'inactivo'])],
+            'tipo' => ['nullable', Rule::in(['venta', 'insumo'])],
             'page' => ['sometimes', 'integer', 'min:1'],
         ]);
         $productos = Producto::with(['categoria', 'marca'])
@@ -42,6 +43,7 @@ class ProductoController extends Controller
             ->when($filtros['categoria'] ?? null, fn (Builder $query, string $categoria) => $query->whereRelation('categoria', 'public_id', $categoria))
             ->when($filtros['marca'] ?? null, fn (Builder $query, string $marca) => $query->whereRelation('marca', 'public_id', $marca))
             ->when($filtros['estado'] ?? null, fn (Builder $query, string $estado) => $query->where('activo', $estado === 'activo'))
+            ->when($filtros['tipo'] ?? null, fn (Builder $query, string $tipo) => $query->where($tipo === 'venta' ? 'se_vende' : 'es_insumo', true))
             ->orderBy('nombre')->orderBy('id')->paginate(15)->withQueryString();
 
         return ProductoResource::collection($productos);

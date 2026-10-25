@@ -135,7 +135,7 @@ function productoValido(User $admin, array $cambios = []): array
         ?? Categoria::factory()->for($admin->negocio)->create(['nombre' => 'Bebidas']);
 
     return ['nombre' => 'Bebida 500 ml', 'categoria' => $categoria->public_id, 'unidad_venta' => 'unidad',
-        'precio' => 1500, 'controla_stock' => true, ...$cambios];
+        'precio' => 1500, 'se_vende' => true, 'es_insumo' => false, 'controla_stock' => true, ...$cambios];
 }
 
 test('a product is created with its category, optional brand, price and normalized fields', function () {
@@ -162,7 +162,9 @@ test('invalid product data returns 422', function (array $cambios, string $campo
 })->with([
     'empty name' => [['nombre' => ' '], 'nombre'], 'long name' => [['nombre' => str_repeat('x', 151)], 'nombre'],
     'unknown category' => [['categoria' => '01m5n22fn4rjjt0zc1mwgd9faa'], 'categoria'],
-    'bad unit' => [['unidad_venta' => 'l'], 'unidad_venta'], 'missing price' => [['precio' => null], 'precio'],
+    'bad unit' => [['unidad_venta' => 'lt'], 'unidad_venta'],
+    'no use' => [['se_vende' => false, 'es_insumo' => false], 'se_vende'], 'missing sale flag' => [['se_vende' => null], 'se_vende'],
+    'missing supply flag' => [['es_insumo' => null], 'es_insumo'], 'missing price' => [['precio' => null], 'precio'],
     'decimal price' => [['precio' => 10.5], 'precio'], 'negative price' => [['precio' => -1], 'precio'],
     'huge price' => [['precio' => 100_000_000], 'precio'], 'negative cost' => [['costo' => -5], 'costo'],
     'long sku' => [['sku' => str_repeat('x', 31)], 'sku'], 'unknown brand' => [['marca' => '01m5n22fn4rjjt0zc1mwgd9faa'], 'marca'],
@@ -184,6 +186,33 @@ test('a product can be created, listed and edited without a category', function 
     $this->putJson('/api/v1/productos/'.$id, productoValido($admin, ['categoria' => '']))->assertOk()->assertJsonPath('data.categoria', null);
     expect(Producto::sole()->categoria_id)->toBeNull();
 })->with([[null], ['']]);
+
+test('supplies need no price while products for sale do', function () {
+    $admin = adminCatalogo();
+    $this->actingAs($admin);
+    $this->postJson('/api/v1/productos', productoValido($admin, ['nombre' => 'Palta', 'se_vende' => false, 'es_insumo' => true, 'precio' => null, 'costo' => 3, 'unidad_venta' => 'g']))
+        ->assertCreated()->assertJsonPath('data.precio', null)->assertJsonPath('data.se_vende', false)->assertJsonPath('data.es_insumo', true)->assertJsonPath('data.unidad_venta', 'g');
+    $this->postJson('/api/v1/productos', productoValido($admin, ['nombre' => 'Agua', 'es_insumo' => true]))
+        ->assertCreated()->assertJsonPath('data.se_vende', true)->assertJsonPath('data.es_insumo', true);
+    $this->postJson('/api/v1/productos', productoValido($admin, ['nombre' => 'Sin precio', 'precio' => null]))->assertUnprocessable()->assertJsonValidationErrors('precio');
+    expect(Producto::count())->toBe(2);
+});
+
+test('every measurement unit is accepted', function (string $unidad) {
+    $admin = adminCatalogo();
+    $this->actingAs($admin)->postJson('/api/v1/productos', productoValido($admin, ['unidad_venta' => $unidad]))->assertCreated()->assertJsonPath('data.unidad_venta', $unidad);
+})->with(['unidad', 'kg', 'g', 'l', 'ml', 'm']);
+
+test('products can be filtered by use', function () {
+    $admin = adminCatalogo();
+    Producto::factory()->for($admin->negocio)->create(['nombre' => 'Completo']);
+    Producto::factory()->for($admin->negocio)->insumo()->create(['nombre' => 'Pan']);
+    Producto::factory()->for($admin->negocio)->create(['nombre' => 'Agua', 'es_insumo' => true]);
+    $this->actingAs($admin);
+    $this->getJson('/api/v1/productos?tipo=venta')->assertOk()->assertJsonCount(2, 'data');
+    $this->getJson('/api/v1/productos?tipo=insumo')->assertOk()->assertJsonCount(2, 'data');
+    $this->getJson('/api/v1/productos?tipo=otro')->assertUnprocessable()->assertJsonValidationErrors('tipo');
+});
 
 test('a product with an explicitly entered zero price is valid', function () {
     $admin = adminCatalogo();

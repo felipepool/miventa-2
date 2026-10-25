@@ -13,7 +13,7 @@ export interface OpcionCatalogo {
     activa: boolean;
 }
 
-export type UnidadVenta = 'unidad' | 'kg';
+export type UnidadVenta = 'unidad' | 'kg' | 'g' | 'l' | 'ml' | 'm';
 
 export interface Producto {
     id: string;
@@ -21,8 +21,10 @@ export interface Producto {
     codigo_barras: string | null;
     nombre: string;
     descripcion: string | null;
+    se_vende: boolean;
+    es_insumo: boolean;
     unidad_venta: UnidadVenta;
-    precio: number;
+    precio: number | null;
     costo: number | null;
     controla_stock: boolean;
     activo: boolean;

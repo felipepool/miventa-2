@@ -15,7 +15,7 @@ enum Modulo: string
     public function etiqueta(): string
     {
         return match ($this) {
-            self::VentaPorPeso => 'Venta por peso',
+            self::VentaPorPeso => 'Venta por medida',
             self::Modificadores => 'Modificadores',
             self::Comanda => 'Comanda y cocina',
         };
@@ -24,7 +24,7 @@ enum Modulo: string
     public function descripcion(): string
     {
         return match ($this) {
-            self::VentaPorPeso => 'Productos por kilo, como queso, jamón o alimento a granel.',
+            self::VentaPorPeso => 'Productos por kilo, litro o metro, como queso, jamón, alimento a granel o cable.',
             self::Modificadores => 'Opciones al vender: tipo de pan, agregados, salsas…',
             self::Comanda => 'Comanda para la cocina. La pantalla KDS se contrata como adicional.',
         };

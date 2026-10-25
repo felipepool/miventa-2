@@ -74,7 +74,9 @@ return [
         'stock_minimo' => 'stock mínimo',
         'sucursales' => 'sucursales',
         'telefono' => 'teléfono',
-        'unidad_venta' => 'unidad de venta',
+        'unidad_venta' => 'unidad de medida',
+        'se_vende' => 'se vende',
+        'es_insumo' => 'es insumo',
         'username' => 'usuario',
     ],
 

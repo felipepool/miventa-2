@@ -41,7 +41,7 @@ test('the admin sees only their own business configuration', function () {
         ->assertJsonPath('data.codigo', $admin->negocio->codigo)
         ->assertJsonPath('data.plan.value', 'retail')
         ->assertJsonPath('data.modulos.0', [
-            'value' => 'venta_por_peso', 'label' => 'Venta por peso', 'descripcion' => Modulo::VentaPorPeso->descripcion(),
+            'value' => 'venta_por_peso', 'label' => 'Venta por medida', 'descripcion' => Modulo::VentaPorPeso->descripcion(),
             'incluido' => true, 'activo' => true,
         ])
         ->assertJsonPath('data.modulos.1.incluido', false)

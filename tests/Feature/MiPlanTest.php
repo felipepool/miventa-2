@@ -84,7 +84,7 @@ test('changing the plan closes the old contract, snapshots the new price and act
     $this->getJson('/api/v1/plan/cotizacion?plan=comida')->assertOk()
         ->assertJsonPath('data.precio_uf', '0.7000')
         ->assertJsonPath('data.modulos_agregados', [['value' => 'modificadores', 'label' => 'Modificadores'], ['value' => 'comanda', 'label' => 'Comanda y cocina']])
-        ->assertJsonPath('data.modulos_retirados', [['value' => 'venta_por_peso', 'label' => 'Venta por peso']])
+        ->assertJsonPath('data.modulos_retirados', [['value' => 'venta_por_peso', 'label' => 'Venta por medida']])
         ->assertJsonPath('data.sin_retorno', false);
     $this->putJson('/api/v1/plan', cambioAceptado(Plan::Comida))->assertOk()
         ->assertJsonPath('data.plan.value', 'comida')->assertJsonPath('data.plan.precio_uf', '0.7000');

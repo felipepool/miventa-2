@@ -35,7 +35,8 @@ export default function ProductosIndex() {
     const categoria = parametros.get('categoria') ?? '';
     const marca = parametros.get('marca') ?? '';
     const estado = parametros.get('estado') ?? '';
-    const hayFiltros = Boolean(buscar || categoria || marca || estado);
+    const tipo = parametros.get('tipo') ?? '';
+    const hayFiltros = Boolean(buscar || categoria || marca || estado || tipo);
     const meta = listado.datos?.meta;
     const filas = listado.datos?.data ?? [];
     const categorias = opciones.datos?.categorias ?? [];
@@ -75,9 +76,10 @@ export default function ProductosIndex() {
 
     const columnas: Column<Producto>[] = [
         { header: 'Producto', mobile: 'title', cell: (producto) => <><strong>{producto.nombre}</strong>{producto.sku && <small className="d-block text-body-secondary">SKU: {producto.sku}</small>}</> },
+        { header: 'Tipo', cell: (producto) => producto.se_vende && producto.es_insumo ? 'Venta e insumo' : producto.es_insumo ? 'Insumo' : 'Venta' },
         { header: 'Categoría', cell: (producto) => producto.categoria?.nombre ?? '—' },
         { header: 'Marca', cell: (producto) => producto.marca?.nombre ?? '—' },
-        { header: 'Precio', cell: (producto) => '$'+producto.precio.toLocaleString('es-CL') },
+        { header: 'Precio', cell: (producto) => producto.precio === null ? '—' : '$'+producto.precio.toLocaleString('es-CL') },
         { header: 'Estado', cell: (producto) => <Badge pill bg={producto.activo ? 'success-subtle' : 'secondary-subtle'} text={producto.activo ? 'success' : 'secondary'}>{producto.activo ? 'Activo' : 'Inactivo'}</Badge> },
         { header: 'Acciones', mobile: 'actions', cell: (producto) => <TableActions recordLabel={producto.nombre}
             primaryAction={{ label: 'Editar', icon: 'pencil', to: '/productos/'+producto.id+'/editar'+location.search }}
@@ -113,6 +115,11 @@ export default function ProductosIndex() {
                     <div className="table-toolbar__filters"><Form.Group controlId="productos-marca"><Form.Label>Marca</Form.Label>
                         <Form.Select className="w-100" value={marca} disabled={!opciones.datos} onChange={(event) => filtrar('marca', event.target.value)}>
                             <option value="">Todas</option>{marcas.map((opcion) => <option key={opcion.id} value={opcion.id}>{opcion.nombre}{opcion.activa ? '' : ' (inactiva)'}</option>)}
+                        </Form.Select>
+                    </Form.Group></div>
+                    <div className="table-toolbar__filters"><Form.Group controlId="productos-tipo"><Form.Label>Tipo</Form.Label>
+                        <Form.Select className="w-100" value={tipo} onChange={(event) => filtrar('tipo', event.target.value)}>
+                            <option value="">Todos</option><option value="venta">Se venden</option><option value="insumo">Insumos</option>
                         </Form.Select>
                     </Form.Group></div>
                     <div className="table-toolbar__filters"><Form.Group controlId="productos-estado"><Form.Label>Estado</Form.Label>

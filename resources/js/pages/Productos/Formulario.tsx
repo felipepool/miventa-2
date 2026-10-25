@@ -15,6 +15,8 @@ interface DatosProducto {
     sku: string;
     codigo_barras: string;
     descripcion: string;
+    se_vende: boolean;
+    es_insumo: boolean;
     unidad_venta: UnidadVenta;
     precio: string;
     costo: string;
@@ -31,7 +33,8 @@ export default function ProductoFormulario({ producto }: { producto?: Producto }
     const [datos, setDatos] = useState<DatosProducto>(() => ({
         nombre: producto?.nombre ?? '', categoria: producto?.categoria?.id ?? '', marca: producto?.marca?.id ?? '',
         sku: producto?.sku ?? '', codigo_barras: producto?.codigo_barras ?? '', descripcion: producto?.descripcion ?? '',
-        unidad_venta: producto?.unidad_venta ?? 'unidad', precio: producto ? String(producto.precio) : '',
+        se_vende: producto?.se_vende ?? true, es_insumo: producto?.es_insumo ?? false,
+        unidad_venta: producto?.unidad_venta ?? 'unidad', precio: producto?.precio === null || producto?.precio === undefined ? '' : String(producto.precio),
         costo: producto?.costo === null || producto?.costo === undefined ? '' : String(producto.costo), controla_stock: producto?.controla_stock ?? true,
     }));
     const [errores, setErrores] = useState<Record<string, string>>({});
@@ -102,18 +105,28 @@ export default function ProductoFormulario({ producto }: { producto?: Producto }
                         </Form.Select>{errores.marca && <Form.Control.Feedback type="invalid">{errores.marca}</Form.Control.Feedback>}
                     </Form.Group></Col>
                 </Row>
+                <Form.Group controlId="producto-tipo" className="mb-3">
+                    <Form.Label>Uso del producto</Form.Label>
+                    <div className="d-flex flex-wrap gap-4">
+                        <Form.Check id="producto-se-vende" type="switch" label="Se vende" checked={datos.se_vende} isInvalid={Boolean(errores.se_vende)} onChange={(event) => actualizar('se_vende', event.target.checked)} />
+                        <Form.Check id="producto-es-insumo" type="switch" label="Es insumo" checked={datos.es_insumo} isInvalid={Boolean(errores.es_insumo)} onChange={(event) => actualizar('es_insumo', event.target.checked)} />
+                    </div>
+                    {errores.se_vende && <p className="text-danger small mb-0" role="alert">{errores.se_vende}</p>}
+                    <Form.Text>Un insumo se compra para preparar otros productos y no necesita precio de venta.</Form.Text>
+                </Form.Group>
                 <Row>
                     <Col md={6}><TextField label="SKU (opcional)" value={datos.sku} maxLength={30} error={errores.sku} onChange={(event) => actualizar('sku', event.target.value)} /></Col>
                     <Col md={6}><TextField label="Código de barras (opcional)" value={datos.codigo_barras} maxLength={50} error={errores.codigo_barras} onChange={(event) => actualizar('codigo_barras', event.target.value)} /></Col>
                 </Row>
                 <Row>
-                    <Col md={6}><TextField label="Precio de venta (CLP, IVA incluido)" type="number" min="0" step="1" inputMode="numeric" value={datos.precio} required error={errores.precio} onChange={(event) => actualizar('precio', event.target.value)} /></Col>
+                    <Col md={6}><TextField label={datos.se_vende ? 'Precio de venta (CLP, IVA incluido)' : 'Precio de venta (CLP, opcional)'} type="number" min="0" step="1" inputMode="numeric" value={datos.precio} required={datos.se_vende} error={errores.precio} onChange={(event) => actualizar('precio', event.target.value)} /></Col>
                     <Col md={6}><TextField label="Costo (CLP, opcional)" type="number" min="0" step="1" inputMode="numeric" value={datos.costo} error={errores.costo} onChange={(event) => actualizar('costo', event.target.value)} /></Col>
                 </Row>
                 <Row>
-                    <Col md={6}><Form.Group controlId="producto-unidad" className="mb-3"><Form.Label>Unidad de venta</Form.Label>
+                    <Col md={6}><Form.Group controlId="producto-unidad" className="mb-3"><Form.Label>Unidad de medida</Form.Label>
                         <Form.Select value={datos.unidad_venta} isInvalid={Boolean(errores.unidad_venta)} onChange={(event) => actualizar('unidad_venta', event.target.value as UnidadVenta)}>
-                            <option value="unidad">Unidad</option><option value="kg">Kilogramo</option>
+                            <option value="unidad">Unidad</option><option value="kg">Kilogramo</option><option value="g">Gramo</option>
+                            <option value="l">Litro</option><option value="ml">Mililitro</option><option value="m">Metro</option>
                         </Form.Select>{errores.unidad_venta && <Form.Control.Feedback type="invalid">{errores.unidad_venta}</Form.Control.Feedback>}
                     </Form.Group></Col>
                     <Col md={6} className="d-flex align-items-center"><Form.Check id="producto-controla-stock" type="switch" label="Controlar stock" checked={datos.controla_stock} isInvalid={Boolean(errores.controla_stock)} onChange={(event) => actualizar('controla_stock', event.target.checked)} /></Col>

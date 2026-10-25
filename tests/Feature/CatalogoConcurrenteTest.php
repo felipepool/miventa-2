@@ -100,5 +100,5 @@ test('simultaneous identical catalog creations leave exactly one record on mysql
 })->with([
     'same brand name' => ['/api/v1/marcas', ['nombre' => 'Alfa'], Marca::class],
     'same category name' => ['/api/v1/categorias', ['nombre' => 'Bebidas'], Categoria::class],
-    'same product sku' => ['/api/v1/productos', ['nombre' => 'Cola', 'sku' => 'COL-1', 'unidad_venta' => 'unidad', 'precio' => 1000, 'controla_stock' => true], Producto::class],
+    'same product sku' => ['/api/v1/productos', ['nombre' => 'Cola', 'sku' => 'COL-1', 'se_vende' => true, 'es_insumo' => false, 'unidad_venta' => 'unidad', 'precio' => 1000, 'controla_stock' => true], Producto::class],
 ])->skip(fn () => DB::connection()->getDriverName() !== 'mysql', 'Requiere conexiones MySQL independientes.');

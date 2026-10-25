@@ -13,7 +13,7 @@ class ProductoResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            ...$this->datosPublicos('sku', 'codigo_barras', 'nombre', 'descripcion', 'unidad_venta', 'precio', 'costo', 'controla_stock', 'activo'),
+            ...$this->datosPublicos('sku', 'codigo_barras', 'nombre', 'descripcion', 'se_vende', 'es_insumo', 'unidad_venta', 'precio', 'costo', 'controla_stock', 'activo'),
             'categoria' => $this->categoria?->datosPublicos('nombre', 'activa'),
             'marca' => $this->marca?->datosPublicos('nombre', 'activa'),
         ];
