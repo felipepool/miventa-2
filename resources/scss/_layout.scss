@@ -1021,6 +1021,11 @@ $pos-producto-tonos: ($primary, $info, $warning, $success, $secondary, $dark);
     }
 }
 
+// Un poco más ancho que el diálogo mediano para que los medios de pago respiren.
+.form-dialog.modal:has(.cobro) {
+    --bs-modal-width: 37.5rem;
+}
+
 // El botón de cobrar está en el pie del diálogo: más ancho que Volver y en una línea.
 .form-dialog__footer .btn.cobro__confirmar {
     white-space: nowrap;
