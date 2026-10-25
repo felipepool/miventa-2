@@ -21,10 +21,13 @@ const ITEMS: ItemMenu[] = [
     { href: '/dashboard', label: 'Inicio', icon: 'speedometer2' },
 ];
 
-const ADMINISTRACION: ItemMenu[] = [
+const CATALOGO: ItemMenu[] = [
     { href: '/productos', label: 'Productos', icon: 'box-seam', permiso: 'gestionar_catalogo' },
     { href: '/categorias', label: 'Categorías', icon: 'collection', permiso: 'gestionar_catalogo' },
     { href: '/marcas', label: 'Marcas', icon: 'tags', permiso: 'gestionar_catalogo' },
+];
+
+const ADMINISTRACION: ItemMenu[] = [
     { href: '/negocio', label: 'Mi negocio', icon: 'building-gear', permiso: 'gestionar_negocio' },
     { href: '/plan', label: 'Mi plan', icon: 'stars', permiso: 'gestionar_negocio' },
     { href: '/usuarios', label: 'Usuarios', icon: 'person-badge', permiso: 'gestionar_usuarios' },
@@ -40,15 +43,21 @@ export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
     const { contexto, permisos } = useSesion();
     const { negocio } = contexto;
     const { pathname } = useLocation();
+    const catalogo = CATALOGO.filter((item) => !item.permiso || permisos.includes(item.permiso));
     const administracion = ADMINISTRACION.filter((item) => !item.permiso || permisos.includes(item.permiso));
+    const catalogoActivo = catalogo.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
     const administracionActiva = administracion.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
+    const [catalogoAbierto, setCatalogoAbierto] = useState(true);
     const [administracionAbierta, setAdministracionAbierta] = useState(true);
 
     useEffect(() => {
+        if (catalogoActivo) {
+            setCatalogoAbierto(true);
+        }
         if (administracionActiva) {
             setAdministracionAbierta(true);
         }
-    }, [pathname, administracionActiva]);
+    }, [pathname, catalogoActivo, administracionActiva]);
 
     return (
         <>
@@ -72,6 +81,33 @@ export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
                             {item.label}
                         </NavLink>
                     ))}
+                    {catalogo.length > 0 && (
+                        <div className="app-sidebar__group">
+                            <button
+                                type="button"
+                                className={`app-sidebar__link app-sidebar__group-toggle ${catalogoActivo ? 'has-active' : ''}`}
+                                aria-expanded={catalogoAbierto}
+                                aria-controls="menu-catalogo"
+                                onClick={() => setCatalogoAbierto((actual) => !actual)}
+                            >
+                                <Icon name="box-seam" />
+                                <span className="flex-grow-1 text-start">Catálogo</span>
+                                <Icon name="chevron-down" className={`app-sidebar__chevron ${catalogoAbierto ? 'is-open' : ''}`} />
+                            </button>
+                            <Collapse in={catalogoAbierto}>
+                                <div id="menu-catalogo">
+                                    <div className="app-sidebar__group-items">
+                                        {catalogo.map((item) => (
+                                            <NavLink key={item.href} to={item.href} className="app-sidebar__link app-sidebar__link--nested" onClick={onCerrar}>
+                                                <Icon name={item.icon} />
+                                                {item.label}
+                                            </NavLink>
+                                        ))}
+                                    </div>
+                                </div>
+                            </Collapse>
+                        </div>
+                    )}
                     {administracion.length > 0 && (
                         <div className="app-sidebar__group">
                             <button
