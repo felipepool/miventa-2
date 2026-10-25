@@ -21,6 +21,7 @@ export default function ResumenTurno({ turno }: { turno: TurnoCaja }) {
                     <Cifra etiqueta="Monto inicial" valor={formatearMonto(turno.monto_inicial)} />
                     <Cifra etiqueta="Ingresos" valor={formatearMonto(turno.ingresos)} />
                     <Cifra etiqueta="Retiros" valor={formatearMonto(turno.retiros)} />
+                    <Cifra etiqueta="Ventas en efectivo" valor={formatearMonto(turno.ventas_efectivo)} />
                     {turno.monto_esperado !== undefined && turno.monto_esperado !== null && <Cifra etiqueta="Efectivo esperado" valor={formatearMonto(turno.monto_esperado)} destacada />}
                     {cerrado && turno.monto_contado !== null && <Cifra etiqueta="Efectivo contado" valor={formatearMonto(turno.monto_contado)} destacada />}
                     {cerrado && diferencia !== undefined && diferencia !== null && <Col xs={6} md={3}>

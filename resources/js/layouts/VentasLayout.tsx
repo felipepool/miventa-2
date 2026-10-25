@@ -17,6 +17,8 @@ interface PantallaVentas {
 
 /** Pantallas del trabajo diario de caja; agrega aquí cada pantalla nueva del punto de venta. */
 const PANTALLAS: PantallaVentas[] = [
+    { href: '/pos', label: 'Vender', icon: 'upc-scan', permiso: 'vender' },
+    { href: '/ventas', label: 'Historial', icon: 'receipt', permiso: 'vender' },
     { href: '/caja', label: 'Mi caja', icon: 'cash-stack', permiso: 'operar_caja' },
     { href: '/turnos', label: 'Turnos', icon: 'clock-history', permiso: 'operar_caja' },
 ];
@@ -74,3 +76,4 @@ export default function VentasLayout() {
         </div>
     );
 }
+

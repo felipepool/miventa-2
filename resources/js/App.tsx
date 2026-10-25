@@ -37,6 +37,9 @@ import NuevoProducto from '@/pages/Productos/Nuevo';
 import EditarProducto from '@/pages/Productos/Editar';
 import VentasLayout from '@/layouts/VentasLayout';
 import CajaIndex from '@/pages/Caja/Index';
+import PosIndex from '@/pages/Pos/Index';
+import VentasIndex from '@/pages/Ventas/Index';
+import VentaDetalle from '@/pages/Ventas/Detalle';
 import TurnosIndex from '@/pages/Turnos/Index';
 import TurnoDetalle from '@/pages/Turnos/Detalle';
 import InventarioIndex from '@/pages/Inventario/Index';
@@ -137,8 +140,13 @@ export default function App() {
                     <Route path="seleccionar-sucursal" element={<SeleccionarSucursal />} />
                 </Route>
                 <Route element={<RequiereSucursal />}>
-                    <Route element={<RequierePermiso permiso="operar_caja" />}>
-                        <Route element={<VentasLayout />}>
+                    <Route element={<VentasLayout />}>
+                        <Route element={<RequierePermiso permiso="vender" />}>
+                            <Route path="pos" element={<PosIndex />} />
+                            <Route path="ventas" element={<VentasIndex />} />
+                            <Route path="ventas/:ventaId" element={<VentaDetalle />} />
+                        </Route>
+                        <Route element={<RequierePermiso permiso="operar_caja" />}>
                             <Route path="caja" element={<CajaIndex />} />
                             <Route path="turnos" element={<TurnosIndex />} />
                             <Route path="turnos/:turnoId" element={<TurnoDetalle />} />
@@ -205,5 +213,6 @@ export default function App() {
         </Routes>
     );
 }
+
 
 

@@ -56,6 +56,7 @@ class TurnoCajaResource extends JsonResource
             'cerrada_at' => $this->cerrada_at?->toIso8601String(),
             'ingresos' => (int) ($this->ingresos ?? $this->sumarMovimientos(TipoMovimientoCaja::Ingreso)),
             'retiros' => (int) ($this->retiros ?? $this->sumarMovimientos(TipoMovimientoCaja::Retiro)),
+            'ventas_efectivo' => (int) ($this->ventas_efectivo ?? $this->sumarVentasEfectivo()),
             'conteo' => $this->conteoOrdenado(),
             'movimientos' => $this->whenLoaded('movimientos', fn () => MovimientoCajaResource::collection($this->movimientos)->resolve($request)),
         ];

@@ -26,7 +26,7 @@ Permitir cerrar el turno contando el efectivo y dejar congelado el esperado, el 
 - Negocio en solo lectura: `403`.
 
 ### Reglas de negocio
-- Esperado = monto inicial + ingresos − retiros; cuando existan las ventas se suman las ventas en efectivo.
+- Esperado = monto inicial + ingresos + ventas en efectivo (sin el vuelto) − retiros (ver `14-CU-pagos-y-redondeo-en-efectivo`).
 - Diferencia = contado − esperado (positiva es sobrante y negativa, faltante).
 - Con la preferencia de cierre ciego activa, el cajero no ve el esperado ni la diferencia, ni antes ni después del cierre; los usuarios con `gestionar_cajas` sí.
 - El cierre es definitivo: no se reabre ni se corrige.

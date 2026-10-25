@@ -1,0 +1,18 @@
+# 14-venta-de-mostrador
+
+1. **Base de datos y reglas.** Tablas `ventas` (folio correlativo por sucursal y número correlativo por negocio, turno de caja, vendedor, estado `pagada`, subtotal, descuento, redondeo, total, notas y clave de idempotencia), `venta_items` (copia del nombre, SKU, unidad, precio y costo del producto al vender), `venta_item_modificadores` y `pagos`. El servidor recalcula todo en pesos enteros con IVA incluido, sin aplicar el IVA dos veces: solo se venden productos activos, a la venta y con precio; los modificadores siguen las reglas del plan 12 (mínimo, máximo, unidades gratis y precio extra); los descuentos son por porcentaje o monto, por línea y a toda la venta, con motivo, con el tope del cajero de la preferencia `descuento_maximo_cajero` y el permiso `descontar_sin_limite` para superarlo; los medios de pago son efectivo, débito, crédito y transferencia, con pagos mixtos; el efectivo cubre lo que falta, se redondea al múltiplo de $10 (Ley 20.956) y admite vuelto. La venta exige un turno abierto del vendedor, es atómica y una clave de idempotencia evita duplicarla si se repite el envío. El efectivo neto de la venta (lo cobrado menos el vuelto) se suma al esperado del turno. Con el adicional Inventario activo, se descuenta el stock de la sucursal de los productos con control de stock y queda en el historial; en una venta el stock puede quedar en negativo.
+
+2. **API.** Con sucursal seleccionada y el permiso `vender`: `GET /api/v1/pos` (productos a la venta con sus modificadores, medios de pago, tope de descuento y turno abierto), `POST /api/v1/ventas`, `GET /api/v1/ventas` y `GET /api/v1/ventas/{venta}`. El vendedor ve sus ventas y quien tiene `gestionar_cajas` ve todas las de la sucursal. El negocio en solo lectura bloquea la venta.
+
+3. **Pantallas en el layout de punto de venta.** **Vender** (`/pos`): cuadrícula de productos con buscador por nombre, SKU o código de barras (el lector de código de barras de teclado agrega el producto), filtro por categoría, carrito con cantidades (hasta 3 decimales en productos por medida), diálogo de modificadores, descuentos y cobro con vuelto, y confirmación con el resumen. **Historial** (`/ventas`) y detalle de cada venta. Se suman al ícono lateral y a la barra inferior, y el acceso «Punto de venta» del menú principal pasa a abrir `/pos` en una pestaña nueva.
+
+4. **Verificar y entregar.** Pruebas en MySQL (`miventa_test`) de cálculos, descuentos y tope, redondeo, pagos mixtos y vuelto, idempotencia, folios (incluso con ventas simultáneas), efecto en el esperado del turno y en el stock con y sin el adicional, permisos y aislamiento entre negocios; revisión de las pantallas en tu Chrome en escritorio, tablet y celular; documentación del plan y sus casos de uso y commit. Quedan fuera: anular ventas, devoluciones y comprobantes para compartir (plan 15); recetas y consumo de insumos (plan 16); cámara del celular para escanear, venta «por monto», pedidos y comanda, mesas, clientes y documentos electrónicos.
+
+## Verificación
+
+- El total, los descuentos, el redondeo y el vuelto los calcula el servidor; ninguna cifra enviada por la pantalla se acepta sin recalcular.
+- El efectivo se redondea a $10 y los demás medios no; los pagos mixtos cubren el total exacto.
+- Repetir el envío con la misma clave de idempotencia devuelve la misma venta; dos ventas simultáneas reciben folios distintos.
+- Las ventas en efectivo suben el esperado del turno y las con tarjeta o transferencia no.
+- Con el adicional Inventario, el stock baja (y puede quedar negativo); sin él, no se toca.
+- El vendedor ve solo sus ventas; quien tiene `gestionar_cajas` ve todas las de la sucursal.

@@ -7,6 +7,7 @@ use App\Models\Producto;
 use App\Models\Stock;
 use App\Models\Sucursal;
 use App\Models\User;
+use App\Models\Venta;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -52,6 +53,34 @@ class RegistrarMovimientoStock
                 'cantidad' => bcsub($nuevoStock, $anterior, self::ESCALA),
                 'stock_resultante' => $nuevoStock,
                 'motivo' => $motivo,
+            ])->save();
+
+            return $movimiento->refresh();
+        }, 3);
+    }
+
+    /**
+     * Descuenta del stock de la sucursal lo vendido. A diferencia de una salida manual, el stock
+     * puede quedar en negativo: el producto ya está en manos del cliente.
+     */
+    public function descontarPorVenta(Producto $producto, Sucursal $sucursal, User $usuario, string $cantidad, Venta $venta): MovimientoStock
+    {
+        return DB::transaction(function () use ($producto, $sucursal, $usuario, $cantidad, $venta): MovimientoStock {
+            $stock = $this->bloquearStock($producto, $sucursal);
+            $nuevoStock = bcsub($stock->cantidad, $cantidad, self::ESCALA);
+            $stock->update(['cantidad' => $nuevoStock]);
+
+            $movimiento = new MovimientoStock;
+            $movimiento->forceFill([
+                'negocio_id' => $producto->negocio_id,
+                'sucursal_id' => $sucursal->id,
+                'producto_id' => $producto->id,
+                'user_id' => $usuario->id,
+                'venta_id' => $venta->id,
+                'tipo' => 'venta',
+                'cantidad' => bcsub('0', $cantidad, self::ESCALA),
+                'stock_resultante' => $nuevoStock,
+                'motivo' => 'Venta N° '.$venta->numero_sucursal,
             ])->save();
 
             return $movimiento->refresh();

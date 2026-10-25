@@ -26,6 +26,7 @@ Permitir al negocio revisar qué entradas, salidas y ajustes tuvo un producto en
 - El historial es por sucursal: los movimientos de otra sucursal no aparecen.
 - Los movimientos no se editan ni se eliminan.
 - La cantidad es la variación con signo (negativa en las salidas y en los ajustes que bajan el stock).
+- Las ventas con control de stock registran un movimiento de tipo `venta`, con el folio en el motivo; a diferencia de una salida manual, una venta puede dejar el stock en negativo (ver `14-CU-registrar-venta-de-mostrador`).
 
 ### Endpoints
 | Método | Ruta | Descripción |

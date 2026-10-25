@@ -6,10 +6,10 @@ import { mensajeDeError } from '@/lib/http';
 import { formatearCantidad } from '@/lib/inventario';
 import { useConsultaApi } from '@/lib/useConsultaApi';
 import type { Paginated } from '@/types/api';
-import type { ItemInventario, MovimientoStock, TipoMovimiento } from '@/types/inventario';
+import type { ItemInventario, MovimientoStock, TipoMovimientoHistorial } from '@/types/inventario';
 import DialogoProducto from './DialogoProducto';
 
-const ETIQUETAS: Record<TipoMovimiento, string> = { entrada: 'Entrada', salida: 'Salida', ajuste: 'Ajuste' };
+const ETIQUETAS: Record<TipoMovimientoHistorial, string> = { entrada: 'Entrada', salida: 'Salida', ajuste: 'Ajuste', venta: 'Venta' };
 
 export default function Historial() {
     return <DialogoProducto title="Historial de movimientos" size="lg">
@@ -43,3 +43,4 @@ function Contenido({ item, cerrar }: { item: ItemInventario; cerrar: () => void 
         </>)}
     </FormDialog>;
 }
+

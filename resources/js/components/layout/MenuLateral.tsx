@@ -29,7 +29,7 @@ type GrupoMenu = 'catalogo' | 'administracion';
 /** Ítems del menú; crece con cada módulo que se incorpora. */
 const ITEMS: ItemMenu[] = [
     { href: '/dashboard', label: 'Inicio', icon: 'speedometer2' },
-    { href: '/caja', label: 'Punto de venta', icon: 'upc-scan', permiso: 'operar_caja', nuevaPestana: true },
+    { href: '/pos', label: 'Punto de venta', icon: 'upc-scan', permiso: 'vender', nuevaPestana: true },
     { href: '/inventario', label: 'Inventario', icon: 'boxes', permiso: 'gestionar_inventario', adicional: 'inventario' },
 ];
 
@@ -158,5 +158,6 @@ export default function MenuLateral({ abierto, onCerrar, flotante = false }: Men
         </>
     );
 }
+
 
 

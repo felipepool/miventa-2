@@ -26,7 +26,7 @@ Permitir registrar las entradas y salidas de efectivo de la caja que no son vent
 
 ### Reglas de negocio
 - `ingreso` suma efectivo a la caja y `retiro` lo resta; el motivo es obligatorio en ambos.
-- Un retiro no puede superar el efectivo disponible (monto inicial más ingresos, menos retiros; luego también las ventas en efectivo).
+- Un retiro no puede superar el efectivo disponible (monto inicial más ingresos y ventas en efectivo, menos retiros).
 - Solo quien abrió el turno registra movimientos; los movimientos de un turno cerrado no se agregan ni se modifican.
 - Los movimientos no se editan ni se eliminan: un error se corrige con otro movimiento.
 

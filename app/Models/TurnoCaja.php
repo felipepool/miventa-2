@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\EstadoVenta;
+use App\Enums\MedioPago;
 use App\Enums\TipoMovimientoCaja;
 use App\Models\Concerns\PerteneceANegocio;
 use App\Models\Concerns\PerteneceASucursal;
@@ -14,6 +16,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
  * Turno de trabajo en una caja: se abre con un monto inicial y se cierra
@@ -55,18 +58,43 @@ class TurnoCaja extends Model
         return $this->hasMany(MovimientoCaja::class)->orderBy('id');
     }
 
+    /** @return HasMany<Venta, $this> */
+    public function ventas(): HasMany
+    {
+        return $this->hasMany(Venta::class, 'turno_caja_id');
+    }
+
+    /**
+     * Pagos de las ventas del turno (para sumar lo cobrado por medio de pago).
+     *
+     * @return HasManyThrough<Pago, Venta, $this>
+     */
+    public function pagos(): HasManyThrough
+    {
+        return $this->hasManyThrough(Pago::class, Venta::class, 'turno_caja_id');
+    }
+
     public function estaAbierto(): bool
     {
         return $this->cerrada_at === null;
     }
 
     /**
-     * Efectivo que debería haber en la caja: monto inicial más ingresos, menos retiros.
-     * Cuando existan las ventas se sumarán las ventas en efectivo.
+     * Efectivo que debería haber en la caja: monto inicial, más ingresos y ventas en efectivo
+     * (sin el vuelto), menos retiros.
      */
     public function calcularEsperado(): int
     {
-        return $this->monto_inicial + $this->sumarMovimientos(TipoMovimientoCaja::Ingreso) - $this->sumarMovimientos(TipoMovimientoCaja::Retiro);
+        return $this->monto_inicial + $this->sumarMovimientos(TipoMovimientoCaja::Ingreso) - $this->sumarMovimientos(TipoMovimientoCaja::Retiro)
+            + $this->sumarVentasEfectivo();
+    }
+
+    /** Efectivo cobrado en las ventas pagadas del turno, descontado el vuelto. */
+    public function sumarVentasEfectivo(): int
+    {
+        return (int) Pago::query()->join('ventas', 'ventas.id', '=', 'pagos.venta_id')
+            ->where('ventas.turno_caja_id', $this->id)->where('ventas.estado', EstadoVenta::Pagada->value)
+            ->where('pagos.medio', MedioPago::Efectivo->value)->sum('pagos.monto');
     }
 
     public function sumarMovimientos(TipoMovimientoCaja $tipo): int

@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\V1\MiCajaController;
 use App\Http\Controllers\Api\V1\MiPlanController;
 use App\Http\Controllers\Api\V1\ModulosNegocioController;
 use App\Http\Controllers\Api\V1\NegocioController;
+use App\Http\Controllers\Api\V1\PosController;
 use App\Http\Controllers\Api\V1\PreferenciasNegocioController;
 use App\Http\Controllers\Api\V1\ProductoController;
 use App\Http\Controllers\Api\V1\RolController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\Api\V1\SucursalActualController;
 use App\Http\Controllers\Api\V1\SucursalController;
 use App\Http\Controllers\Api\V1\TurnoCajaController;
 use App\Http\Controllers\Api\V1\UsuarioController;
+use App\Http\Controllers\Api\V1\VentaController;
 use App\Http\Middleware\RequerirNegocioOperativo;
 use App\Http\Middleware\RequerirSucursalActual;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +46,13 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api'
         Route::get('plan', [MiPlanController::class, 'show'])->name('plan.show');
         Route::get('plan/cotizacion', [MiPlanController::class, 'cotizacion'])->name('plan.cotizacion');
         Route::put('plan', [MiPlanController::class, 'update'])->name('plan.update');
+    });
+
+    Route::middleware([RequerirSucursalActual::class, 'can:vender'])->group(function () {
+        Route::get('pos', PosController::class)->name('pos');
+        Route::get('ventas', [VentaController::class, 'index'])->name('ventas.index');
+        Route::post('ventas', [VentaController::class, 'store'])->name('ventas.store');
+        Route::get('ventas/{venta}', [VentaController::class, 'show'])->name('ventas.show');
     });
 
     Route::middleware([RequerirSucursalActual::class, 'can:operar_caja'])->group(function () {

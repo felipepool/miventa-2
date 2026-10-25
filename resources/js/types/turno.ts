@@ -26,6 +26,7 @@ export interface TurnoCaja {
     cerrada_at: string | null;
     ingresos: number;
     retiros: number;
+    ventas_efectivo: number;
     monto_esperado?: number | null;
     monto_contado: number | null;
     diferencia?: number | null;
