@@ -13,7 +13,7 @@ Permitir a quien opera la caja abrir su turno con un monto inicial en una caja a
 - La sucursal tiene al menos una caja activa sin turno abierto.
 
 ### Flujo principal
-1. El usuario abre el punto de venta desde el menú principal (pestaña nueva) y entra a Mi caja.
+1. El usuario abre el punto de venta desde el menú principal (en la misma pestaña) y entra a Mi caja.
 2. El cliente consulta `GET /api/v1/caja` y recibe su turno abierto, si lo hay, y las cajas de la sucursal con quién las ocupa.
 3. Sin turno abierto, el usuario elige una caja libre, escribe el monto inicial y una nota opcional.
 4. El cliente envía `POST /api/v1/caja/abrir` con `{ "caja": "01J...", "monto_inicial": 20000, "nota": "Sencillo" }`.

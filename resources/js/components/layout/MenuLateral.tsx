@@ -20,8 +20,6 @@ interface ItemMenu {
     adicional?: string;
     /** Módulo del plan que el negocio debe tener activo para ver el ítem. */
     modulo?: string;
-    /** Abre el acceso en una pestaña nueva. */
-    nuevaPestana?: boolean;
 }
 
 type GrupoMenu = 'catalogo' | 'administracion';
@@ -29,7 +27,7 @@ type GrupoMenu = 'catalogo' | 'administracion';
 /** Ítems del menú; crece con cada módulo que se incorpora. */
 const ITEMS: ItemMenu[] = [
     { href: '/dashboard', label: 'Inicio', icon: 'speedometer2' },
-    { href: '/pos', label: 'Punto de venta', icon: 'upc-scan', permiso: 'vender', nuevaPestana: true },
+    { href: '/pos', label: 'Punto de venta', icon: 'upc-scan', permiso: 'vender' },
     { href: '/inventario', label: 'Inventario', icon: 'boxes', permiso: 'gestionar_inventario', adicional: 'inventario' },
 ];
 
@@ -92,9 +90,8 @@ export default function MenuLateral({ abierto, onCerrar, flotante = false }: Men
                 </div>
 
                 <nav className="app-sidebar__nav" aria-label="Menú principal">
-                    {ITEMS.filter(visible).filter((item) => !(flotante && item.nuevaPestana)).map((item) => (
-                        <NavLink key={item.href} to={item.href} className="app-sidebar__link" onClick={onCerrar}
-                            target={item.nuevaPestana ? '_blank' : undefined} rel={item.nuevaPestana ? 'noopener noreferrer' : undefined}>
+                    {ITEMS.filter(visible).map((item) => (
+                        <NavLink key={item.href} to={item.href} className="app-sidebar__link" onClick={onCerrar}>
                             <Icon name={item.icon} />
                             {item.label}
                         </NavLink>
