@@ -28,7 +28,7 @@ enum Plan: string
     public function etiqueta(): string
     {
         return match ($this) {
-            self::Retail => 'Retail',
+            self::Retail => 'Comercio',
             self::Comida => 'Gastronomía',
             self::Mixto => 'Mixto',
         };
@@ -37,7 +37,7 @@ enum Plan: string
     public function descripcion(): string
     {
         return match ($this) {
-            self::Retail => 'Para almacenes, minimarkets, botillerías y tiendas.',
+            self::Retail => 'Para almacenes, minimarkets, botillerías, ferreterías y tiendas que venden productos por unidad, peso o medida.',
             self::Comida => 'Para restaurantes, cafeterías, sangucherías y otros negocios de comida.',
             self::Mixto => 'Para negocios que venden productos y además preparan comida.',
         };

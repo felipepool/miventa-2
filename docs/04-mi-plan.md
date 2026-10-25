@@ -4,7 +4,7 @@
 
 3. **Detallar el cobro mensual.** Listar el plan, las sucursales adicionales y las cajas adicionales vigentes, cada una con su precio contratado, y sumar el total mensual en UF + IVA. Indicar que cada sucursal incluye una caja y que la sucursal principal no tiene cobro adicional.
 
-4. **Cambiar de plan.** Permitir elegir entre Retail y Gastronomía; Mixto se mantiene solo para quien ya lo tiene. Antes de confirmar, mostrar el nuevo precio, los módulos que se agregan y los que dejan de estar disponibles (sus datos se conservan), y exigir que se acepte el cobro. Al confirmar se cierra el contrato anterior, comienza el nuevo y se activan los módulos del plan elegido. Las sucursales y cajas adicionales conservan su precio contratado.
+4. **Cambiar de plan.** Permitir elegir entre Comercio y Gastronomía; Mixto se mantiene solo para quien ya lo tiene. Antes de confirmar, mostrar el nuevo precio, los módulos que se agregan y los que dejan de estar disponibles (sus datos se conservan), y exigir que se acepte el cobro. Al confirmar se cierra el contrato anterior, comienza el nuevo y se activan los módulos del plan elegido. Las sucursales y cajas adicionales conservan su precio contratado.
 
 5. **Proteger el cambio.** Validar permisos y aislamiento entre negocios desde el servidor, rechazar un precio aceptado que ya no coincida con la tarifa vigente y evitar contratos duplicados ante envíos repetidos u operaciones simultáneas. Actualizar el menú y la cabecera después del cambio.
 
