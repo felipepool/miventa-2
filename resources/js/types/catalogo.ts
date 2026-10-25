@@ -26,6 +26,6 @@ export interface Producto {
     costo: number | null;
     controla_stock: boolean;
     activo: boolean;
-    categoria: OpcionCatalogo;
+    categoria: OpcionCatalogo | null;
     marca: OpcionCatalogo | null;
 }

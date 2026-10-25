@@ -32,7 +32,7 @@ class StoreProductoRequest extends FormRequest
     {
         return [
             'nombre' => ['required', 'string', 'max:150'],
-            'categoria' => ['required', 'string', 'ulid', $this->existeEnCatalogo('categorias', $this->productoEditado()?->categoria_id)],
+            'categoria' => ['nullable', 'string', 'ulid', $this->existeEnCatalogo('categorias', $this->productoEditado()?->categoria_id)],
             'marca' => ['nullable', 'string', 'ulid', $this->existeEnCatalogo('marcas', $this->productoEditado()?->marca_id)],
             'sku' => ['nullable', 'string', 'max:30', $this->unicoEnNegocio()],
             'codigo_barras' => ['nullable', 'string', 'max:50', $this->unicoEnNegocio()],
@@ -50,7 +50,6 @@ class StoreProductoRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'categoria.required' => 'Elige una categoría.',
             'categoria.exists' => 'La categoría seleccionada no está disponible.',
             'marca.exists' => 'La marca seleccionada no está disponible.',
             'sku.unique' => 'Ya existe un producto con este SKU en tu negocio.',
@@ -65,7 +64,7 @@ class StoreProductoRequest extends FormRequest
         $nombre = $this->input('nombre');
         $limpios = ['nombre' => is_string($nombre) ? trim($nombre) : $nombre];
 
-        foreach (['marca', 'sku', 'codigo_barras', 'descripcion', 'costo'] as $campo) {
+        foreach (['categoria', 'marca', 'sku', 'codigo_barras', 'descripcion', 'costo'] as $campo) {
             $valor = $this->input($campo);
             if (is_string($valor)) {
                 $valor = trim($valor);

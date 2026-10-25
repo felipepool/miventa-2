@@ -3,7 +3,7 @@
 ## Caso de uso: Seleccionar categoría y marca al crear un producto
 
 ### Objetivo
-Mantener disponibles las opciones del formulario aunque se recargue el listado y guiar la creación del primer producto.
+Mantener disponibles las opciones del formulario aunque se recargue el listado y permitir crear el primer producto con o sin categoría.
 
 ### Actores
 - Usuario autenticado con permiso `gestionar_catalogo`.
@@ -14,14 +14,14 @@ Mantener disponibles las opciones del formulario aunque se recargue el listado y
 ### Flujo principal
 1. La pantalla consulta las opciones de categorías y marcas del negocio de forma independiente al listado de productos.
 2. El usuario busca, filtra o pagina productos sin perder las opciones del formulario.
-3. Si existe una categoría activa, el usuario puede seleccionarla y guardar el producto.
-4. Si no existe, la pantalla ofrece crear una categoría antes del producto.
+3. El usuario puede seleccionar una categoría activa o dejar «Sin categoría», y guardar el producto en ambos casos.
+4. Si no existen categorías, el listado y el formulario siguen permitiendo crear productos, sin mensajes ni botones para crear una categoría.
 
 ### Flujos alternativos y errores
 - Si falla la carga de opciones, la pantalla y el formulario muestran un error y permiten reintentar sin presentar selectores vacíos como si fueran datos válidos.
 
 ### Reglas de negocio
-- La categoría es obligatoria y debe estar activa para asignarla a un producto nuevo; la marca es opcional.
+- La categoría y la marca son opcionales; cuando se informan, deben estar activas para asignarlas a un producto nuevo.
 - La edición conserva la categoría o marca inactiva ya asignada según el caso de uso original del catálogo.
 
 ### Endpoints

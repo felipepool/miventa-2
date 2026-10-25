@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Button, Col, Form, Row, Spinner } from 'react-bootstrap';
-import { Link, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
+import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import { FormDialog, TextField } from '@/components/ui';
 import { api, erroresDeValidacion, mensajeDeError } from '@/lib/http';
 import { useSesion } from '@/lib/auth';
@@ -29,7 +29,7 @@ export default function ProductoFormulario({ producto }: { producto?: Producto }
     const formId = useId();
     const formulario = useRef<HTMLFormElement>(null);
     const [datos, setDatos] = useState<DatosProducto>(() => ({
-        nombre: producto?.nombre ?? '', categoria: producto?.categoria.id ?? '', marca: producto?.marca?.id ?? '',
+        nombre: producto?.nombre ?? '', categoria: producto?.categoria?.id ?? '', marca: producto?.marca?.id ?? '',
         sku: producto?.sku ?? '', codigo_barras: producto?.codigo_barras ?? '', descripcion: producto?.descripcion ?? '',
         unidad_venta: producto?.unidad_venta ?? 'unidad', precio: producto ? String(producto.precio) : '',
         costo: producto?.costo === null || producto?.costo === undefined ? '' : String(producto.costo), controla_stock: producto?.controla_stock ?? true,
@@ -53,7 +53,7 @@ export default function ProductoFormulario({ producto }: { producto?: Producto }
         setErrores({});
         setErrorGeneral('');
         const payload = {
-            ...datos, marca: datos.marca || null, sku: datos.sku || null, codigo_barras: datos.codigo_barras || null,
+            ...datos, categoria: datos.categoria || null, marca: datos.marca || null, sku: datos.sku || null, codigo_barras: datos.codigo_barras || null,
             descripcion: datos.descripcion || null, costo: datos.costo === '' ? null : Number(datos.costo), precio: datos.precio.trim() === '' ? null : Number(datos.precio),
         };
         try {
@@ -75,9 +75,8 @@ export default function ProductoFormulario({ producto }: { producto?: Producto }
     const actualizar = (campo: keyof DatosProducto, valor: string | boolean) => setDatos((actuales) => ({ ...actuales, [campo]: valor }));
     const categorias = opcionesActivas(opciones.datos?.categorias ?? [], datos.categoria);
     const marcas = opcionesActivas(opciones.datos?.marcas ?? [], datos.marca);
-    const sinCategorias = !producto && opciones.datos && categorias.length === 0;
 
-    return <FormDialog title={producto ? 'Editar producto' : 'Nuevo producto'} size="lg" onHide={cerrar} processing={procesando} actions={opciones.datos && !sinCategorias ? <>
+    return <FormDialog title={producto ? 'Editar producto' : 'Nuevo producto'} size="lg" onHide={cerrar} processing={procesando} actions={opciones.datos ? <>
         <Button variant="outline-secondary" disabled={procesando} onClick={cerrar}>Cancelar</Button>
         <Button type="submit" form={formId} disabled={procesando || !permisos.includes('gestionar_catalogo')}>
             {procesando && <Spinner as="span" animation="border" size="sm" aria-hidden="true" className="me-2" />}
@@ -86,16 +85,15 @@ export default function ProductoFormulario({ producto }: { producto?: Producto }
     </> : <Button variant="outline-secondary" onClick={cerrar}>Volver al listado</Button>}>
         {opciones.cargando && <p role="status"><Spinner as="span" animation="border" size="sm" className="me-2" aria-hidden="true" />Cargando categorías y marcas…</p>}
         {Boolean(opciones.error) && <div role="alert"><p>No se pudieron cargar las categorías y marcas. {mensajeDeError(opciones.error)}</p><Button variant="outline-secondary" onClick={opciones.recargar}>Reintentar</Button></div>}
-        {sinCategorias && <div role="status"><p>Para crear tu primer producto, primero agrega una categoría activa.</p><Link className="btn btn-primary" to="/categorias/nueva">Crear categoría</Link></div>}
-        {opciones.datos && !sinCategorias &&
+        {opciones.datos &&
         <form ref={formulario} id={formId} className="record-form" noValidate aria-busy={procesando} onSubmit={(event) => void guardar(event)}>
             <fieldset disabled={procesando}>
                 <legend className="visually-hidden">Datos del producto</legend>
                 <TextField label="Nombre" value={datos.nombre} maxLength={150} required error={errores.nombre} onChange={(event) => actualizar('nombre', event.target.value)} />
                 <Row>
-                    <Col md={6}><Form.Group controlId="producto-categoria" className="mb-3"><Form.Label>Categoría</Form.Label>
-                        <Form.Select required value={datos.categoria} isInvalid={Boolean(errores.categoria)} onChange={(event) => actualizar('categoria', event.target.value)}>
-                            <option value="">Selecciona una categoría</option>{categorias.map((opcion) => <option key={opcion.id} value={opcion.id}>{opcion.nombre}{opcion.activa ? '' : ' (inactiva)'}</option>)}
+                    <Col md={6}><Form.Group controlId="producto-categoria" className="mb-3"><Form.Label>Categoría (opcional)</Form.Label>
+                        <Form.Select value={datos.categoria} isInvalid={Boolean(errores.categoria)} onChange={(event) => actualizar('categoria', event.target.value)}>
+                            <option value="">Sin categoría</option>{categorias.map((opcion) => <option key={opcion.id} value={opcion.id}>{opcion.nombre}{opcion.activa ? '' : ' (inactiva)'}</option>)}
                         </Form.Select>{errores.categoria && <Form.Control.Feedback type="invalid">{errores.categoria}</Form.Control.Feedback>}
                     </Form.Group></Col>
                     <Col md={6}><Form.Group controlId="producto-marca" className="mb-3"><Form.Label>Marca (opcional)</Form.Label>

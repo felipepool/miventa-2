@@ -40,7 +40,6 @@ export default function ProductosIndex() {
     const filas = listado.datos?.data ?? [];
     const categorias = opciones.datos?.categorias ?? [];
     const marcas = opciones.datos?.marcas ?? [];
-    const puedeCrearProducto = opciones.datos?.categorias.some((opcion) => opcion.activa) ?? false;
 
     useEffect(() => {
         if (meta && meta.current_page > meta.last_page) {
@@ -76,7 +75,7 @@ export default function ProductosIndex() {
 
     const columnas: Column<Producto>[] = [
         { header: 'Producto', mobile: 'title', cell: (producto) => <><strong>{producto.nombre}</strong>{producto.sku && <small className="d-block text-body-secondary">SKU: {producto.sku}</small>}</> },
-        { header: 'Categoría', cell: (producto) => producto.categoria.nombre },
+        { header: 'Categoría', cell: (producto) => producto.categoria?.nombre ?? '—' },
         { header: 'Marca', cell: (producto) => producto.marca?.nombre ?? '—' },
         { header: 'Precio', cell: (producto) => '$'+producto.precio.toLocaleString('es-CL') },
         { header: 'Estado', cell: (producto) => <Badge pill bg={producto.activo ? 'success-subtle' : 'secondary-subtle'} text={producto.activo ? 'success' : 'secondary'}>{producto.activo ? 'Activo' : 'Inactivo'}</Badge> },
@@ -94,17 +93,13 @@ export default function ProductosIndex() {
 
     return <>
         <PageHeader title="Productos" subtitle="Administra los productos de tu catálogo."
-            actions={opciones.datos && !puedeCrearProducto
-                ? <Link to="/categorias/nueva" className="btn btn-primary"><Icon name="plus-lg" className="me-2" />Crear categoría</Link>
-                : <Link to={'/productos/nuevo'+location.search} className="btn btn-primary"><Icon name="plus-lg" className="me-2" />Nuevo producto</Link>} />
+            actions={<Link to={'/productos/nuevo'+location.search} className="btn btn-primary"><Icon name="plus-lg" className="me-2" />Nuevo producto</Link>} />
         <DataTable columns={columnas} rows={filas} rowKey={(producto) => producto.id} caption="Productos del negocio"
-            status={status} busy={listado.cargando} meta={meta}
+            status={status} busy={listado.cargando} meta={meta} emptyIcon="box-seam"
             onPageChange={(pagina) => setParametros((actuales) => { const nuevos = new URLSearchParams(actuales); nuevos.set('page', String(pagina)); return nuevos; })}
-            emptyMessage={hayFiltros ? 'No encontramos productos con estos filtros.' : opciones.datos && !puedeCrearProducto
-                ? 'Para agregar productos, primero crea una categoría activa.' : 'Todavía no tienes productos. Agrega el primero.'}
+            emptyMessage={hayFiltros ? 'No encontramos productos con estos filtros.' : 'Todavía no tienes productos. Agrega el primero.'}
             emptyAction={hayFiltros ? <Button variant="outline-secondary" onClick={limpiarFiltros}>Ver todos los productos</Button>
-                : opciones.datos && !puedeCrearProducto ? <Link to="/categorias/nueva" className="btn btn-primary">Crear categoría</Link>
-                    : <Link to="/productos/nuevo" className="btn btn-primary">Nuevo producto</Link>}
+                : <Link to="/productos/nuevo" className="btn btn-primary">Nuevo producto</Link>}
             toolbar={<div role="search" aria-label="Buscar y filtrar productos">
                 <div className="table-toolbar align-items-end">
                     <div className="table-toolbar__search"><Form.Label htmlFor="productos-buscar">Buscar producto</Form.Label>

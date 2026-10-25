@@ -109,13 +109,13 @@ class ProductoController extends Controller
      * Con el negocio bloqueado, confirma que la categoría y la marca siguen
      * activas (o ya eran las del producto).
      *
-     * @return array{0: Categoria, 1: ?Marca}
+     * @return array{0: ?Categoria, 1: ?Marca}
      */
     private function validarCatalogo(StoreProductoRequest $request, ?Producto $producto = null): array
     {
-        $categoria = Categoria::where('public_id', $request->validated('categoria'))->first();
+        $categoria = $request->validated('categoria') ? Categoria::where('public_id', $request->validated('categoria'))->first() : null;
 
-        if (! $categoria || (! $categoria->activa && $categoria->id !== $producto?->categoria_id)) {
+        if ($request->validated('categoria') && (! $categoria || (! $categoria->activa && $categoria->id !== $producto?->categoria_id))) {
             throw ValidationException::withMessages(['categoria' => 'La categoría seleccionada no está disponible.']);
         }
 

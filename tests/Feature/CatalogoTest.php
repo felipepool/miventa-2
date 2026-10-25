@@ -161,7 +161,7 @@ test('invalid product data returns 422', function (array $cambios, string $campo
     expect(Producto::count())->toBe(0);
 })->with([
     'empty name' => [['nombre' => ' '], 'nombre'], 'long name' => [['nombre' => str_repeat('x', 151)], 'nombre'],
-    'no category' => [['categoria' => null], 'categoria'], 'unknown category' => [['categoria' => '01m5n22fn4rjjt0zc1mwgd9faa'], 'categoria'],
+    'unknown category' => [['categoria' => '01m5n22fn4rjjt0zc1mwgd9faa'], 'categoria'],
     'bad unit' => [['unidad_venta' => 'l'], 'unidad_venta'], 'missing price' => [['precio' => null], 'precio'],
     'decimal price' => [['precio' => 10.5], 'precio'], 'negative price' => [['precio' => -1], 'precio'],
     'huge price' => [['precio' => 100_000_000], 'precio'], 'negative cost' => [['costo' => -5], 'costo'],
@@ -171,6 +171,19 @@ test('invalid product data returns 422', function (array $cambios, string $campo
     'array sku' => [['sku' => ['No válido']], 'sku'],
     'array description' => [['descripcion' => ['No válido']], 'descripcion'],
 ]);
+
+test('a product can be created, listed and edited without a category', function (?string $categoriaVacia) {
+    $admin = adminCatalogo();
+    $this->actingAs($admin);
+    $id = $this->postJson('/api/v1/productos', productoValido($admin, ['nombre' => 'Sin categoría', 'categoria' => $categoriaVacia]))
+        ->assertCreated()->assertJsonPath('data.categoria', null)->json('data.id');
+    expect(Producto::sole()->categoria_id)->toBeNull();
+    $this->getJson('/api/v1/productos')->assertOk()->assertJsonPath('data.0.categoria', null);
+
+    $this->putJson('/api/v1/productos/'.$id, productoValido($admin, ['nombre' => 'Con categoría']))->assertOk()->assertJsonPath('data.categoria.nombre', 'Bebidas');
+    $this->putJson('/api/v1/productos/'.$id, productoValido($admin, ['categoria' => '']))->assertOk()->assertJsonPath('data.categoria', null);
+    expect(Producto::sole()->categoria_id)->toBeNull();
+})->with([[null], ['']]);
 
 test('a product with an explicitly entered zero price is valid', function () {
     $admin = adminCatalogo();

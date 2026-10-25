@@ -9,11 +9,11 @@ Permitir al negocio crear y mantener su catálogo de productos para usarlo en op
 - Usuario autenticado con permiso `gestionar_catalogo`.
 
 ### Precondiciones
-- Hay una sucursal activa seleccionada, el negocio permite escritura y existe una categoría activa del negocio.
+- Hay una sucursal activa seleccionada, y el negocio permite escritura.
 
 ### Flujo principal
 1. El usuario lista productos con búsqueda por nombre, SKU o código de barras, filtros opcionales de categoría, marca y estado, y paginación.
-2. El usuario crea o edita un producto con categoría, nombre, unidad de venta, precio entero en pesos con IVA incluido y los demás campos permitidos.
+2. El usuario crea o edita un producto con nombre, categoría opcional, unidad de venta, precio entero en pesos con IVA incluido y los demás campos permitidos.
 3. El usuario cambia el estado con `PATCH /api/v1/productos/{id}/estado` y `{ "activo": false }`.
 4. El servidor verifica permiso, unicidad y pertenencia al negocio de las relaciones, y responde con el producto y sus nombres de categoría y marca.
 
@@ -24,7 +24,7 @@ Permitir al negocio crear y mantener su catálogo de productos para usarlo en op
 - Negocio en solo lectura: `403` al modificar.
 
 ### Reglas de negocio
-- La categoría es obligatoria y la marca opcional; ambas deben pertenecer al mismo negocio.
+- La categoría y la marca son opcionales; cuando se informan, deben pertenecer al mismo negocio y estar activas. Un producto sin categoría se muestra como «Sin categoría».
 - Categoría o marca desactivada puede conservarse en un producto existente mientras no se cambie.
 - SKU y código de barras, cuando se informan, son únicos dentro del negocio.
 - Precio y costo son montos enteros en pesos; el precio incluye IVA.
@@ -55,7 +55,7 @@ Permitir al negocio crear y mantener su catálogo de productos para usarlo en op
     "costo": null,
     "controla_stock": true,
     "activo": true,
-    "categoria": { "id": "01J...", "nombre": "Bebidas", "activa": true },
+    "categoria": null,
     "marca": null
   }
 }
@@ -73,7 +73,7 @@ Permitir al negocio crear y mantener su catálogo de productos para usarlo en op
 ```
 
 ### Tablas y columnas
-- `productos`: `id`, `public_id`, `negocio_id`, `categoria_id`, `marca_id`, `sku`, `codigo_barras`, `nombre`, `descripcion`, `unidad_venta`, `precio`, `costo`, `controla_stock`, `activo`, `created_at`, `updated_at`.
+- `productos`: `id`, `public_id`, `negocio_id`, `categoria_id` (opcional), `marca_id` (opcional), `sku`, `codigo_barras`, `nombre`, `descripcion`, `unidad_venta`, `precio`, `costo`, `controla_stock`, `activo`, `created_at`, `updated_at`.
 - `categorias`: `id`, `public_id`, `negocio_id`, `nombre`, `activa`.
 - `marcas`: `id`, `public_id`, `negocio_id`, `nombre`, `activa`.
 

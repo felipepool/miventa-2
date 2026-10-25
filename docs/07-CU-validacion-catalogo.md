@@ -9,7 +9,7 @@ Evitar que un precio omitido se guarde como cero y que entradas de tipo incorrec
 - Usuario autenticado con permiso `gestionar_catalogo`.
 
 ### Precondiciones
-- Negocio operativo con sucursal seleccionada; para productos, una categoría activa del negocio.
+- Negocio operativo con sucursal seleccionada.
 
 ### Flujo principal
 1. El usuario completa un formulario de Producto, Categoría o Marca.

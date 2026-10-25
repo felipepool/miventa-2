@@ -14,7 +14,7 @@ class ProductoResource extends JsonResource
     {
         return [
             ...$this->datosPublicos('sku', 'codigo_barras', 'nombre', 'descripcion', 'unidad_venta', 'precio', 'costo', 'controla_stock', 'activo'),
-            'categoria' => $this->categoria->datosPublicos('nombre', 'activa'),
+            'categoria' => $this->categoria?->datosPublicos('nombre', 'activa'),
             'marca' => $this->marca?->datosPublicos('nombre', 'activa'),
         ];
     }
