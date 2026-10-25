@@ -20,6 +20,8 @@ interface ItemMenu {
     modulo?: string;
 }
 
+type GrupoMenu = 'catalogo' | 'administracion';
+
 /** Ítems del menú; crece con cada módulo que se incorpora. */
 const ITEMS: ItemMenu[] = [
     { href: '/dashboard', label: 'Inicio', icon: 'speedometer2' },
@@ -55,17 +57,18 @@ export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
     const administracion = ADMINISTRACION.filter((item) => !item.permiso || permisos.includes(item.permiso));
     const catalogoActivo = catalogo.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
     const administracionActiva = administracion.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
-    const [catalogoAbierto, setCatalogoAbierto] = useState(true);
-    const [administracionAbierta, setAdministracionAbierta] = useState(true);
+    const grupoActivo: GrupoMenu | null = catalogoActivo ? 'catalogo' : administracionActiva ? 'administracion' : null;
+    // Solo un grupo del menú permanece desplegado a la vez.
+    const [grupoAbierto, setGrupoAbierto] = useState<GrupoMenu | null>(grupoActivo);
+    const catalogoAbierto = grupoAbierto === 'catalogo';
+    const administracionAbierta = grupoAbierto === 'administracion';
+    const alternarGrupo = (grupo: GrupoMenu) => setGrupoAbierto((actual) => (actual === grupo ? null : grupo));
 
     useEffect(() => {
-        if (catalogoActivo) {
-            setCatalogoAbierto(true);
+        if (grupoActivo) {
+            setGrupoAbierto(grupoActivo);
         }
-        if (administracionActiva) {
-            setAdministracionAbierta(true);
-        }
-    }, [pathname, catalogoActivo, administracionActiva]);
+    }, [pathname, grupoActivo]);
 
     return (
         <>
@@ -96,7 +99,7 @@ export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
                                 className={`app-sidebar__link app-sidebar__group-toggle ${catalogoActivo ? 'has-active' : ''}`}
                                 aria-expanded={catalogoAbierto}
                                 aria-controls="menu-catalogo"
-                                onClick={() => setCatalogoAbierto((actual) => !actual)}
+                                onClick={() => alternarGrupo('catalogo')}
                             >
                                 <Icon name="box-seam" />
                                 <span className="flex-grow-1 text-start">Catálogo</span>
@@ -123,7 +126,7 @@ export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
                                 className={`app-sidebar__link app-sidebar__group-toggle ${administracionActiva ? 'has-active' : ''}`}
                                 aria-expanded={administracionAbierta}
                                 aria-controls="menu-administracion"
-                                onClick={() => setAdministracionAbierta((actual) => !actual)}
+                                onClick={() => alternarGrupo('administracion')}
                             >
                                 <Icon name="gear" />
                                 <span className="flex-grow-1 text-start">Administración</span>
