@@ -34,7 +34,8 @@ Permitir al negocio crear y mantener su catálogo de productos para usarlo en op
 ### Endpoints
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/api/v1/productos?buscar=&categoria=&marca=&estado=&page=` | Listar, buscar y filtrar productos; incluye opciones de categoría y marca. |
+| GET | `/api/v1/productos?buscar=&categoria=&marca=&estado=&page=` | Listar, buscar y filtrar productos. |
+| GET | `/api/v1/productos/opciones` | Obtener opciones de categoría y marca para filtros y formulario. |
 | POST | `/api/v1/productos` | Crear producto. |
 | GET | `/api/v1/productos/{id}` | Consultar producto. |
 | PUT | `/api/v1/productos/{id}` | Editar producto. |

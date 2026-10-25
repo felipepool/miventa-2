@@ -58,6 +58,7 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api'
         Route::patch('marcas/{marca}/estado', CambiarEstadoMarcaController::class)->name('marcas.estado');
         Route::apiResource('categorias', CategoriaController::class)->only(['index', 'show', 'store', 'update']);
         Route::patch('categorias/{categoria}/estado', CambiarEstadoCategoriaController::class)->name('categorias.estado');
+        Route::get('productos/opciones', [ProductoController::class, 'opciones'])->name('productos.opciones');
         Route::apiResource('productos', ProductoController::class)->only(['index', 'show', 'store', 'update']);
         Route::patch('productos/{producto}/estado', CambiarEstadoProductoController::class)->name('productos.estado');
     });

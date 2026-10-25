@@ -44,7 +44,12 @@ class ProductoController extends Controller
             ->when($filtros['estado'] ?? null, fn (Builder $query, string $estado) => $query->where('activo', $estado === 'activo'))
             ->orderBy('nombre')->orderBy('id')->paginate(15)->withQueryString();
 
-        return ProductoResource::collection($productos)->additional([
+        return ProductoResource::collection($productos);
+    }
+
+    public function opciones(): JsonResponse
+    {
+        return response()->json([
             'categorias' => Categoria::orderBy('nombre')->orderBy('id')->get()
                 ->map(fn (Categoria $categoria) => $categoria->datosPublicos('nombre', 'activa'))->all(),
             'marcas' => Marca::orderBy('nombre')->orderBy('id')->get()

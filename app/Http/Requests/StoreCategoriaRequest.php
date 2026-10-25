@@ -45,7 +45,8 @@ class StoreCategoriaRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->merge(['nombre' => trim((string) $this->input('nombre'))]);
+        $nombre = $this->input('nombre');
+        $this->merge(['nombre' => is_string($nombre) ? trim($nombre) : $nombre]);
     }
 
     /**

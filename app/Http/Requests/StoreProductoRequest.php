@@ -62,10 +62,14 @@ class StoreProductoRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $limpios = ['nombre' => trim((string) $this->input('nombre'))];
+        $nombre = $this->input('nombre');
+        $limpios = ['nombre' => is_string($nombre) ? trim($nombre) : $nombre];
 
         foreach (['marca', 'sku', 'codigo_barras', 'descripcion', 'costo'] as $campo) {
-            $valor = trim((string) $this->input($campo));
+            $valor = $this->input($campo);
+            if (is_string($valor)) {
+                $valor = trim($valor);
+            }
             $limpios[$campo] = $valor === '' ? null : $valor;
         }
 

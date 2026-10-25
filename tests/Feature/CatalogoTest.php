@@ -21,7 +21,7 @@ test('catalog endpoints return 401 without a session', function (string $metodo,
     ['getJson', '/api/v1/marcas'], ['postJson', '/api/v1/marcas'], ['putJson', '/api/v1/marcas/01m5n22fn4rjjt0zc1mwgd9faa'],
     ['patchJson', '/api/v1/marcas/01m5n22fn4rjjt0zc1mwgd9faa/estado'],
     ['getJson', '/api/v1/categorias'], ['postJson', '/api/v1/categorias'], ['patchJson', '/api/v1/categorias/01m5n22fn4rjjt0zc1mwgd9faa/estado'],
-    ['getJson', '/api/v1/productos'], ['postJson', '/api/v1/productos'], ['putJson', '/api/v1/productos/01m5n22fn4rjjt0zc1mwgd9faa'],
+    ['getJson', '/api/v1/productos'], ['getJson', '/api/v1/productos/opciones'], ['postJson', '/api/v1/productos'], ['putJson', '/api/v1/productos/01m5n22fn4rjjt0zc1mwgd9faa'],
     ['patchJson', '/api/v1/productos/01m5n22fn4rjjt0zc1mwgd9faa/estado'],
 ]);
 
@@ -32,6 +32,7 @@ test('users without catalog permission receive 403', function (string $rol) {
     $this->actingAs($usuario)->getJson('/api/v1/marcas')->assertForbidden();
     $this->getJson('/api/v1/categorias')->assertForbidden();
     $this->getJson('/api/v1/productos')->assertForbidden();
+    $this->getJson('/api/v1/productos/opciones')->assertForbidden();
     $this->postJson('/api/v1/marcas', ['nombre' => 'No creada'])->assertForbidden();
     $this->putJson('/api/v1/marcas/'.$marca->public_id, ['nombre' => 'No editada'])->assertForbidden();
     $this->patchJson('/api/v1/productos/'.$producto->public_id.'/estado', ['activo' => false])->assertForbidden();
@@ -85,6 +86,16 @@ test('the same name can exist in two businesses', function () {
     Marca::factory()->create(['nombre' => 'Compartida']);
     $this->actingAs($admin)->postJson('/api/v1/marcas', ['nombre' => 'Compartida'])->assertCreated();
 });
+
+test('brands and categories reject non-text names instead of converting them', function (string $recurso, string $modelo) {
+    $admin = adminCatalogo();
+    $registro = $modelo::factory()->for($admin->negocio)->create();
+    $this->actingAs($admin)->postJson("/api/v1/{$recurso}", ['nombre' => ['No válido']])
+        ->assertUnprocessable()->assertJsonValidationErrors('nombre');
+    $this->putJson("/api/v1/{$recurso}/{$registro->public_id}", ['nombre' => ['No válido']])
+        ->assertUnprocessable()->assertJsonValidationErrors('nombre');
+    expect($modelo::where('nombre', 'Array')->exists())->toBeFalse();
+})->with([['marcas', Marca::class], ['categorias', Categoria::class]]);
 
 test('foreign catalog records return 404', function () {
     $admin = adminCatalogo();
@@ -156,7 +167,17 @@ test('invalid product data returns 422', function (array $cambios, string $campo
     'huge price' => [['precio' => 100_000_000], 'precio'], 'negative cost' => [['costo' => -5], 'costo'],
     'long sku' => [['sku' => str_repeat('x', 31)], 'sku'], 'unknown brand' => [['marca' => '01m5n22fn4rjjt0zc1mwgd9faa'], 'marca'],
     'missing stock flag' => [['controla_stock' => null], 'controla_stock'],
+    'array name' => [['nombre' => ['No válido']], 'nombre'],
+    'array sku' => [['sku' => ['No válido']], 'sku'],
+    'array description' => [['descripcion' => ['No válido']], 'descripcion'],
 ]);
+
+test('a product with an explicitly entered zero price is valid', function () {
+    $admin = adminCatalogo();
+    $this->actingAs($admin)->postJson('/api/v1/productos', productoValido($admin, ['precio' => 0]))
+        ->assertCreated()->assertJsonPath('data.precio', 0);
+    expect(Producto::sole()->precio)->toBe(0);
+});
 
 test('sku and barcode are unique per business but reusable across businesses', function () {
     $admin = adminCatalogo();
@@ -201,6 +222,7 @@ test('products are paginated searchable and filterable without leaking another b
     $cola = Producto::factory()->for($admin->negocio)->create(['nombre' => 'Cola', 'sku' => 'COL-1', 'codigo_barras' => '999', 'categoria_id' => $bebidas->id, 'marca_id' => $marca->id]);
     $inactivo = Producto::factory()->for($admin->negocio)->inactivo()->create(['nombre' => 'Agua']);
     $ajeno = Producto::factory()->create(['nombre' => 'Cola ajena']);
+    $categoriaAjena = Categoria::withoutGlobalScopes()->findOrFail($ajeno->categoria_id);
     $this->actingAs($admin);
     $this->getJson('/api/v1/productos')->assertOk()->assertJsonCount(15, 'data')->assertJsonPath('meta.total', 17)
         ->assertJsonMissing(['id' => $ajeno->public_id])->assertJsonPath('data.0.nombre', 'Agua');
@@ -211,15 +233,19 @@ test('products are paginated searchable and filterable without leaking another b
     $this->getJson('/api/v1/productos?estado=inactivo')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $inactivo->public_id);
     $this->getJson('/api/v1/productos?buscar='.urlencode("' OR 1=1 --"))->assertOk()->assertJsonCount(0, 'data');
     $this->getJson('/api/v1/productos?estado=otro')->assertUnprocessable()->assertJsonValidationErrors('estado');
-    $this->getJson('/api/v1/productos?page=2')->assertOk()->assertJsonCount(2, 'data')->assertJsonCount(17, 'categorias')->assertJsonCount(1, 'marcas');
+    $this->getJson('/api/v1/productos?page=2')->assertOk()->assertJsonCount(2, 'data')->assertJsonMissingPath('categorias')->assertJsonMissingPath('marcas');
+    $this->getJson('/api/v1/productos/opciones')->assertOk()->assertJsonCount(17, 'categorias')->assertJsonCount(1, 'marcas')
+        ->assertJsonMissing(['id' => $categoriaAjena->public_id]);
 });
 
 test('a read-only business cannot modify the catalog but can read it', function () {
     $admin = adminCatalogo();
     $producto = Producto::factory()->for($admin->negocio)->create(['nombre' => 'Intacto']);
     $this->actingAs($admin)->getJson('/api/v1/productos')->assertOk();
+    $this->getJson('/api/v1/productos/opciones')->assertOk();
     $admin->negocio->suscripciones()->delete();
     $this->getJson('/api/v1/productos')->assertOk();
+    $this->getJson('/api/v1/productos/opciones')->assertOk();
     $this->postJson('/api/v1/marcas', ['nombre' => 'No creada'])->assertForbidden()->assertJsonPath('code', 'negocio_solo_lectura');
     $this->putJson('/api/v1/productos/'.$producto->public_id, productoValido($admin, ['nombre' => 'Cambiado']))->assertForbidden();
     expect($producto->fresh()->nombre)->toBe('Intacto');

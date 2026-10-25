@@ -10,13 +10,13 @@ import { useConsultaApi } from '@/lib/useConsultaApi';
 import type { Paginated } from '@/types/api';
 import type { OpcionCatalogo, Producto } from '@/types/catalogo';
 
-interface CatalogoProductos extends Paginated<Producto> {
+interface OpcionesProducto {
     categorias: OpcionCatalogo[];
     marcas: OpcionCatalogo[];
 }
 
 export interface ProductosContexto {
-    catalogo: { categorias: OpcionCatalogo[]; marcas: OpcionCatalogo[] };
+    opciones: ReturnType<typeof useConsultaApi<OpcionesProducto>>;
     onGuardado: (producto: Producto, operacion: 'creado' | 'actualizado') => void;
 }
 
@@ -25,7 +25,8 @@ export default function ProductosIndex() {
     const [parametros, setParametros] = useSearchParams();
     const [reiniciosBusqueda, setReiniciosBusqueda] = useState(0);
     const consulta = parametros.toString();
-    const listado = useConsultaApi<CatalogoProductos>('/productos'+(consulta ? '?'+consulta : ''));
+    const listado = useConsultaApi<Paginated<Producto>>('/productos'+(consulta ? '?'+consulta : ''));
+    const opciones = useConsultaApi<OpcionesProducto>('/productos/opciones');
     const [productoPorCambiar, setProductoPorCambiar] = useState<Producto | null>(null);
     const [procesando, setProcesando] = useState(false);
     const [errorEstado, setErrorEstado] = useState('');
@@ -37,8 +38,9 @@ export default function ProductosIndex() {
     const hayFiltros = Boolean(buscar || categoria || marca || estado);
     const meta = listado.datos?.meta;
     const filas = listado.datos?.data ?? [];
-    const categorias = listado.datos?.categorias ?? [];
-    const marcas = listado.datos?.marcas ?? [];
+    const categorias = opciones.datos?.categorias ?? [];
+    const marcas = opciones.datos?.marcas ?? [];
+    const puedeCrearProducto = opciones.datos?.categorias.some((opcion) => opcion.activa) ?? false;
 
     useEffect(() => {
         if (meta && meta.current_page > meta.last_page) {
@@ -92,24 +94,29 @@ export default function ProductosIndex() {
 
     return <>
         <PageHeader title="Productos" subtitle="Administra los productos de tu catálogo."
-            actions={<Link to={'/productos/nuevo'+location.search} className="btn btn-primary"><Icon name="plus-lg" className="me-2" />Nuevo producto</Link>} />
+            actions={opciones.datos && !puedeCrearProducto
+                ? <Link to="/categorias/nueva" className="btn btn-primary"><Icon name="plus-lg" className="me-2" />Crear categoría</Link>
+                : <Link to={'/productos/nuevo'+location.search} className="btn btn-primary"><Icon name="plus-lg" className="me-2" />Nuevo producto</Link>} />
         <DataTable columns={columnas} rows={filas} rowKey={(producto) => producto.id} caption="Productos del negocio"
             status={status} busy={listado.cargando} meta={meta}
             onPageChange={(pagina) => setParametros((actuales) => { const nuevos = new URLSearchParams(actuales); nuevos.set('page', String(pagina)); return nuevos; })}
-            emptyMessage={hayFiltros ? 'No encontramos productos con estos filtros.' : 'Todavía no tienes productos. Agrega el primero.'}
-            emptyAction={hayFiltros ? <Button variant="outline-secondary" onClick={limpiarFiltros}>Ver todos los productos</Button> : <Link to="/productos/nuevo" className="btn btn-primary">Nuevo producto</Link>}
+            emptyMessage={hayFiltros ? 'No encontramos productos con estos filtros.' : opciones.datos && !puedeCrearProducto
+                ? 'Para agregar productos, primero crea una categoría activa.' : 'Todavía no tienes productos. Agrega el primero.'}
+            emptyAction={hayFiltros ? <Button variant="outline-secondary" onClick={limpiarFiltros}>Ver todos los productos</Button>
+                : opciones.datos && !puedeCrearProducto ? <Link to="/categorias/nueva" className="btn btn-primary">Crear categoría</Link>
+                    : <Link to="/productos/nuevo" className="btn btn-primary">Nuevo producto</Link>}
             toolbar={<div role="search" aria-label="Buscar y filtrar productos">
                 <div className="table-toolbar align-items-end">
                     <div className="table-toolbar__search"><Form.Label htmlFor="productos-buscar">Buscar producto</Form.Label>
                         <SearchInput id="productos-buscar" key={reiniciosBusqueda} value={buscar} label="Buscar por nombre, SKU o código de barras" placeholder="Nombre, SKU o código de barras" maxLength={100} onChange={(valor) => filtrar('buscar', valor)} />
                     </div>
                     <div className="table-toolbar__filters"><Form.Group controlId="productos-categoria"><Form.Label>Categoría</Form.Label>
-                        <Form.Select className="w-100" value={categoria} onChange={(event) => filtrar('categoria', event.target.value)}>
+                        <Form.Select className="w-100" value={categoria} disabled={!opciones.datos} onChange={(event) => filtrar('categoria', event.target.value)}>
                             <option value="">Todas</option>{categorias.map((opcion) => <option key={opcion.id} value={opcion.id}>{opcion.nombre}{opcion.activa ? '' : ' (inactiva)'}</option>)}
                         </Form.Select>
                     </Form.Group></div>
                     <div className="table-toolbar__filters"><Form.Group controlId="productos-marca"><Form.Label>Marca</Form.Label>
-                        <Form.Select className="w-100" value={marca} onChange={(event) => filtrar('marca', event.target.value)}>
+                        <Form.Select className="w-100" value={marca} disabled={!opciones.datos} onChange={(event) => filtrar('marca', event.target.value)}>
                             <option value="">Todas</option>{marcas.map((opcion) => <option key={opcion.id} value={opcion.id}>{opcion.nombre}{opcion.activa ? '' : ' (inactiva)'}</option>)}
                         </Form.Select>
                     </Form.Group></div>
@@ -119,12 +126,16 @@ export default function ProductosIndex() {
                         </Form.Select>
                     </Form.Group></div>
                 </div>
+                {Boolean(opciones.error) && <div className="d-flex flex-wrap align-items-center gap-2 mt-3" role="alert">
+                    <span>No se pudieron cargar las categorías y marcas.</span>
+                    <Button variant="outline-secondary" size="sm" onClick={opciones.recargar}>Reintentar</Button>
+                </div>}
                 <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3">
                     <p className="small text-body-secondary mb-0" role="status">{listado.cargando ? 'Buscando productos…' : listado.error ? 'Listado no disponible' : (meta?.total ?? 0)+' '+(meta?.total === 1 ? 'producto' : 'productos')+(hayFiltros ? ' con los filtros actuales' : ' en tu negocio')}</p>
                     {hayFiltros && <Button variant="link" className="p-0" onClick={limpiarFiltros}>Limpiar filtros</Button>}
                 </div>
             </div>} />
-        <Outlet context={{ catalogo: { categorias, marcas }, onGuardado: (producto, operacion) => { notificar('Producto '+producto.nombre+' '+operacion+' correctamente.'); listado.recargar(); } } satisfies ProductosContexto} />
+        <Outlet context={{ opciones, onGuardado: (producto, operacion) => { notificar('Producto '+producto.nombre+' '+operacion+' correctamente.'); listado.recargar(); } } satisfies ProductosContexto} />
         {productoPorCambiar && <ConfirmModal title={productoPorCambiar.activo ? '¿Desactivar producto?' : '¿Activar producto?'}
             confirmLabel={productoPorCambiar.activo ? 'Desactivar' : 'Activar'} variant={productoPorCambiar.activo ? 'danger' : 'primary'}
             processing={procesando} error={errorEstado} onConfirm={() => void cambiarEstado()} onCancel={() => setProductoPorCambiar(null)}>

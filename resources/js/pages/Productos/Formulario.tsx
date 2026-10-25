@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Button, Col, Form, Row, Spinner } from 'react-bootstrap';
-import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import { FormDialog, TextField } from '@/components/ui';
 import { api, erroresDeValidacion, mensajeDeError } from '@/lib/http';
 import { useSesion } from '@/lib/auth';
@@ -22,7 +22,7 @@ interface DatosProducto {
 }
 
 export default function ProductoFormulario({ producto }: { producto?: Producto }) {
-    const { catalogo, onGuardado } = useOutletContext<ProductosContexto>();
+    const { opciones, onGuardado } = useOutletContext<ProductosContexto>();
     const location = useLocation();
     const navigate = useNavigate();
     const { permisos } = useSesion();
@@ -54,7 +54,7 @@ export default function ProductoFormulario({ producto }: { producto?: Producto }
         setErrorGeneral('');
         const payload = {
             ...datos, marca: datos.marca || null, sku: datos.sku || null, codigo_barras: datos.codigo_barras || null,
-            descripcion: datos.descripcion || null, costo: datos.costo === '' ? null : Number(datos.costo), precio: Number(datos.precio),
+            descripcion: datos.descripcion || null, costo: datos.costo === '' ? null : Number(datos.costo), precio: datos.precio.trim() === '' ? null : Number(datos.precio),
         };
         try {
             const respuesta = producto
@@ -73,16 +73,21 @@ export default function ProductoFormulario({ producto }: { producto?: Producto }
     };
 
     const actualizar = (campo: keyof DatosProducto, valor: string | boolean) => setDatos((actuales) => ({ ...actuales, [campo]: valor }));
-    const categorias = opcionesActivas(catalogo.categorias, datos.categoria);
-    const marcas = opcionesActivas(catalogo.marcas, datos.marca);
+    const categorias = opcionesActivas(opciones.datos?.categorias ?? [], datos.categoria);
+    const marcas = opcionesActivas(opciones.datos?.marcas ?? [], datos.marca);
+    const sinCategorias = !producto && opciones.datos && categorias.length === 0;
 
-    return <FormDialog title={producto ? 'Editar producto' : 'Nuevo producto'} size="lg" onHide={cerrar} processing={procesando} actions={<>
+    return <FormDialog title={producto ? 'Editar producto' : 'Nuevo producto'} size="lg" onHide={cerrar} processing={procesando} actions={opciones.datos && !sinCategorias ? <>
         <Button variant="outline-secondary" disabled={procesando} onClick={cerrar}>Cancelar</Button>
         <Button type="submit" form={formId} disabled={procesando || !permisos.includes('gestionar_catalogo')}>
             {procesando && <Spinner as="span" animation="border" size="sm" aria-hidden="true" className="me-2" />}
             {procesando ? 'Guardando…' : producto ? 'Guardar cambios' : 'Crear producto'}
         </Button>
-    </>}>
+    </> : <Button variant="outline-secondary" onClick={cerrar}>Volver al listado</Button>}>
+        {opciones.cargando && <p role="status"><Spinner as="span" animation="border" size="sm" className="me-2" aria-hidden="true" />Cargando categorías y marcas…</p>}
+        {Boolean(opciones.error) && <div role="alert"><p>No se pudieron cargar las categorías y marcas. {mensajeDeError(opciones.error)}</p><Button variant="outline-secondary" onClick={opciones.recargar}>Reintentar</Button></div>}
+        {sinCategorias && <div role="status"><p>Para crear tu primer producto, primero agrega una categoría activa.</p><Link className="btn btn-primary" to="/categorias/nueva">Crear categoría</Link></div>}
+        {opciones.datos && !sinCategorias &&
         <form ref={formulario} id={formId} className="record-form" noValidate aria-busy={procesando} onSubmit={(event) => void guardar(event)}>
             <fieldset disabled={procesando}>
                 <legend className="visually-hidden">Datos del producto</legend>
@@ -118,6 +123,6 @@ export default function ProductoFormulario({ producto }: { producto?: Producto }
                 <TextField as="textarea" rows={3} label="Descripción (opcional)" value={datos.descripcion} maxLength={1000} error={errores.descripcion} onChange={(event) => actualizar('descripcion', event.target.value)} />
                 {errorGeneral && <p className="text-danger" role="alert">{errorGeneral}</p>}
             </fieldset>
-        </form>
+        </form>}
     </FormDialog>;
 }
