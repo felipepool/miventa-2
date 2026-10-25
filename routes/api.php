@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\CajaController;
 use App\Http\Controllers\Api\V1\CambiarEstadoCajaController;
 use App\Http\Controllers\Api\V1\CambiarEstadoCategoriaController;
+use App\Http\Controllers\Api\V1\CambiarEstadoGrupoModificadorController;
 use App\Http\Controllers\Api\V1\CambiarEstadoMarcaController;
 use App\Http\Controllers\Api\V1\CambiarEstadoProductoController;
 use App\Http\Controllers\Api\V1\CambiarEstadoSucursalController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Api\V1\CambiarEstadoUsuarioController;
 use App\Http\Controllers\Api\V1\CategoriaController;
 use App\Http\Controllers\Api\V1\CotizacionCajaController;
 use App\Http\Controllers\Api\V1\CotizacionSucursalController;
+use App\Http\Controllers\Api\V1\GrupoModificadorController;
 use App\Http\Controllers\Api\V1\InventarioController;
 use App\Http\Controllers\Api\V1\MarcaController;
 use App\Http\Controllers\Api\V1\MeController;
@@ -62,6 +64,14 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api'
         Route::get('productos/opciones', [ProductoController::class, 'opciones'])->name('productos.opciones');
         Route::apiResource('productos', ProductoController::class)->only(['index', 'show', 'store', 'update']);
         Route::patch('productos/{producto}/estado', CambiarEstadoProductoController::class)->name('productos.estado');
+    });
+
+    Route::middleware([RequerirSucursalActual::class, 'can:gestionar_catalogo', 'modulo:modificadores'])->group(function () {
+        Route::get('grupos-modificadores', [GrupoModificadorController::class, 'index'])->name('grupos-modificadores.index');
+        Route::post('grupos-modificadores', [GrupoModificadorController::class, 'store'])->name('grupos-modificadores.store');
+        Route::get('grupos-modificadores/{grupoModificador}', [GrupoModificadorController::class, 'show'])->name('grupos-modificadores.show');
+        Route::put('grupos-modificadores/{grupoModificador}', [GrupoModificadorController::class, 'update'])->name('grupos-modificadores.update');
+        Route::patch('grupos-modificadores/{grupoModificador}/estado', CambiarEstadoGrupoModificadorController::class)->name('grupos-modificadores.estado');
     });
 
     Route::middleware([RequerirSucursalActual::class, 'can:gestionar_inventario', 'adicional:inventario'])->group(function () {

@@ -2,7 +2,8 @@ import { useEffect, useId, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Button, Col, Form, Row, Spinner } from 'react-bootstrap';
 import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
-import { FormDialog, TextField } from '@/components/ui';
+import { FormDialog, Icon, TextField } from '@/components/ui';
+import { ETIQUETAS_SELECCION } from '@/lib/modificadores';
 import { api, erroresDeValidacion, mensajeDeError } from '@/lib/http';
 import { useSesion } from '@/lib/auth';
 import type { OpcionCatalogo, Producto, UnidadVenta } from '@/types/catalogo';
@@ -27,7 +28,8 @@ export default function ProductoFormulario({ producto }: { producto?: Producto }
     const { opciones, onGuardado } = useOutletContext<ProductosContexto>();
     const location = useLocation();
     const navigate = useNavigate();
-    const { permisos } = useSesion();
+    const { permisos, contexto } = useSesion();
+    const usaModificadores = contexto.modulos.includes('modificadores');
     const formId = useId();
     const formulario = useRef<HTMLFormElement>(null);
     const [datos, setDatos] = useState<DatosProducto>(() => ({
@@ -37,6 +39,7 @@ export default function ProductoFormulario({ producto }: { producto?: Producto }
         unidad_venta: producto?.unidad_venta ?? 'unidad', precio: producto?.precio === null || producto?.precio === undefined ? '' : String(producto.precio),
         costo: producto?.costo === null || producto?.costo === undefined ? '' : String(producto.costo), controla_stock: producto?.controla_stock ?? true,
     }));
+    const [grupos, setGrupos] = useState<string[]>(() => producto?.grupos_modificadores?.map((grupo) => grupo.id) ?? []);
     const [errores, setErrores] = useState<Record<string, string>>({});
     const [errorGeneral, setErrorGeneral] = useState('');
     const [procesando, setProcesando] = useState(false);
@@ -57,6 +60,7 @@ export default function ProductoFormulario({ producto }: { producto?: Producto }
         setErrorGeneral('');
         const payload = {
             ...datos, categoria: datos.categoria || null, marca: datos.marca || null, sku: datos.sku || null, codigo_barras: datos.codigo_barras || null,
+            ...(usaModificadores ? { grupos_modificadores: grupos } : {}),
             descripcion: datos.descripcion || null, costo: datos.costo === '' ? null : Number(datos.costo), precio: datos.precio.trim() === '' ? null : Number(datos.precio),
         };
         try {
@@ -78,6 +82,17 @@ export default function ProductoFormulario({ producto }: { producto?: Producto }
     const actualizar = (campo: keyof DatosProducto, valor: string | boolean) => setDatos((actuales) => ({ ...actuales, [campo]: valor }));
     const categorias = opcionesActivas(opciones.datos?.categorias ?? [], datos.categoria);
     const marcas = opcionesActivas(opciones.datos?.marcas ?? [], datos.marca);
+    const gruposConocidos = [...(opciones.datos?.grupos_modificadores ?? []), ...(producto?.grupos_modificadores ?? [])];
+    const gruposElegidos = grupos.map((id) => gruposConocidos.find((grupo) => grupo.id === id)).filter((grupo) => grupo !== undefined);
+    const gruposDisponibles = (opciones.datos?.grupos_modificadores ?? []).filter((grupo) => grupo.activo && !grupos.includes(grupo.id));
+    const moverGrupo = (indice: number, desplazamiento: number) => setGrupos((actuales) => {
+        const destino = indice+desplazamiento;
+        const movido = actuales[indice];
+        if (movido === undefined || destino < 0 || destino >= actuales.length) { return actuales; }
+        const copia = actuales.filter((_, posicion) => posicion !== indice);
+        copia.splice(destino, 0, movido);
+        return copia;
+    });
 
     return <FormDialog title={producto ? 'Editar producto' : 'Nuevo producto'} size="lg" onHide={cerrar} processing={procesando} actions={opciones.datos ? <>
         <Button variant="outline-secondary" disabled={procesando} onClick={cerrar}>Cancelar</Button>
@@ -129,11 +144,26 @@ export default function ProductoFormulario({ producto }: { producto?: Producto }
                             <option value="l">Litro</option><option value="ml">Mililitro</option><option value="m">Metro</option>
                         </Form.Select>{errores.unidad_venta && <Form.Control.Feedback type="invalid">{errores.unidad_venta}</Form.Control.Feedback>}
                     </Form.Group></Col>
-                    <Col md={6} className="d-flex align-items-center"><Form.Check id="producto-controla-stock" type="switch" label="Controlar stock" checked={datos.controla_stock} isInvalid={Boolean(errores.controla_stock)} onChange={(event) => actualizar('controla_stock', event.target.checked)} /></Col>
+                    <Col md={6} className="d-flex align-items-center mb-3 mb-md-0"><Form.Check id="producto-controla-stock" type="switch" label="Controlar stock" checked={datos.controla_stock} isInvalid={Boolean(errores.controla_stock)} onChange={(event) => actualizar('controla_stock', event.target.checked)} /></Col>
                 </Row>
-                <TextField as="textarea" rows={3} label="Descripción (opcional)" value={datos.descripcion} maxLength={1000} error={errores.descripcion} onChange={(event) => actualizar('descripcion', event.target.value)} />
+                {usaModificadores && <Form.Group controlId="producto-grupos" className="mb-3">
+                    <Form.Label>Grupos de modificadores (opcional)</Form.Label>
+                    {gruposElegidos.length > 0 && <ol className="list-unstyled mb-2">{gruposElegidos.map((grupo, indice) => <li key={grupo.id} className="d-flex align-items-center gap-2 border rounded p-2 mb-2">
+                        <span className="flex-grow-1">{grupo.nombre}{!grupo.activo && ' (inactivo)'}<small className="d-block text-body-secondary">{ETIQUETAS_SELECCION[grupo.tipo_seleccion]}</small></span>
+                        <Button variant="outline-secondary" size="sm" disabled={indice === 0} aria-label={'Subir '+grupo.nombre} onClick={() => moverGrupo(indice, -1)}><Icon name="arrow-up" /></Button>
+                        <Button variant="outline-secondary" size="sm" disabled={indice === gruposElegidos.length-1} aria-label={'Bajar '+grupo.nombre} onClick={() => moverGrupo(indice, 1)}><Icon name="arrow-down" /></Button>
+                        <Button variant="outline-danger" size="sm" aria-label={'Quitar '+grupo.nombre} onClick={() => setGrupos((actuales) => actuales.filter((id) => id !== grupo.id))}><Icon name="x-lg" /></Button>
+                    </li>)}</ol>}
+                    <Form.Select value="" isInvalid={Object.keys(errores).some((campo) => campo.startsWith('grupos_modificadores'))} disabled={gruposDisponibles.length === 0} onChange={(event) => { if (event.target.value) { setGrupos((actuales) => [...actuales, event.target.value]); } }}>
+                        <option value="">{gruposDisponibles.length > 0 ? 'Agregar un grupo…' : 'No hay más grupos activos'}</option>
+                        {gruposDisponibles.map((grupo) => <option key={grupo.id} value={grupo.id}>{grupo.nombre}</option>)}
+                    </Form.Select>
+                    {Object.entries(errores).filter(([campo]) => campo.startsWith('grupos_modificadores')).map(([campo, mensaje]) => <Form.Control.Feedback key={campo} type="invalid" className="d-block">{mensaje}</Form.Control.Feedback>)}
+                    <Form.Text muted>Se ofrecen al vender este producto, en este orden.</Form.Text>
+                </Form.Group>}                <TextField as="textarea" rows={3} label="Descripción (opcional)" value={datos.descripcion} maxLength={1000} error={errores.descripcion} onChange={(event) => actualizar('descripcion', event.target.value)} />
                 {errorGeneral && <p className="text-danger" role="alert">{errorGeneral}</p>}
             </fieldset>
         </form>}
     </FormDialog>;
 }
+

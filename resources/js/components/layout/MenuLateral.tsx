@@ -16,6 +16,8 @@ interface ItemMenu {
     permiso?: string;
     /** Adicional que el negocio debe tener activo (en prueba o contratado) para ver el ítem. */
     adicional?: string;
+    /** Módulo del plan que el negocio debe tener activo para ver el ítem. */
+    modulo?: string;
 }
 
 /** Ítems del menú; crece con cada módulo que se incorpora. */
@@ -28,6 +30,7 @@ const CATALOGO: ItemMenu[] = [
     { href: '/productos', label: 'Productos', icon: 'box-seam', permiso: 'gestionar_catalogo' },
     { href: '/categorias', label: 'Categorías', icon: 'collection', permiso: 'gestionar_catalogo' },
     { href: '/marcas', label: 'Marcas', icon: 'tags', permiso: 'gestionar_catalogo' },
+    { href: '/modificadores', label: 'Modificadores', icon: 'sliders', permiso: 'gestionar_catalogo', modulo: 'modificadores' },
 ];
 
 const ADMINISTRACION: ItemMenu[] = [
@@ -46,9 +49,9 @@ export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
     const { contexto, permisos } = useSesion();
     const { negocio } = contexto;
     const adicionalesActivos = contexto.suscripcion?.adicionales_activos ?? [];
-    const visible = (item: ItemMenu) => (!item.permiso || permisos.includes(item.permiso)) && (!item.adicional || adicionalesActivos.includes(item.adicional));
+    const visible = (item: ItemMenu) => (!item.permiso || permisos.includes(item.permiso)) && (!item.adicional || adicionalesActivos.includes(item.adicional)) && (!item.modulo || contexto.modulos.includes(item.modulo));
     const { pathname } = useLocation();
-    const catalogo = CATALOGO.filter((item) => !item.permiso || permisos.includes(item.permiso));
+    const catalogo = CATALOGO.filter(visible);
     const administracion = ADMINISTRACION.filter((item) => !item.permiso || permisos.includes(item.permiso));
     const catalogoActivo = catalogo.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
     const administracionActiva = administracion.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
@@ -145,4 +148,5 @@ export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
         </>
     );
 }
+
 

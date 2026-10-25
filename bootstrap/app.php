@@ -3,6 +3,7 @@
 use App\Http\Middleware\EstablecerContexto;
 use App\Http\Middleware\LimitarRestablecerContrasena;
 use App\Http\Middleware\RequerirAdicional;
+use App\Http\Middleware\RequerirModulo;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -35,7 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
             prepend: EstablecerContexto::class,
         );
 
-        $middleware->alias(['adicional' => RequerirAdicional::class]);
+        $middleware->alias(['adicional' => RequerirAdicional::class, 'modulo' => RequerirModulo::class]);
 
         $middleware->redirectUsersTo('/dashboard');
         $middleware->redirectGuestsTo('/login');

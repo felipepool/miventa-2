@@ -8,11 +8,12 @@ import { api, erroresDeValidacion, mensajeDeError } from '@/lib/http';
 import { notificar } from '@/lib/notificaciones';
 import { useConsultaApi } from '@/lib/useConsultaApi';
 import type { Paginated } from '@/types/api';
-import type { OpcionCatalogo, Producto } from '@/types/catalogo';
+import type { OpcionCatalogo, OpcionGrupoModificador, Producto } from '@/types/catalogo';
 
 interface OpcionesProducto {
     categorias: OpcionCatalogo[];
     marcas: OpcionCatalogo[];
+    grupos_modificadores: OpcionGrupoModificador[];
 }
 
 export interface ProductosContexto {
@@ -146,3 +147,4 @@ export default function ProductosIndex() {
         </ConfirmModal>}
     </>;
 }
+

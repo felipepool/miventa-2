@@ -18,6 +18,9 @@ class StoreProductoRequest extends FormRequest
     /** Precio y costo máximos aceptados (CLP). */
     public const int MONTO_MAXIMO = 99_999_999;
 
+    /** Grupos de modificadores que puede tener un producto. */
+    public const int GRUPOS_MODIFICADORES_MAXIMOS = 20;
+
     /**
      * La autorización la aplica la ruta con el permiso `gestionar_catalogo`.
      */
@@ -45,6 +48,8 @@ class StoreProductoRequest extends FormRequest
             'precio' => [Rule::requiredIf(fn () => $this->boolean('se_vende')), 'nullable', 'integer', 'min:0', 'max:'.self::MONTO_MAXIMO],
             'costo' => ['nullable', 'integer', 'min:0', 'max:'.self::MONTO_MAXIMO],
             'controla_stock' => ['required', 'boolean'],
+            'grupos_modificadores' => ['sometimes', 'array', 'max:'.self::GRUPOS_MODIFICADORES_MAXIMOS],
+            'grupos_modificadores.*' => ['string', 'ulid', 'distinct'],
         ];
     }
 
@@ -56,6 +61,8 @@ class StoreProductoRequest extends FormRequest
         return [
             'categoria.exists' => 'La categoría seleccionada no está disponible.',
             'marca.exists' => 'La marca seleccionada no está disponible.',
+            'grupos_modificadores.max' => 'Un producto admite hasta '.self::GRUPOS_MODIFICADORES_MAXIMOS.' grupos de modificadores.',
+            'grupos_modificadores.*.distinct' => 'Un grupo de modificadores está repetido.',
             'sku.unique' => 'Ya existe un producto con este SKU en tu negocio.',
             'codigo_barras.unique' => 'Ya existe un producto con este código de barras en tu negocio.',
             'precio.integer' => 'El precio debe ser un monto entero en pesos.',

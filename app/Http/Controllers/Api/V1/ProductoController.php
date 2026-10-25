@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\Modulo;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductoRequest;
 use App\Http\Requests\UpdateProductoRequest;
 use App\Http\Resources\ProductoResource;
 use App\Models\Categoria;
+use App\Models\GrupoModificador;
 use App\Models\Marca;
 use App\Models\Negocio;
 use App\Models\Producto;
@@ -56,12 +58,16 @@ class ProductoController extends Controller
                 ->map(fn (Categoria $categoria) => $categoria->datosPublicos('nombre', 'activa'))->all(),
             'marcas' => Marca::orderBy('nombre')->orderBy('id')->get()
                 ->map(fn (Marca $marca) => $marca->datosPublicos('nombre', 'activa'))->all(),
+            'grupos_modificadores' => app(NegocioActual::class)->obtener()->tieneModulo(Modulo::Modificadores)
+                ? GrupoModificador::orderBy('nombre')->orderBy('id')->get()
+                    ->map(fn (GrupoModificador $grupo) => $grupo->datosPublicos('nombre', 'tipo_seleccion', 'activo'))->all()
+                : [],
         ]);
     }
 
     public function show(Producto $producto): ProductoResource
     {
-        return new ProductoResource($producto->load(['categoria', 'marca']));
+        return new ProductoResource($producto->load(['categoria', 'marca', 'gruposModificadores']));
     }
 
     public function store(StoreProductoRequest $request, NegocioActual $actual): JsonResponse
@@ -76,11 +82,12 @@ class ProductoController extends Controller
             $producto->categoria()->associate($categoria);
             $producto->marca()->associate($marca);
             $producto->save();
+            $this->sincronizarGrupos($producto, $request);
 
             return $producto->refresh();
         }, 3);
 
-        return (new ProductoResource($producto->load(['categoria', 'marca'])))->response()->setStatusCode(201);
+        return (new ProductoResource($producto->load(['categoria', 'marca', 'gruposModificadores'])))->response()->setStatusCode(201);
     }
 
     public function update(UpdateProductoRequest $request, Producto $producto): ProductoResource
@@ -96,9 +103,10 @@ class ProductoController extends Controller
             $producto->categoria()->associate($categoria);
             $producto->marca()->associate($marca);
             $producto->save();
+            $this->sincronizarGrupos($producto, $request);
         }, 3);
 
-        return new ProductoResource($producto->load(['categoria', 'marca']));
+        return new ProductoResource($producto->load(['categoria', 'marca', 'gruposModificadores']));
     }
 
     private function exigirPermiso(Request $request): void
@@ -128,6 +136,35 @@ class ProductoController extends Controller
         }
 
         return [$categoria, $marca];
+    }
+
+    /**
+     * Reemplaza los grupos de modificadores del producto por la lista recibida, en ese orden.
+     * Con el módulo apagado se ignora y se conservan las asignaciones existentes.
+     */
+    private function sincronizarGrupos(Producto $producto, StoreProductoRequest $request): void
+    {
+        $ids = $request->validated('grupos_modificadores');
+
+        if ($ids === null || ! app(NegocioActual::class)->obtener()->tieneModulo(Modulo::Modificadores)) {
+            return;
+        }
+
+        $grupos = GrupoModificador::whereIn('public_id', $ids)->get()->keyBy('public_id');
+        $actuales = $producto->gruposModificadores()->pluck('grupos_modificadores.id')->all();
+        $asignaciones = [];
+
+        foreach (array_values($ids) as $orden => $publicId) {
+            $grupo = $grupos->get($publicId);
+
+            if ($grupo === null || (! $grupo->activo && ! in_array($grupo->id, $actuales, true))) {
+                throw ValidationException::withMessages(['grupos_modificadores' => 'Uno de los grupos de modificadores no está disponible.']);
+            }
+
+            $asignaciones[$grupo->id] = ['orden' => $orden];
+        }
+
+        $producto->gruposModificadores()->sync($asignaciones);
     }
 
     private function validarUnicos(StoreProductoRequest $request, ?Producto $producto = null): void

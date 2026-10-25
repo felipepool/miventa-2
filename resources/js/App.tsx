@@ -29,6 +29,9 @@ import EditarMarca from '@/pages/Marcas/Editar';
 import CategoriasIndex from '@/pages/Categorias/Index';
 import CategoriaFormulario from '@/pages/Categorias/Formulario';
 import EditarCategoria from '@/pages/Categorias/Editar';
+import ModificadoresIndex from '@/pages/Modificadores/Index';
+import NuevoGrupoModificador from '@/pages/Modificadores/Nuevo';
+import EditarGrupoModificador from '@/pages/Modificadores/Editar';
 import ProductosIndex from '@/pages/Productos/Index';
 import NuevoProducto from '@/pages/Productos/Nuevo';
 import EditarProducto from '@/pages/Productos/Editar';
@@ -80,6 +83,13 @@ function RequiereAdicional({ adicional, etiqueta }: { adicional: string; etiquet
     const { contexto } = useSesion();
 
     return contexto.suscripcion?.adicionales_activos.includes(adicional) ? <Outlet /> : <AdicionalNoContratado etiqueta={etiqueta} />;
+}
+
+/** Rutas de un módulo del plan: si el negocio no lo tiene activo, la página no existe para él. */
+function RequiereModulo({ modulo }: { modulo: string }) {
+    const { contexto } = useSesion();
+
+    return contexto.modulos.includes(modulo) ? <Outlet /> : <NotFoundPage />;
 }
 
 function RequiereSucursal() {
@@ -151,6 +161,12 @@ export default function App() {
                                 <Route path="nueva" element={<CategoriaFormulario />} />
                                 <Route path=":categoriaId/editar" element={<EditarCategoria />} />
                             </Route>
+                            <Route element={<RequiereModulo modulo="modificadores" />}>
+                                <Route path="modificadores" element={<ModificadoresIndex />}>
+                                    <Route path="nuevo" element={<NuevoGrupoModificador />} />
+                                    <Route path=":grupoId/editar" element={<EditarGrupoModificador />} />
+                                </Route>
+                            </Route>
                             <Route path="productos" element={<ProductosIndex />}>
                                 <Route path="nuevo" element={<NuevoProducto />} />
                                 <Route path=":productoId/editar" element={<EditarProducto />} />
@@ -178,4 +194,5 @@ export default function App() {
         </Routes>
     );
 }
+
 
