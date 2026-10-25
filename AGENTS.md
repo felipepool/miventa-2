@@ -4,7 +4,8 @@
 # MiVenta
 
 - Keep CRUD flows consistent across the system, using Usuarios as the reference. For editing, use the shared `EditDialog` to show the initial loading dialog, then mount the populated form in `FormDialog`; share error, retry, and unavailable-record behavior too. A different flow requires a concrete functional reason and explicit user approval before implementation.
-- For every plan explicitly approved by the user, save its numbered steps and agreed behavior in an independent Markdown file under `docs/`, using a sequential numeric prefix and a descriptive filename (starting with `01-seleccion-sucursal-login.md`, then `02-...md`). Continue after the highest existing plan number; keep an existing plan's number when updating it. The user has requested this documentation for all future approved plans. Include only the approved plan, without conversation history, implementation logs, or unapproved additions.
+- For every plan explicitly approved by the user, save its numbered steps and agreed behavior in an independent Markdown file under `docs/` named `NN-PLAN-descriptive-name.md`, and document its use cases in independent files named `NN-CU-descriptive-name.md`, one per use case, sharing the plan's number (e.g. `01-PLAN-seleccion-sucursal-login.md` and `01-CU-seleccion-sucursal-login.md`). Use a sequential numeric prefix, continuing after the highest existing plan number; keep an existing plan's number when updating it. Each use case file follows the template `docs/plantillas/CU.md`: a title `# NN-name`, then `## Caso de uso: <name>` with the sections Objetivo, Actores, Precondiciones, Flujo principal (numbered), Reglas de negocio, Endpoints (table), Respuesta de éxito and Respuesta de error (JSON examples), Tablas y columnas, and Consideraciones de seguridad, omitting any section that does not apply. Plan files keep their numbered steps and agreed behavior, and may add a final Verificación section, using the template `docs/plantillas/PLAN.md`. The user has requested this documentation for all future approved plans. Include only the approved plan and its use cases, without conversation history, implementation logs, or unapproved additions. Existing files that predate this naming keep their names unless the user asks to rename them.
+- At the end of every development that adds or changes UI, and before committing, review the affected screens in the browser at desktop, tablet and smartphone sizes, using viewports that represent Android phones, iPhone, iPad and other tablets, with dialogs and offcanvas panels open. Check that there is no horizontal scroll, the text is readable, the touch targets are usable and nothing is cut off. Browser size emulation is not a test on real devices: say so, and report what was reviewed and what could not be.
 
 === foundation rules ===
 
@@ -172,3 +173,134 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - After the feature tests pass, ask the user to run the complete suite with `php artisan test --compact`.
 
 </laravel-boost-guidelines>
+
+# MiVenta - Instrucciones para agentes
+
+## Reglas específicas de MiVenta
+
+Reglas específicas del proyecto. Complementan las directrices y skills generadas por Laravel Boost; no las reemplazan.
+
+### Objetivo y contexto
+MiVenta es una aplicación de gestión comercial/POS orientada a negocios con una o más sucursales. Puede involucrar catálogo, precios, inventario, ventas, pedidos, cajas/turnos y facturación electrónica chilena. No presupongas que todos esos módulos están implementados: inspecciona el repositorio antes de utilizarlos.
+
+El proyecto actual utiliza Laravel y puede incluir React, TypeScript e Inertia. Comprueba las versiones y los paquetes reales en composer.json, package.json y el código existente antes de tomar decisiones. La integración con un motor de documentos tributarios electrónicos (DTE) puede residir en otro servicio: respeta sus contratos y no reimplementes ese motor por iniciativa propia.
+### Prioridades
+1. Resolver exactamente lo solicitado con el cambio más pequeño y seguro posible.
+2. Respetar la arquitectura, nombres, convenciones, diseño y dependencias existentes.
+3. Proteger los datos entre negocios y sucursales, la integridad de las ventas y la seguridad de la autenticación.
+4. Escribir código simple, legible, mantenible y seguro por defecto, comprensible para cualquier desarrollador que conozca el stack.
+5. Verificar los cambios con las pruebas y herramientas que el repositorio realmente tenga disponibles.
+6. Explicar brevemente qué se hizo y qué no se pudo verificar.
+### Forma de trabajar
+- Antes de modificar código: lee los archivos implicados, sus consumidores, las rutas y las pruebas relacionadas. No recorras todo el repositorio sin motivo.
+- Ante tareas medianas o grandes, propone un plan breve de máximo 4 pasos y ejecuta de forma incremental.
+- Trabaja en un objetivo por vez. Evita refactorizaciones, instalaciones o cambios de stack no solicitados.
+- Reutiliza componentes, servicios, validaciones y utilidades existentes; no dupliques lógica.
+- Si falta información, busca primero en el código o con herramientas disponibles. No inventes clases, métodos, columnas, endpoints ni resultados de comandos.
+- Antes de una operación destructiva o de alto impacto, explica el riesgo y solicita autorización.
+- No modifiques archivos fuera del alcance, archivos de secretos, configuraciones de producción ni dependencias sin necesidad explícita.
+- No ejecutes migrate:fresh, migrate:refresh, db:wipe, borrados masivos o comandos equivalentes sin autorización expresa.
+- No afirmes que una prueba pasó si no la ejecutaste.
+### Calidad del código: lectura humana primero
+- Escribe código para que un desarrollador humano pueda entenderlo y mantenerlo sin depender de la IA. Prioriza claridad sobre soluciones ingeniosas, compactas u «optimizadas» prematuramente.
+- Usa nombres descriptivos y coherentes con el idioma y las convenciones del repositorio. Evita abreviaturas ambiguas, variables de una letra (salvo índices evidentes) y nombres genéricos como data, process o handle cuando oculten intención.
+- Mantén cada clase, función y componente enfocados en una responsabilidad reconocible. Divide funciones largas cuando existan responsabilidades diferentes; no fragmentes en helpers triviales sin valor.
+- Prefiere flujo de control sencillo, retornos tempranos cuando aclaren la lógica y baja anidación. Evita condicionales complejos y efectos secundarios inesperados.
+- Usa tipado explícito donde el stack lo admita: tipos de parámetros y retorno en PHP, interfaces/tipos adecuados en TypeScript. No recurras a any, casts inseguros o supresión de errores sin justificación.
+- Respeta DRY, KISS y SOLID con criterio: elimina duplicaciones reales, pero NO crees patrones, interfaces, factories o capas de abstracción sin una necesidad concreta. Prefiere patrones existentes.
+- Deja reglas del negocio y decisiones de autorización en el servidor, no repartidas entre vistas o componentes. Evita controladores gigantes y componentes React con lógica de negocio acoplada.
+- Evita números mágicos, estados expresados por cadenas dispersas y lógica duplicada; reutiliza constantes, enums o tipos ya existentes cuando corresponda.
+- Documenta brevemente por qué una decisión no es obvia, especialmente invariantes de negocio, seguridad o concurrencia. No escribas comentarios redundantes que repitan lo que dice el código.
+- Elimina código muerto, imports sin uso y depuración introducida por el cambio. No dejes dd(), dump(), console.log() de datos sensibles, TODO vagos ni código comentado innecesario.
+- Mantén cambios fáciles de revisar: diffs pequeños, sin reformatear archivos ajenos ni renombrar elementos sin razón. Respeta la compatibilidad de interfaces públicas, rutas y contratos existentes.
+### Seguridad obligatoria en cada cambio
+Principio general: trata como no confiables los datos del navegador, clientes API, archivos, webhooks, encabezados y servicios externos. Aplica defensa en profundidad y privilegios mínimos. No prometas «cero vulnerabilidades»: implementa controles verificables y comunica el riesgo residual.
+#### Validación, autenticación y autorización
+- Valida en el servidor cada entrada que influya en consultas, cambios, permisos, precios o estados. Usa Form Requests u otros mecanismos existentes. La validación del frontend es solo apoyo visual.
+- Usa políticas, gates, middleware o comprobaciones de autorización consistentes con el proyecto. Un usuario autenticado NO tiene permiso automático para ver o modificar cualquier recurso.
+- Previene IDOR/BOLA: para cada operación sobre un recurso con ID, comprueba en backend la pertenencia al negocio y, si aplica, sucursal, y el permiso para la acción. Incluye vistas de detalle, listados, exportaciones y descargas.
+- No confíes en tenant_id, negocio_id, sucursal_id, usuario_id, roles, precios, descuentos o totales enviados por el cliente sin validación y autorización del servidor. Obtén el contexto autorizado de la sesión/autenticación y comprueba relaciones.
+- Evita asignación masiva insegura: usa datos validados y campos explícitos al crear/actualizar modelos. No persistas directamente $request->all() ni permitas al cliente modificar campos de permisos, propiedad o estado interno.
+- Conserva los controles de sesión, CSRF, cookies seguras, contraseñas hasheadas y rate limiting presentes. No desactives protecciones para solucionar errores. Si modificas login/logout, comprueba el tratamiento seguro de sesiones y cookies.
+- Los mensajes de error al usuario no deben revelar SQL, stack traces, rutas internas, secretos ni si existen cuentas protegidas cuando eso permita enumeración.
+#### Inyecciones, salida y recursos externos
+- Usa Eloquent/Query Builder y consultas parametrizadas; nunca concatenes entradas no confiables en SQL. Si necesitas SQL crudo o nombres dinámicos de columna/orden, aplica parámetros para valores y listas permitidas para identificadores.
+- Mantén el escape habitual de React y las vistas. Evita HTML sin sanitizar, dangerouslySetInnerHTML y ejecución dinámica de expresiones/código con entradas externas; si fueran imprescindibles, justifica y sanitiza correctamente.
+- Para archivos, valida tipo real, tamaño, extensión y autorización; genera nombres seguros, protege rutas y evita exponer archivos privados en directorios públicos.
+- Para URLs o servicios externos controlables por usuarios, previene SSRF con destinos permitidos y validación apropiada. En integraciones HTTP usa HTTPS, verificación TLS, timeouts y manejo explícito de fallos; no registres cuerpos con secretos.
+- Nunca construyas comandos de sistema, rutas de archivo ni consultas ejecutables concatenando entrada no confiable.
+#### Datos, operaciones sensibles y dependencias
+- Usa el principio de mínimo privilegio para cuentas, servicios y accesos; no agregues permisos «temporales» amplios para que algo funcione.
+- Nunca incluyas credenciales, claves API, certificados, tokens, datos personales o archivos .env en código, commits, resultados o logs. Reutiliza la configuración segura ya establecida.
+- No silencies excepciones ni ocultes errores: registra información diagnóstica necesaria sin datos sensibles y devuelve errores controlados al cliente.
+- Protege consistencia y concurrencia en pagos, ventas, inventario, cajas, folios y DTE: evalúa transacciones, bloqueos, restricciones de base de datos e idempotencia cuando haya riesgo de duplicados o condiciones de carrera.
+- Mantén dependencias actualizadas solo dentro del alcance autorizado; antes de agregar una librería verifica si es necesaria, compatible y mantenida. No ignores avisos de vulnerabilidad de herramientas disponibles.
+- Evita exponer endpoints, información sensible o permisos adicionales por comodidad de desarrollo; no actives modo debug en producción.
+### Laravel Boost y documentación
+- Sigue las directrices de Laravel Boost existentes en este repositorio, incluidas sus skills cuando sean pertinentes.
+- Si el MCP laravel-boost está disponible, úsalo para verificar versiones, esquema, rutas, logs y consultar documentación de Laravel/Inertia. Comprueba su disponibilidad: estar instalado en Composer no garantiza que esté conectado.
+- Prefiere documentación de la versión detectada en lugar de patrones de otras versiones.
+- Las consultas a bases de datos por MCP deben ser de solo lectura, salvo autorización explícita para modificar datos.
+### Reglas de negocio esenciales
+#### Multiempresa y sucursales
+- Respeta el aislamiento de datos por negocio (tenant) y las restricciones por sucursal cuando correspondan.
+- Aplica los filtros y autorizaciones desde el servidor; nunca confíes solo en identificadores enviados por el frontend.
+- Al consultar, modificar o eliminar registros, verifica pertenencia al negocio y, cuando proceda, a la sucursal autorizada.
+- No alteres relaciones, scopes, middleware o políticas existentes sin comprender su función.
+#### Ventas, inventario y dinero
+- No cambies las reglas de stock, estados de pedido, caja o turno sin revisar su implementación y efectos secundarios.
+- Agrupa operaciones que deban ser atómicas en transacciones de base de datos, siguiendo el patrón existente.
+- Los precios de MiVenta se han manejado con IVA incluido (Chile, tasa general 19 %); revisa la lógica vigente antes de calcular o modificar montos. No apliques IVA dos veces.
+- Evita cálculos monetarios con float cuando puedan producir errores; usa la representación y reglas de redondeo ya establecidas en el proyecto.
+- Mantén coherentes subtotales, descuentos, impuestos, totales, stock y comprobantes.
+#### Seguridad y DTE
+- Conserva el mecanismo de autenticación, sesiones, cookies, CSRF, roles y permisos existente; no lo sustituyas sin solicitarlo.
+- Nunca expongas secretos, tokens, certificados digitales, CAF, claves privadas ni datos sensibles en respuestas, logs o commits.
+- En integración con el SII o servicios de DTE, preserva folios, idempotencia, firmas y contratos API; no emitas documentos reales para realizar pruebas.
+#### Backend y frontend
+- En Laravel, usa los mecanismos presentes en el proyecto para validación, autorización, acceso a datos, servicios y manejo de errores.
+- Si el frontend usa Inertia + React + TypeScript, continúa con ese enfoque. No introduzcas una SPA separada, API nueva, Livewire o Vue sin petición expresa.
+- Respeta los componentes visuales y convenciones existentes; evita rediseñar pantallas no relacionadas.
+- Mantén mensajes de validación claros y estados de carga/error coherentes con la aplicación.
+- No crees abstracciones o capas adicionales para una necesidad que puede resolverse siguiendo un patrón ya usado.
+
+## Responsive y dispositivos móviles
+
+- Toda la interfaz debe adaptarse a escritorio, tablets y smartphones (Android, iPhone y iPad con iOS).
+- Usa los breakpoints de Tailwind (sm, md, lg, xl, 2xl) y el grid responsive de React Bootstrap.
+- No asumas solo escritorio; diseña y verifica en pantallas pequeñas y táctiles.
+- Al terminar cada desarrollo que agregue o cambie interfaz, y antes del commit, revisa las pantallas afectadas en el navegador en escritorio, tablet y smartphone, con tamaños que representen Android, iPhone, iPad y otras tablets, y con los diálogos y paneles laterales abiertos. Comprueba que no haya scroll horizontal, que el texto sea legible, que los elementos táctiles sean usables y que nada quede cortado.
+- La emulación de tamaños del navegador no sustituye las pruebas en dispositivos reales: indícalo e informa qué se revisó y qué no se pudo revisar.
+
+## Front + API
+
+- El front usa React + TypeScript + React Bootstrap + Vite; la API usa Laravel con Sanctum (`php artisan install:api`).
+- Rutas de API en `routes/api.php`; autenticación por token Sanctum, no sesiones de web para la API.
+- Validación y autorización en servidor; no confiar en tokens ni datos del cliente sin verificar.
+
+## Planificación y aprobación
+
+- Antes de cualquier tarea mediana o grande, presentar un plan breve (máximo 4 pasos) y esperar la aprobación explícita del usuario.
+- Ejecutar de forma incremental, un objetivo por vez, sin refactorizaciones ni cambios de stack no solicitados.
+## Validación de cambios
+- Identifica primero los scripts y herramientas presentes en composer.json y package.json.
+- Ejecuta pruebas enfocadas en los archivos o comportamientos modificados; amplía pruebas cuando el riesgo lo justifique.
+- Usa php artisan test si la suite Laravel está configurada, y los scripts de lint/build/typecheck que realmente existan.
+- Si Pint está instalado, limita el formateo a archivos modificados; evita cambios de formato en masa.
+- Para cambios de permisos, multiempresa, ventas o impuestos, considera pruebas de casos incorrectos y límites además del caso exitoso.
+- Si no puedes ejecutar una verificación, indica por qué y cuál quedó pendiente.
+### Revisión mínima antes de dar una tarea por terminada
+1. Legibilidad: ¿el código tiene nombres claros, responsabilidades acotadas y sigue el estilo existente? ¿Un colega puede entenderlo sin explicación adicional?
+2. Entradas y permisos: ¿hay validación en servidor, autorización por operación y aislamiento entre negocios/sucursales? ¿Se impide modificar campos protegidos?
+3. Riesgos habituales: ¿se evita SQL injection, XSS, CSRF, IDOR, filtración de secretos, rutas inseguras y errores que revelen información interna, según aplique?
+4. Integridad: ¿montos, estados, stock y efectos externos resisten fallos y acciones repetidas o concurrentes cuando corresponde?
+5. Pruebas: crea o ajusta tests del comportamiento solicitado y de casos inválidos, no autorizados y entre tenants cuando aplique. Ejecuta los comandos disponibles e informa el resultado real.
+6. Alcance: revisa el diff; no dejes cambios de formato, logs de depuración, secretos, dependencias o código no solicitado.
+Si detectas una vulnerabilidad relacionada directamente con el cambio, corrígela dentro del alcance y pruébala. Si descubres un problema ajeno al alcance, repórtalo claramente con su ubicación y riesgo; no emprendas una reescritura no solicitada. Si no puedes verificar un control, indícalo en vez de afirmar que el resultado es completamente seguro.
+## Formato de respuesta
+Responde en español, de manera concreta:
+1. Qué cambié: archivos y comportamiento principal.
+2. Cómo lo verifiqué: comandos y resultados reales, o pendientes; incluye tests de seguridad pertinentes.
+3. Riesgos o decisiones pendientes: problemas de seguridad detectados, límites de la verificación y decisiones por resolver, solo si son relevantes.
+No añadas propuestas de reescritura arquitectónica ni funciones nuevas que no se hayan solicitado.
+

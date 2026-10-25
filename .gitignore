@@ -25,3 +25,32 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Contenido sensible: nunca debe subirse al repositorio.
+# Variables de entorno (solo se versiona .env.example)
+.env.*
+!.env.example
+
+# Claves, certificados digitales y folios tributarios (DTE / SII)
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.crt
+*.cer
+*.caf
+/certificados/
+/folios/
+
+# Bases de datos locales y volcados
+*.sqlite
+*.sqlite3
+*.sql
+*.dump
+*.bak
+
+# Configuración local de herramientas (puede contener rutas o tokens personales)
+/.claude/settings.local.json
+.mcp.local.json
+/opencode.local.json

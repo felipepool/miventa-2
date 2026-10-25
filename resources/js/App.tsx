@@ -35,6 +35,10 @@ import EditarGrupoModificador from '@/pages/Modificadores/Editar';
 import ProductosIndex from '@/pages/Productos/Index';
 import NuevoProducto from '@/pages/Productos/Nuevo';
 import EditarProducto from '@/pages/Productos/Editar';
+import VentasLayout from '@/layouts/VentasLayout';
+import CajaIndex from '@/pages/Caja/Index';
+import TurnosIndex from '@/pages/Turnos/Index';
+import TurnoDetalle from '@/pages/Turnos/Detalle';
 import InventarioIndex from '@/pages/Inventario/Index';
 import MovimientoFormulario from '@/pages/Inventario/Movimiento';
 import HistorialMovimientos from '@/pages/Inventario/Historial';
@@ -133,6 +137,13 @@ export default function App() {
                     <Route path="seleccionar-sucursal" element={<SeleccionarSucursal />} />
                 </Route>
                 <Route element={<RequiereSucursal />}>
+                    <Route element={<RequierePermiso permiso="operar_caja" />}>
+                        <Route element={<VentasLayout />}>
+                            <Route path="caja" element={<CajaIndex />} />
+                            <Route path="turnos" element={<TurnosIndex />} />
+                            <Route path="turnos/:turnoId" element={<TurnoDetalle />} />
+                        </Route>
+                    </Route>
                     <Route element={<AppLayout />}>
                         <Route index element={<Navigate to="/dashboard" replace />} />
                         <Route path="dashboard" element={<Dashboard />} />

@@ -1,0 +1,18 @@
+# 13-turnos-de-caja
+
+1. **Base de datos y reglas.** Tabla `turnos_caja` (negocio, sucursal, caja, usuario que abrió, número correlativo por caja, monto inicial, notas de apertura y cierre, fechas de apertura y cierre, quién cerró, monto esperado, contado, diferencia y conteo por billetes y monedas) y tabla `movimientos_caja` (turno, usuario, tipo `ingreso` o `retiro`, monto y motivo). Una caja tiene a lo más un turno abierto y una persona solo puede tener uno abierto a la vez. Solo se abre en una caja activa de la sucursal actual y solo quien abrió el turno registra movimientos en él. El esperado es el monto inicial más los ingresos, menos los retiros; cuando existan las ventas se sumarán las ventas en efectivo. Un retiro no puede superar el efectivo que hay en la caja. El cierre congela esperado, contado y diferencia y no se deshace. El contado se ingresa por billetes y monedas (20.000, 10.000, 5.000, 2.000, 1.000, 500, 100, 50 y 10) o como un total. Un turno cerrado no se corrige: un error se compensa con un movimiento del turno siguiente.
+
+2. **API.** Con sucursal seleccionada y el permiso `operar_caja`: `GET /api/v1/caja` (mi turno abierto y las cajas disponibles), `POST /api/v1/caja/abrir`, `POST /api/v1/caja/movimientos` y `POST /api/v1/caja/cerrar`. Historial: `GET /api/v1/turnos` con filtros por caja, usuario, estado y fechas, y `GET /api/v1/turnos/{turno}` con sus movimientos; el cajero ve solo sus turnos y quien tiene `gestionar_cajas` ve todos los de la sucursal y puede cerrar el de otra persona con `POST /api/v1/turnos/{turno}/cerrar`. Con la preferencia de cierre ciego activa, el cajero no recibe el esperado ni la diferencia; los usuarios con `gestionar_cajas` sí. El negocio en solo lectura bloquea abrir, mover y cerrar.
+
+3. **Layout de punto de venta y pantallas.** Las pantallas de caja usan un layout propio de punto de venta, como en MiVenta original: una barra delgada de íconos a la izquierda en escritorio y una barra inferior en celulares y tablets con las pantallas **Mi caja** y **Turnos**, y el menú principal oculto que se despliega sobre la pantalla con el botón ☰, para dejar todo el ancho al trabajo de caja. En el menú principal se agrega el acceso **Punto de venta**, que se abre en una pestaña nueva, visible con `operar_caja`; por ahora lleva a Mi caja y, cuando exista la pantalla de ventas, abrirá esa. Mi caja permite abrir el turno (caja, monto inicial y nota), ver el resumen y los movimientos, registrar ingresos y retiros y cerrar con el conteo. Turnos muestra el historial y el detalle con el comprobante del cierre. Las pantallas siguen el flujo de Usuarios, con carga, error y reintento, y no duplican envíos.
+
+4. **Verificar y entregar.** Pruebas en MySQL (`miventa_test`) de los casos válidos, inválidos, no autorizados, entre negocios y concurrentes (dos aperturas simultáneas de la misma caja); revisión de las pantallas en tu Chrome en escritorio, tablet y celular; documentación del plan y sus casos de uso y commit. Quedan fuera: registrar ventas y cobros, impresión de comprobantes, arqueos parciales y reportes de caja.
+
+## Verificación
+
+- Una caja no admite dos turnos abiertos ni una persona dos turnos a la vez, incluso con solicitudes simultáneas.
+- Solo quien abrió el turno registra movimientos; un retiro mayor al efectivo disponible se rechaza.
+- El cierre congela el esperado, el contado y la diferencia, y no puede repetirse.
+- Con cierre ciego, el cajero no recibe el esperado ni la diferencia; con `gestionar_cajas` sí.
+- El cajero ve solo sus turnos; un turno de otra sucursal u otro negocio no es visible.
+- El acceso Punto de venta se abre en una pestaña nueva y las pantallas de caja usan el layout de punto de venta.

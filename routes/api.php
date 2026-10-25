@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\GrupoModificadorController;
 use App\Http\Controllers\Api\V1\InventarioController;
 use App\Http\Controllers\Api\V1\MarcaController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\MiCajaController;
 use App\Http\Controllers\Api\V1\MiPlanController;
 use App\Http\Controllers\Api\V1\ModulosNegocioController;
 use App\Http\Controllers\Api\V1\NegocioController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\Api\V1\ProductoController;
 use App\Http\Controllers\Api\V1\RolController;
 use App\Http\Controllers\Api\V1\SucursalActualController;
 use App\Http\Controllers\Api\V1\SucursalController;
+use App\Http\Controllers\Api\V1\TurnoCajaController;
 use App\Http\Controllers\Api\V1\UsuarioController;
 use App\Http\Middleware\RequerirNegocioOperativo;
 use App\Http\Middleware\RequerirSucursalActual;
@@ -42,6 +44,16 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api'
         Route::get('plan', [MiPlanController::class, 'show'])->name('plan.show');
         Route::get('plan/cotizacion', [MiPlanController::class, 'cotizacion'])->name('plan.cotizacion');
         Route::put('plan', [MiPlanController::class, 'update'])->name('plan.update');
+    });
+
+    Route::middleware([RequerirSucursalActual::class, 'can:operar_caja'])->group(function () {
+        Route::get('caja', [MiCajaController::class, 'show'])->name('caja.show');
+        Route::post('caja/abrir', [MiCajaController::class, 'abrir'])->name('caja.abrir');
+        Route::post('caja/movimientos', [MiCajaController::class, 'registrarMovimiento'])->name('caja.movimientos');
+        Route::post('caja/cerrar', [MiCajaController::class, 'cerrar'])->name('caja.cerrar');
+        Route::get('turnos', [TurnoCajaController::class, 'index'])->name('turnos.index');
+        Route::get('turnos/{turnoCaja}', [TurnoCajaController::class, 'show'])->name('turnos.show');
+        Route::post('turnos/{turnoCaja}/cerrar', [TurnoCajaController::class, 'cerrar'])->middleware('can:gestionar_cajas')->name('turnos.cerrar');
     });
 
     Route::middleware([RequerirSucursalActual::class, 'can:gestionar_cajas'])->group(function () {

@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Alert } from 'react-bootstrap';
-import { useAuth } from '@/lib/auth';
+import { Outlet, useLocation } from 'react-router-dom';
+import AvisoSuscripcion from '@/components/layout/AvisoSuscripcion';
 import BarraSuperior from '@/components/layout/BarraSuperior';
 import MenuLateral from '@/components/layout/MenuLateral';
 import { useMenuLateral } from '@/components/layout/useMenuLateral';
@@ -12,14 +11,6 @@ import { useMenuLateral } from '@/components/layout/useMenuLateral';
  */
 export default function AppLayout() {
     const menu = useMenuLateral();
-    const { sesion, refresh } = useAuth();
-    const estado = sesion?.contexto.suscripcion;
-    useEffect(() => {
-        if (!estado?.en_prueba || !estado.prueba_hasta) { return; }
-        const retraso = Math.min(2147483647, Math.max(1000, new Date(estado.prueba_hasta).getTime() - Date.now() + 100));
-        const timer = window.setTimeout(() => { void refresh().catch(() => {}); }, retraso);
-        return () => window.clearTimeout(timer);
-    }, [estado?.en_prueba, estado?.prueba_hasta, refresh]);
     const { pathname } = useLocation();
     const { cerrar } = menu;
 
@@ -37,11 +28,7 @@ export default function AppLayout() {
                 <BarraSuperior onAbrirMenu={menu.alternar} />
 
                 <main className="app-content">
-                    {estado && (estado.en_prueba || estado.solo_lectura) && <Alert variant={estado.solo_lectura ? 'warning' : 'info'}>
-                        {estado.solo_lectura ? 'Tu prueba terminó. Puedes consultar tus datos, pero no vender ni modificar información operativa.'
-                            : `Prueba gratuita: quedan ${estado.dias_restantes} días. Los adicionales están habilitados durante la prueba.`}
-                        {sesion?.permisos.includes('gestionar_negocio') && <> <Link to="/plan">{estado.contratado ? 'Ver contratación' : 'Elegir plan y adicionales'}</Link>.</>}
-                    </Alert>}
+                    <AvisoSuscripcion />
                     <Outlet />
                 </main>
             </div>

@@ -7,6 +7,8 @@ import { useSesion } from '@/lib/auth';
 interface MenuLateralProps {
     abierto: boolean;
     onCerrar: () => void;
+    /** Siempre oculto y desplegable sobre el contenido (layout del punto de venta); si no, fijo desde pantallas grandes. */
+    flotante?: boolean;
 }
 
 interface ItemMenu {
@@ -18,6 +20,8 @@ interface ItemMenu {
     adicional?: string;
     /** Módulo del plan que el negocio debe tener activo para ver el ítem. */
     modulo?: string;
+    /** Abre el acceso en una pestaña nueva. */
+    nuevaPestana?: boolean;
 }
 
 type GrupoMenu = 'catalogo' | 'administracion';
@@ -25,6 +29,7 @@ type GrupoMenu = 'catalogo' | 'administracion';
 /** Ítems del menú; crece con cada módulo que se incorpora. */
 const ITEMS: ItemMenu[] = [
     { href: '/dashboard', label: 'Inicio', icon: 'speedometer2' },
+    { href: '/caja', label: 'Punto de venta', icon: 'upc-scan', permiso: 'operar_caja', nuevaPestana: true },
     { href: '/inventario', label: 'Inventario', icon: 'boxes', permiso: 'gestionar_inventario', adicional: 'inventario' },
 ];
 
@@ -47,12 +52,13 @@ const ADMINISTRACION: ItemMenu[] = [
  * Menú principal: marca y navegación. Fijo desde pantallas grandes y
  * desplegable (offcanvas) en celular y tablet.
  */
-export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
+export default function MenuLateral({ abierto, onCerrar, flotante = false }: MenuLateralProps) {
     const { contexto, permisos } = useSesion();
     const { negocio } = contexto;
     const adicionalesActivos = contexto.suscripcion?.adicionales_activos ?? [];
     const visible = (item: ItemMenu) => (!item.permiso || permisos.includes(item.permiso)) && (!item.adicional || adicionalesActivos.includes(item.adicional)) && (!item.modulo || contexto.modulos.includes(item.modulo));
     const { pathname } = useLocation();
+    const modificador = flotante ? 'app-sidebar--flotante' : '';
     const catalogo = CATALOGO.filter(visible);
     const administracion = ADMINISTRACION.filter((item) => !item.permiso || permisos.includes(item.permiso));
     const catalogoActivo = catalogo.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
@@ -72,9 +78,9 @@ export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
 
     return (
         <>
-            <div className={`app-sidebar-backdrop ${abierto ? 'show' : ''}`} onClick={onCerrar} aria-hidden="true" />
+            <div className={`app-sidebar-backdrop ${modificador} ${abierto ? 'show' : ''}`} onClick={onCerrar} aria-hidden="true" />
 
-            <aside className={`app-sidebar ${abierto ? 'show' : ''}`}>
+            <aside className={`app-sidebar ${modificador} ${abierto ? 'show' : ''}`} inert={flotante && !abierto ? true : undefined}>
                 <div className="d-flex align-items-start justify-content-between">
                     <Link to="/dashboard" className="app-sidebar__brand" onClick={onCerrar}>
                         <span className="d-flex flex-column lh-sm">
@@ -82,12 +88,13 @@ export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
                             {negocio && <small className="app-sidebar__business">{negocio.nombre}</small>}
                         </span>
                     </Link>
-                    <button type="button" className="btn-close btn-close-white mt-2 me-2 d-lg-none" onClick={onCerrar} aria-label="Cerrar menú" />
+                    <button type="button" className={`btn-close btn-close-white mt-2 me-2 ${flotante ? '' : 'd-lg-none'}`} onClick={onCerrar} aria-label="Cerrar menú" />
                 </div>
 
                 <nav className="app-sidebar__nav" aria-label="Menú principal">
-                    {ITEMS.filter(visible).map((item) => (
-                        <NavLink key={item.href} to={item.href} className="app-sidebar__link" onClick={onCerrar}>
+                    {ITEMS.filter(visible).filter((item) => !(flotante && item.nuevaPestana)).map((item) => (
+                        <NavLink key={item.href} to={item.href} className="app-sidebar__link" onClick={onCerrar}
+                            target={item.nuevaPestana ? '_blank' : undefined} rel={item.nuevaPestana ? 'noopener noreferrer' : undefined}>
                             <Icon name={item.icon} />
                             {item.label}
                         </NavLink>
