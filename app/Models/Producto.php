@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Table('productos')]
 #[Fillable(['sku', 'codigo_barras', 'nombre', 'descripcion', 'se_vende', 'es_insumo', 'unidad_venta', 'precio', 'costo', 'controla_stock', 'activo'])]
@@ -29,6 +30,12 @@ class Producto extends Model
     public function marca(): BelongsTo
     {
         return $this->belongsTo(Marca::class);
+    }
+
+    /** Existencias en la sucursal actual (el modelo Stock ya filtra por sucursal). @return HasOne<Stock, $this> */
+    public function stock(): HasOne
+    {
+        return $this->hasOne(Stock::class);
     }
 
     protected function casts(): array

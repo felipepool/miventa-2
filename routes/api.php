@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\CambiarEstadoUsuarioController;
 use App\Http\Controllers\Api\V1\CategoriaController;
 use App\Http\Controllers\Api\V1\CotizacionCajaController;
 use App\Http\Controllers\Api\V1\CotizacionSucursalController;
+use App\Http\Controllers\Api\V1\InventarioController;
 use App\Http\Controllers\Api\V1\MarcaController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\MiPlanController;
@@ -61,6 +62,13 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api'
         Route::get('productos/opciones', [ProductoController::class, 'opciones'])->name('productos.opciones');
         Route::apiResource('productos', ProductoController::class)->only(['index', 'show', 'store', 'update']);
         Route::patch('productos/{producto}/estado', CambiarEstadoProductoController::class)->name('productos.estado');
+    });
+
+    Route::middleware([RequerirSucursalActual::class, 'can:gestionar_inventario'])->group(function () {
+        Route::get('inventario', [InventarioController::class, 'index'])->name('inventario.index');
+        Route::get('inventario/{producto}/movimientos', [InventarioController::class, 'movimientos'])->name('inventario.movimientos');
+        Route::post('inventario/{producto}/movimientos', [InventarioController::class, 'registrarMovimiento'])->name('inventario.movimientos.store');
+        Route::put('inventario/{producto}/minimo', [InventarioController::class, 'fijarMinimo'])->name('inventario.minimo');
     });
 
     Route::middleware([RequerirSucursalActual::class, 'can:gestionar_sucursales'])->group(function () {

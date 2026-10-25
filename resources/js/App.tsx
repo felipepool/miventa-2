@@ -31,6 +31,10 @@ import EditarCategoria from '@/pages/Categorias/Editar';
 import ProductosIndex from '@/pages/Productos/Index';
 import NuevoProducto from '@/pages/Productos/Nuevo';
 import EditarProducto from '@/pages/Productos/Editar';
+import InventarioIndex from '@/pages/Inventario/Index';
+import MovimientoFormulario from '@/pages/Inventario/Movimiento';
+import HistorialMovimientos from '@/pages/Inventario/Historial';
+import MinimoFormulario from '@/pages/Inventario/Minimo';
 
 function Cargando() {
     const { errorSesion, refresh } = useAuth();
@@ -142,6 +146,13 @@ export default function App() {
                             <Route path="productos" element={<ProductosIndex />}>
                                 <Route path="nuevo" element={<NuevoProducto />} />
                                 <Route path=":productoId/editar" element={<EditarProducto />} />
+                            </Route>
+                        </Route>
+                        <Route element={<RequierePermiso permiso="gestionar_inventario" />}>
+                            <Route path="inventario" element={<InventarioIndex />}>
+                                <Route path=":productoId/movimiento" element={<MovimientoFormulario />} />
+                                <Route path=":productoId/historial" element={<HistorialMovimientos />} />
+                                <Route path=":productoId/minimo" element={<MinimoFormulario />} />
                             </Route>
                         </Route>
                         <Route element={<RequierePermiso permiso="gestionar_sucursales" />}>

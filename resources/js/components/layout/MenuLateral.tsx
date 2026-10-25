@@ -19,6 +19,7 @@ interface ItemMenu {
 /** Ítems del menú; crece con cada módulo que se incorpora. */
 const ITEMS: ItemMenu[] = [
     { href: '/dashboard', label: 'Inicio', icon: 'speedometer2' },
+    { href: '/inventario', label: 'Inventario', icon: 'boxes', permiso: 'gestionar_inventario' },
 ];
 
 const CATALOGO: ItemMenu[] = [
