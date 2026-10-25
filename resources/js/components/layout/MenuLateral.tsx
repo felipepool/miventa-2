@@ -22,6 +22,9 @@ const ITEMS: ItemMenu[] = [
 ];
 
 const ADMINISTRACION: ItemMenu[] = [
+    { href: '/productos', label: 'Productos', icon: 'box-seam', permiso: 'gestionar_catalogo' },
+    { href: '/categorias', label: 'Categorías', icon: 'collection', permiso: 'gestionar_catalogo' },
+    { href: '/marcas', label: 'Marcas', icon: 'tags', permiso: 'gestionar_catalogo' },
     { href: '/negocio', label: 'Mi negocio', icon: 'building-gear', permiso: 'gestionar_negocio' },
     { href: '/plan', label: 'Mi plan', icon: 'stars', permiso: 'gestionar_negocio' },
     { href: '/usuarios', label: 'Usuarios', icon: 'person-badge', permiso: 'gestionar_usuarios' },

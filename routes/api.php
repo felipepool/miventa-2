@@ -2,15 +2,21 @@
 
 use App\Http\Controllers\Api\V1\CajaController;
 use App\Http\Controllers\Api\V1\CambiarEstadoCajaController;
+use App\Http\Controllers\Api\V1\CambiarEstadoCategoriaController;
+use App\Http\Controllers\Api\V1\CambiarEstadoMarcaController;
+use App\Http\Controllers\Api\V1\CambiarEstadoProductoController;
 use App\Http\Controllers\Api\V1\CambiarEstadoSucursalController;
 use App\Http\Controllers\Api\V1\CambiarEstadoUsuarioController;
+use App\Http\Controllers\Api\V1\CategoriaController;
 use App\Http\Controllers\Api\V1\CotizacionCajaController;
 use App\Http\Controllers\Api\V1\CotizacionSucursalController;
+use App\Http\Controllers\Api\V1\MarcaController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\MiPlanController;
 use App\Http\Controllers\Api\V1\ModulosNegocioController;
 use App\Http\Controllers\Api\V1\NegocioController;
 use App\Http\Controllers\Api\V1\PreferenciasNegocioController;
+use App\Http\Controllers\Api\V1\ProductoController;
 use App\Http\Controllers\Api\V1\RolController;
 use App\Http\Controllers\Api\V1\SucursalActualController;
 use App\Http\Controllers\Api\V1\SucursalController;
@@ -45,6 +51,15 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api'
         Route::get('roles', RolController::class)->name('roles.index');
         Route::apiResource('usuarios', UsuarioController::class)->only(['index', 'show', 'store', 'update']);
         Route::patch('usuarios/{usuario}/estado', CambiarEstadoUsuarioController::class)->name('usuarios.estado');
+    });
+
+    Route::middleware([RequerirSucursalActual::class, 'can:gestionar_catalogo'])->group(function () {
+        Route::apiResource('marcas', MarcaController::class)->only(['index', 'show', 'store', 'update']);
+        Route::patch('marcas/{marca}/estado', CambiarEstadoMarcaController::class)->name('marcas.estado');
+        Route::apiResource('categorias', CategoriaController::class)->only(['index', 'show', 'store', 'update']);
+        Route::patch('categorias/{categoria}/estado', CambiarEstadoCategoriaController::class)->name('categorias.estado');
+        Route::apiResource('productos', ProductoController::class)->only(['index', 'show', 'store', 'update']);
+        Route::patch('productos/{producto}/estado', CambiarEstadoProductoController::class)->name('productos.estado');
     });
 
     Route::middleware([RequerirSucursalActual::class, 'can:gestionar_sucursales'])->group(function () {

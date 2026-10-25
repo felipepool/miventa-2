@@ -22,6 +22,15 @@ import CajaFormulario from '@/pages/Cajas/Formulario';
 import EditarCaja from '@/pages/Cajas/Editar';
 import NegocioIndex from '@/pages/Negocio/Index';
 import PlanIndex from '@/pages/Plan/Index';
+import MarcasIndex from '@/pages/Marcas/Index';
+import MarcaFormulario from '@/pages/Marcas/Formulario';
+import EditarMarca from '@/pages/Marcas/Editar';
+import CategoriasIndex from '@/pages/Categorias/Index';
+import CategoriaFormulario from '@/pages/Categorias/Formulario';
+import EditarCategoria from '@/pages/Categorias/Editar';
+import ProductosIndex from '@/pages/Productos/Index';
+import NuevoProducto from '@/pages/Productos/Nuevo';
+import EditarProducto from '@/pages/Productos/Editar';
 
 function Cargando() {
     const { errorSesion, refresh } = useAuth();
@@ -119,6 +128,20 @@ export default function App() {
                             <Route path="usuarios" element={<UsuariosIndex />}>
                                 <Route path="nuevo" element={<NuevoUsuario />} />
                                 <Route path=":usuarioId/editar" element={<EditarUsuario />} />
+                            </Route>
+                        </Route>
+                        <Route element={<RequierePermiso permiso="gestionar_catalogo" />}>
+                            <Route path="marcas" element={<MarcasIndex />}>
+                                <Route path="nueva" element={<MarcaFormulario />} />
+                                <Route path=":marcaId/editar" element={<EditarMarca />} />
+                            </Route>
+                            <Route path="categorias" element={<CategoriasIndex />}>
+                                <Route path="nueva" element={<CategoriaFormulario />} />
+                                <Route path=":categoriaId/editar" element={<EditarCategoria />} />
+                            </Route>
+                            <Route path="productos" element={<ProductosIndex />}>
+                                <Route path="nuevo" element={<NuevoProducto />} />
+                                <Route path=":productoId/editar" element={<EditarProducto />} />
                             </Route>
                         </Route>
                         <Route element={<RequierePermiso permiso="gestionar_sucursales" />}>
