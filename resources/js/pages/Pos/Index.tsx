@@ -7,6 +7,7 @@ import CarritoPanel from '@/components/pos/CarritoPanel';
 import CobroDialog from '@/components/pos/CobroDialog';
 import DescuentoDialog from '@/components/pos/DescuentoDialog';
 import ModificadoresDialog from '@/components/pos/ModificadoresDialog';
+import ProductoTarjeta from '@/components/pos/ProductoTarjeta';
 import { FormDialog, Icon } from '@/components/ui';
 import { formatearMonto } from '@/lib/caja';
 import { mensajeDeError } from '@/lib/http';
@@ -42,6 +43,7 @@ export default function PosIndex() {
     const [dialogo, setDialogo] = useState<Dialogo | null>(null);
     const [vendida, setVendida] = useState<Venta | null>(null);
     const resumen = useMemo(() => resumirCarrito(lineas, descuentoVenta), [lineas, descuentoVenta]);
+    const enCarrito = useMemo(() => lineas.reduce((cantidades, linea) => cantidades.set(linea.producto.id, Number(sumarCantidades(String(cantidades.get(linea.producto.id) ?? 0), linea.cantidad))), new Map<string, number>()), [lineas]);
     const hayDescuentos = descuentoVenta !== null || lineas.some((linea) => linea.descuento !== null);
 
     const productos = useMemo(() => {
@@ -127,17 +129,11 @@ export default function PosIndex() {
                 </div>}
                 {productos.length === 0
                     ? <p className="text-body-secondary" role="status">{catalogo.productos.length === 0 ? 'No hay productos a la venta. Crea productos con precio en Catálogo.' : 'No encontramos productos con esa búsqueda.'}</p>
-                    : <div className="row g-2">{productos.map((producto) => <div key={producto.id} className="col-6 col-md-4 col-xl-3">
-                        <button type="button" className="btn btn-light border w-100 h-100 text-start p-3 d-flex flex-column justify-content-between gap-2" onClick={() => elegirProducto(producto)}>
-                            <span className="fw-semibold text-break">{producto.nombre}</span>
-                            <span className="d-flex justify-content-between align-items-end"><span className="text-primary fw-semibold">{formatearMonto(producto.precio)}{producto.unidad_venta !== 'unidad' && <small className="text-body-secondary"> /{producto.unidad_venta}</small>}</span>
-                                {producto.grupos_modificadores.length > 0 && <Icon name="sliders" className="text-body-secondary" />}</span>
-                        </button>
-                    </div>)}</div>}
+                    : <div className="pos-grilla">{productos.map((producto) => <ProductoTarjeta key={producto.id} producto={producto} enCarrito={enCarrito.get(producto.id) ?? 0} onElegir={() => elegirProducto(producto)} />)}</div>}
             </div>
             <div className="col-lg-4 d-none d-lg-block"><div className="position-sticky" style={{ top: '4.5rem' }}>{panel}</div></div>
         </div>
-        {lineas.length > 0 && <div className="d-lg-none position-sticky" style={{ bottom: '4.75rem', zIndex: 5 }}>
+        {lineas.length > 0 && <div className="d-lg-none position-sticky mt-3"style={{ bottom: '4.75rem', zIndex: 5 }}>
             <Button size="lg" className="w-100 shadow d-flex justify-content-between align-items-center" onClick={() => setDialogo({ tipo: 'carrito' })}>
                 <span><Icon name="cart" className="me-2" />Ver carrito ({unidadesEnCarrito})</span><strong>{formatearMonto(resumen.base)}</strong>
             </Button>

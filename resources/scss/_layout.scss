@@ -605,72 +605,160 @@ $ventas-rail-width: 4.25rem;
 
 .pos-grilla {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
     gap: 0.75rem;
     align-content: start;
 }
+
+@include media-breakpoint-down(sm) {
+    .pos-grilla {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+}
+
+// Tonos de la inicial: uno por categoría, tomados de la paleta de marca.
+$pos-producto-tonos: ($primary, $info, $warning, $success, $secondary, $dark);
 
 .pos-producto {
     position: relative;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
-    padding: 0.75rem;
+    gap: 0.625rem;
+    min-width: 0;
+    min-height: 9.5rem;
+    padding: 0.875rem;
     border: 1px solid $border-color;
-    border-radius: $border-radius;
+    border-radius: $border-radius-lg;
     background: #fff;
+    box-shadow: $box-shadow-sm;
+    color: $body-color;
     text-align: start;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
 
-    &:hover,
-    &:focus-visible {
-        border-color: $primary;
-        box-shadow: 0 0 0 0.2rem rgba($primary, 0.15);
-    }
-
-    &__imagen {
-        display: grid;
-        place-items: center;
-        width: 100%;
-        height: 4.5rem;
-        overflow: hidden;
-        border-radius: $border-radius-sm;
-        background: $light;
-        color: $text-muted;
-        font-size: 1.5rem;
-
-        img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+    @media (hover: hover) {
+        &:hover {
+            border-color: rgba($primary, 0.45);
+            box-shadow: $box-shadow;
+            transform: translateY(-1px);
         }
     }
 
-    &__nombre {
+    &:focus-visible {
+        outline: 0;
+        border-color: $primary;
+        box-shadow: 0 0 0 0.2rem rgba($primary, 0.25);
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+
+    &.is-en-carrito {
+        border-color: $primary;
+        background: rgba($primary, 0.04);
+    }
+
+    &__inicial {
+        display: grid;
+        flex-shrink: 0;
+        place-items: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: $border-radius;
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+
+        @each $tono in $pos-producto-tonos {
+            $indice: index($pos-producto-tonos, $tono) - 1;
+
+            &--#{$indice} {
+                background: rgba($tono, 0.12);
+                color: shade-color($tono, 25%);
+            }
+        }
+    }
+
+    &__cantidad {
+        position: absolute;
+        top: 0.625rem;
+        right: 0.625rem;
+        min-width: 1.75rem;
+        height: 1.75rem;
+        padding: 0 0.5rem;
+        border-radius: 50rem;
+        background: $primary;
+        color: #fff;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        line-height: 1.75rem;
+        text-align: center;
+    }
+
+    &__cuerpo {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 0.125rem;
+        min-width: 0;
+    }
+
+    &__categoria {
+        overflow: hidden;
+        color: $text-muted;
+        font-size: 0.6875rem;
         font-weight: 600;
-        line-height: 1.2;
+        letter-spacing: 0.04em;
+        text-overflow: ellipsis;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    &__nombre {
+        display: -webkit-box;
+        overflow: hidden;
+        font-weight: 600;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+    }
+
+    &__pie {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px dashed $border-color;
     }
 
     &__precio {
         color: $primary;
+        font-size: 1.0625rem;
         font-weight: 700;
-    }
+        white-space: nowrap;
 
-    &__stock {
-        color: $text-muted;
-        font-size: 0.75rem;
-
-        &.is-agotado {
-            color: $danger;
+        small {
+            color: $text-muted;
+            font-size: 0.75rem;
+            font-weight: 500;
         }
     }
 
     &__mods {
-        position: absolute;
-        top: 0.5rem;
-        right: 0.5rem;
-        color: $primary;
+        display: grid;
+        flex-shrink: 0;
+        place-items: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 50%;
+        background: $light;
+        color: $secondary;
+        font-size: 0.875rem;
     }
 }
 
