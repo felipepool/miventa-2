@@ -887,6 +887,149 @@ $pos-producto-tonos: ($primary, $info, $warning, $success, $secondary, $dark);
     }
 }
 
+// Diálogo de cobro
+.cobro {
+    &__total {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.125rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: $border-radius-lg;
+        background: rgba($primary, 0.08);
+        text-align: center;
+    }
+
+    &__etiqueta {
+        color: $text-muted;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    &__monto {
+        color: $primary;
+        font-size: 2.25rem;
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    &__medios {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
+
+        @include media-breakpoint-up(sm) {
+            grid-template-columns: none;
+            grid-auto-columns: minmax(0, 1fr);
+            grid-auto-flow: column;
+        }
+    }
+
+    &__medio {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        min-height: 4.25rem;
+        padding: 0.5rem;
+        border: 1px solid $border-color;
+        border-radius: $border-radius;
+        background: #fff;
+        color: $body-color;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        transition: border-color 0.15s, background-color 0.15s;
+
+        .bi {
+            color: $secondary;
+            font-size: 1.375rem;
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                border-color: rgba($primary, 0.45);
+            }
+        }
+
+        &:focus-visible {
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba($primary, 0.25);
+        }
+
+        &.is-activo {
+            border-color: $primary;
+            background: rgba($primary, 0.08);
+            color: shade-color($primary, 20%);
+
+            .bi {
+                color: $primary;
+            }
+        }
+    }
+
+    &__seccion {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid $border-color;
+    }
+
+    &__rapidos {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+
+        .btn {
+            flex: 1 1 4.5rem;
+            min-height: 2.5rem;
+        }
+    }
+
+    &__vuelto {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        border-radius: $border-radius;
+        background: $light;
+        font-size: 1.125rem;
+
+        strong {
+            font-size: 1.5rem;
+        }
+
+        &.is-positivo {
+            background: rgba($success, 0.12);
+            color: shade-color($success, 30%);
+        }
+    }
+
+    &__aviso {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: $secondary;
+
+        .bi {
+            color: $primary;
+            font-size: 1.5rem;
+        }
+    }
+}
+
+// El botón de cobrar está en el pie del diálogo: más ancho que Volver y en una línea.
+.form-dialog__footer .btn.cobro__confirmar {
+    white-space: nowrap;
+
+    @include media-breakpoint-down(sm) {
+        flex: 2;
+    }
+}
+
 .pos-linea {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto;
@@ -1459,69 +1602,6 @@ $pedido-mesa: #6f42c1;
         .escaner__franja {
             width: 50%;
             height: auto;
-        }
-    }
-}
-
-// Modal de cobro
-.cobro {
-    &__total {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-bottom: 1rem;
-
-        strong {
-            font-size: 2.25rem;
-            line-height: 1.1;
-        }
-    }
-
-    &__medios {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-
-        .btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.75rem 0.5rem;
-            font-weight: 600;
-
-            .bi {
-                font-size: 1.25rem;
-            }
-        }
-    }
-
-    &__efectivo {
-        padding: 1rem;
-        border-radius: $border-radius;
-        background: $light;
-    }
-
-    &__documento {
-        margin-bottom: 1rem;
-        padding: 0.75rem 1rem;
-        border: 1px solid $border-color;
-        border-radius: $border-radius;
-    }
-
-    &__vuelto {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        padding: 0.75rem 1rem;
-        border-radius: $border-radius;
-        background: rgba($success, 0.12);
-        color: shade-color($success, 30%);
-        font-size: 1.125rem;
-
-        strong {
-            font-size: 1.75rem;
         }
     }
 }
