@@ -204,6 +204,12 @@ body {
     .pos {
         height: calc(100dvh - #{$topbar-height} - 3rem);
     }
+
+    @include media-breakpoint-up(lg) {
+        .app-shell--ventas:has(.pos-pantalla) {
+            height: 100dvh;
+        }
+    }
 }
 
 // Con viewport-fit=cover el contenido llega bajo el notch: se respetan los márgenes seguros.

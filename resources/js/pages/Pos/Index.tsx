@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Alert, Badge, Button, Card, Form, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
@@ -82,6 +82,23 @@ export default function PosIndex() {
 
     const reiniciar = () => { setLineas([]); setDescuentoVenta(null); setMotivo(''); setDialogo(null); };
 
+    const puedeCobrar = lineas.length > 0 && resumen.base >= 1 && dialogo === null && vendida === null;
+
+    /** En escritorio, F9 abre el cobro, igual que el botón Cobrar del carrito. */
+    useEffect(() => {
+        if (!puedeCobrar) { return undefined; }
+
+        const cobrarConF9 = (event: globalThis.KeyboardEvent) => {
+            if (event.key !== 'F9' || !window.matchMedia('(min-width: 992px)').matches) { return; }
+            event.preventDefault();
+            setDialogo({ tipo: 'cobro' });
+        };
+
+        window.addEventListener('keydown', cobrarConF9);
+
+        return () => window.removeEventListener('keydown', cobrarConF9);
+    }, [puedeCobrar]);
+
     const construirVenta = (pagos: Record<string, unknown>[], clave: string) => ({
         items: lineas.map((linea) => ({ producto: linea.producto.id, cantidad: linea.cantidad, modificadores: linea.modificadores, descuento: linea.descuento })),
         descuento: descuentoVenta, motivo_descuento: hayDescuentos ? motivo : null, pagos, clave_idempotencia: clave,
@@ -112,28 +129,30 @@ export default function PosIndex() {
     const tope = catalogo.descuento_sin_limite ? null : catalogo.descuento_maximo;
 
     return <>
-        <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-            <h1 className="h4 mb-0">Vender</h1>
-            <Badge bg="light" text="dark" className="fs-6 fw-normal border">{catalogo.turno.caja} · Turno {catalogo.turno.numero}</Badge>
-        </div>
-        <div className="row g-3">
-            <div className="col-lg-8">
-                <div className="input-group mb-3">
-                    <span className="input-group-text" aria-hidden="true"><Icon name="search" /></span>
-                    <Form.Control type="search" size="lg" autoFocus value={buscar} placeholder="Buscar o escanear código de barras" aria-label="Buscar producto por nombre, SKU o código de barras"
-                        onChange={(event) => setBuscar(event.target.value)} onKeyDown={alEscribir} />
-                </div>
-                {catalogo.categorias.length > 0 && <div className="d-flex flex-wrap gap-2 mb-3" role="group" aria-label="Filtrar por categoría">
-                    <Button size="sm" variant={categoria === '' ? 'primary' : 'outline-secondary'} aria-pressed={categoria === ''} onClick={() => setCategoria('')}>Todas</Button>
-                    {catalogo.categorias.map((opcion) => <Button key={opcion.id} size="sm" variant={categoria === opcion.id ? 'primary' : 'outline-secondary'} aria-pressed={categoria === opcion.id} onClick={() => setCategoria(opcion.id)}>{opcion.nombre}</Button>)}
-                </div>}
-                {productos.length === 0
-                    ? <p className="text-body-secondary" role="status">{catalogo.productos.length === 0 ? 'No hay productos a la venta. Crea productos con precio en Catálogo.' : 'No encontramos productos con esa búsqueda.'}</p>
-                    : <div className="pos-grilla">{productos.map((producto) => <ProductoTarjeta key={producto.id} producto={producto} enCarrito={enCarrito.get(producto.id) ?? 0} onElegir={() => elegirProducto(producto)} />)}</div>}
+        <div className="pos-pantalla">
+            <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                <h1 className="h4 mb-0">Vender</h1>
+                <Badge bg="light" text="dark" className="fs-6 fw-normal border">{catalogo.turno.caja} · Turno {catalogo.turno.numero}</Badge>
             </div>
-            <div className="col-lg-4 d-none d-lg-block"><div className="position-sticky" style={{ top: '4.5rem' }}>{panel}</div></div>
+            <div className="row gx-3 pos-pantalla__cuerpo">
+                <div className="col-lg-8 pos-pantalla__catalogo">
+                    <div className="input-group mb-3">
+                        <span className="input-group-text" aria-hidden="true"><Icon name="search" /></span>
+                        <Form.Control type="search" size="lg" autoFocus value={buscar} placeholder="Buscar o escanear código de barras" aria-label="Buscar producto por nombre, SKU o código de barras"
+                            onChange={(event) => setBuscar(event.target.value)} onKeyDown={alEscribir} />
+                    </div>
+                    {catalogo.categorias.length > 0 && <div className="d-flex flex-wrap gap-2 mb-3" role="group" aria-label="Filtrar por categoría">
+                        <Button size="sm" variant={categoria === '' ? 'primary' : 'outline-secondary'} aria-pressed={categoria === ''} onClick={() => setCategoria('')}>Todas</Button>
+                        {catalogo.categorias.map((opcion) => <Button key={opcion.id} size="sm" variant={categoria === opcion.id ? 'primary' : 'outline-secondary'} aria-pressed={categoria === opcion.id} onClick={() => setCategoria(opcion.id)}>{opcion.nombre}</Button>)}
+                    </div>}
+                    {productos.length === 0
+                        ? <p className="text-body-secondary" role="status">{catalogo.productos.length === 0 ? 'No hay productos a la venta. Crea productos con precio en Catálogo.' : 'No encontramos productos con esa búsqueda.'}</p>
+                        : <div className="pos-grilla">{productos.map((producto) => <ProductoTarjeta key={producto.id} producto={producto} enCarrito={enCarrito.get(producto.id) ?? 0} onElegir={() => elegirProducto(producto)} />)}</div>}
+                </div>
+                <div className="col-lg-4 d-none d-lg-block"><div className="pos__carrito">{panel}</div></div>
+            </div>
         </div>
-        {lineas.length > 0 && <div className="d-lg-none position-sticky mt-3"style={{ bottom: '4.75rem', zIndex: 5 }}>
+        {lineas.length > 0 && <div className="d-lg-none position-sticky mt-3" style={{ bottom: '4.75rem', zIndex: 5 }}>
             <Button size="lg" className="w-100 shadow d-flex justify-content-between align-items-center" onClick={() => setDialogo({ tipo: 'carrito' })}>
                 <span><Icon name="cart" className="me-2" />Ver carrito ({unidadesEnCarrito})</span><strong>{formatearMonto(resumen.base)}</strong>
             </Button>

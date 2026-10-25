@@ -782,12 +782,35 @@ $pos-producto-tonos: ($primary, $info, $warning, $success, $secondary, $dark);
 
     &__lineas {
         flex: 1;
+        min-height: 0;
         overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    &__vacio {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+        text-align: center;
     }
 
     &__pie {
+        flex-shrink: 0;
         padding: 1rem;
         border-top: 1px solid $border-color;
+    }
+
+    &__atajo {
+        padding: 0.125rem 0.375rem;
+        border: 1px solid rgba(#fff, 0.4);
+        border-radius: $border-radius-sm;
+        background: rgba(#fff, 0.15);
+        color: inherit;
+        font-size: 0.75rem;
+        vertical-align: middle;
     }
 
     &__detalle {
@@ -806,6 +829,61 @@ $pos-producto-tonos: ($primary, $info, $warning, $success, $secondary, $dark);
         strong {
             font-size: 1.75rem;
         }
+    }
+}
+
+// Escritorio: la pantalla de venta ocupa justo el alto visible. El catálogo se
+// desplaza por dentro y el carrito llena la columna con el botón Cobrar abajo.
+@include media-breakpoint-up(lg) {
+    .app-shell--ventas:has(.pos-pantalla) {
+        height: 100vh;
+
+        .app-main,
+        .app-content {
+            min-height: 0;
+        }
+
+        .app-content {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+
+    .pos-pantalla {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+
+        // La fila de Bootstrap se envuelve (flex-wrap), así que el alto estirado
+        // de sus columnas no es definido: se les da el alto de la fila.
+        &__cuerpo {
+            flex: 1;
+            min-height: 0;
+
+            > * {
+                height: 100%;
+            }
+        }
+
+        &__catalogo {
+            display: flex;
+            flex-direction: column;
+
+            .pos-grilla {
+                flex: 1;
+                min-height: 0;
+                margin: -0.25rem;
+                padding: 0.25rem;
+                overflow-y: auto;
+            }
+        }
+    }
+
+    .pos__carrito {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
     }
 }
 
