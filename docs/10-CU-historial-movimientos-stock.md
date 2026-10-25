@@ -9,7 +9,7 @@ Permitir al negocio revisar qué entradas, salidas y ajustes tuvo un producto en
 - Usuario autenticado con permiso `gestionar_inventario`.
 
 ### Precondiciones
-- Hay una sucursal activa seleccionada.
+- Hay una sucursal activa seleccionada y el adicional Inventario está activo (ver `11-CU-acceso-inventario-contratado`).
 
 ### Flujo principal
 1. El usuario elige «Ver historial» en un producto del inventario.
@@ -62,3 +62,4 @@ Permitir al negocio revisar qué entradas, salidas y ajustes tuvo un producto en
 ### Consideraciones de seguridad
 - El historial se limita al negocio y a la sucursal actuales mediante los filtros del modelo, y el producto de otro negocio responde `404`.
 - Solo se expone el nombre del usuario que registró el movimiento, nunca identificadores internos.
+

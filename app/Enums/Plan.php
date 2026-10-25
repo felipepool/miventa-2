@@ -52,7 +52,7 @@ enum Plan: string
     {
         $comunes = [
             'Punto de venta con lector de códigos y cámara del celular.',
-            'Productos, categorías, marcas y control de stock por sucursal.',
+            'Productos, categorías y marcas.',
             'Caja: apertura, movimientos, cierre y turnos.',
             'Historial de ventas, anulaciones y reportes.',
             'Usuarios con roles y permisos.',

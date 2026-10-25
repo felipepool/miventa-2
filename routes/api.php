@@ -64,7 +64,7 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api'
         Route::patch('productos/{producto}/estado', CambiarEstadoProductoController::class)->name('productos.estado');
     });
 
-    Route::middleware([RequerirSucursalActual::class, 'can:gestionar_inventario'])->group(function () {
+    Route::middleware([RequerirSucursalActual::class, 'can:gestionar_inventario', 'adicional:inventario'])->group(function () {
         Route::get('inventario', [InventarioController::class, 'index'])->name('inventario.index');
         Route::get('inventario/{producto}/movimientos', [InventarioController::class, 'movimientos'])->name('inventario.movimientos');
         Route::post('inventario/{producto}/movimientos', [InventarioController::class, 'registrarMovimiento'])->name('inventario.movimientos.store');

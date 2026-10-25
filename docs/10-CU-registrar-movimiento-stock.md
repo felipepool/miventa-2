@@ -9,7 +9,7 @@ Permitir al negocio registrar entradas, salidas y ajustes de inventario de un pr
 - Usuario autenticado con permiso `gestionar_inventario`.
 
 ### Precondiciones
-- Hay una sucursal activa seleccionada, el negocio permite escritura y el producto controla stock.
+- Hay una sucursal activa seleccionada, el negocio permite escritura, el producto controla stock y el adicional Inventario está activo (ver `11-CU-acceso-inventario-contratado`).
 
 ### Flujo principal
 1. El usuario elige «Movimiento» en un producto del inventario.
@@ -74,3 +74,4 @@ Permitir al negocio registrar entradas, salidas y ajustes de inventario de un pr
 - Bloqueo de la fila de stock y transacción para evitar condiciones de carrera; restricción única por sucursal y producto.
 - Las cantidades se calculan con aritmética decimal exacta, sin `float`.
 - El permiso `gestionar_inventario` se comprueba en la ruta y de nuevo dentro de la operación.
+

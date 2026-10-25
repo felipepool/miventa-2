@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ConceptoTarifa;
 use App\Models\Categoria;
 use App\Models\MovimientoStock;
 use App\Models\Negocio;
@@ -13,7 +14,7 @@ uses(RefreshDatabase::class);
 
 function adminInventario(): User
 {
-    return User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
+    return User::factory()->for(Negocio::factory()->conPlanContratado()->conAdicional(ConceptoTarifa::Inventario)->conSucursalPrincipal())->admin()->create();
 }
 
 function sucursalPrincipalDe(User $admin): Sucursal

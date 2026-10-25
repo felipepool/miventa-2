@@ -10,18 +10,19 @@ enum ConceptoTarifa: string
     case Documentos = 'documentos';
     case Mesas = 'mesas';
     case Kds = 'kds';
+    case Inventario = 'inventario';
 
     /** @return list<self> */
     public static function adicionales(): array
     {
-        return [self::Documentos, self::Mesas, self::Kds];
+        return [self::Documentos, self::Mesas, self::Kds, self::Inventario];
     }
 
     public function etiqueta(): string
     {
         return match ($this) {
             self::Plan => 'Plan', self::Sucursal => 'Sucursal adicional', self::Caja => 'Caja adicional',
-            self::Documentos => 'Facturación electrónica', self::Mesas => 'Gestión de mesas', self::Kds => 'KDS',
+            self::Documentos => 'Facturación electrónica', self::Mesas => 'Gestión de mesas', self::Kds => 'KDS', self::Inventario => 'Inventario',
         };
     }
 }

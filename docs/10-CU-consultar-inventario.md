@@ -9,7 +9,7 @@ Permitir al negocio ver las existencias de los productos que controlan stock en 
 - Usuario autenticado con permiso `gestionar_inventario`.
 
 ### Precondiciones
-- Hay una sucursal activa seleccionada y el negocio está operativo.
+- Hay una sucursal activa seleccionada, el negocio está operativo y el adicional Inventario está activo (en prueba o contratado; ver 11-CU-acceso-inventario-contratado).
 
 ### Flujo principal
 1. El usuario abre Inventario.
@@ -23,6 +23,7 @@ Permitir al negocio ver las existencias de los productos que controlan stock en 
 - Filtro `stock` distinto de `bajo`: `422`.
 - Stock mínimo negativo, no numérico, con decimales no permitidos o sobre el máximo: `422` en `stock_minimo`.
 - Producto de otro negocio o inexistente: `404`. Producto sin control de stock: `422`.
+- Adicional Inventario no contratado: `403` con `code: adicional_no_contratado`.
 - Falta de permiso: `403`.
 
 ### Reglas de negocio
@@ -76,3 +77,4 @@ Permitir al negocio ver las existencias de los productos que controlan stock en 
 - La ruta exige autenticación, `gestionar_inventario` y sucursal seleccionada; los modelos se limitan al negocio y a la sucursal actuales.
 - Los identificadores internos no se exponen; solo el ULID público del producto.
 - El permiso se vuelve a comprobar dentro de la operación de escritura.
+

@@ -35,7 +35,7 @@ test('a trial lasts fourteen days and expires at its exact boundary', function (
     $negocio = $admin->negocio;
     expect($negocio->prueba_hasta->equalTo($negocio->prueba_desde->addDays(14)))->toBeTrue();
     $this->actingAs($admin)->getJson('/api/v1/me')->assertJsonPath('data.contexto.suscripcion.en_prueba', true)
-        ->assertJsonPath('data.contexto.suscripcion.adicionales_activos', ['documentos', 'mesas', 'kds'])
+        ->assertJsonPath('data.contexto.suscripcion.adicionales_activos', ['documentos', 'mesas', 'kds', 'inventario'])
         ->assertJsonPath('data.contexto.suscripcion.facturacion.valor_tributario', false);
     $this->travelTo($negocio->prueba_hasta);
     $this->getJson('/api/v1/negocio')->assertOk();

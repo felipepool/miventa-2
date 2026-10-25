@@ -14,12 +14,14 @@ interface ItemMenu {
     label: string;
     icon: string;
     permiso?: string;
+    /** Adicional que el negocio debe tener activo (en prueba o contratado) para ver el ítem. */
+    adicional?: string;
 }
 
 /** Ítems del menú; crece con cada módulo que se incorpora. */
 const ITEMS: ItemMenu[] = [
     { href: '/dashboard', label: 'Inicio', icon: 'speedometer2' },
-    { href: '/inventario', label: 'Inventario', icon: 'boxes', permiso: 'gestionar_inventario' },
+    { href: '/inventario', label: 'Inventario', icon: 'boxes', permiso: 'gestionar_inventario', adicional: 'inventario' },
 ];
 
 const CATALOGO: ItemMenu[] = [
@@ -43,6 +45,8 @@ const ADMINISTRACION: ItemMenu[] = [
 export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
     const { contexto, permisos } = useSesion();
     const { negocio } = contexto;
+    const adicionalesActivos = contexto.suscripcion?.adicionales_activos ?? [];
+    const visible = (item: ItemMenu) => (!item.permiso || permisos.includes(item.permiso)) && (!item.adicional || adicionalesActivos.includes(item.adicional));
     const { pathname } = useLocation();
     const catalogo = CATALOGO.filter((item) => !item.permiso || permisos.includes(item.permiso));
     const administracion = ADMINISTRACION.filter((item) => !item.permiso || permisos.includes(item.permiso));
@@ -76,7 +80,7 @@ export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
                 </div>
 
                 <nav className="app-sidebar__nav" aria-label="Menú principal">
-                    {ITEMS.filter((item) => !item.permiso || permisos.includes(item.permiso)).map((item) => (
+                    {ITEMS.filter(visible).map((item) => (
                         <NavLink key={item.href} to={item.href} className="app-sidebar__link" onClick={onCerrar}>
                             <Icon name={item.icon} />
                             {item.label}
@@ -141,3 +145,4 @@ export default function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
         </>
     );
 }
+

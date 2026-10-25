@@ -2,9 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Enums\ConceptoTarifa;
 use App\Enums\Modulo;
 use App\Enums\Plan;
 use App\Models\Negocio;
+use App\Models\NegocioAdicional;
 use App\Models\Sucursal;
 use App\Models\Suscripcion;
 use App\Models\Tarifa;
@@ -73,6 +75,16 @@ class NegocioFactory extends Factory
                 $tarifa->update(['precio_uf' => '1.0000']);
             }
             Suscripcion::factory()->for($negocio)->create();
+        });
+    }
+
+    /** Negocio con el adicional contratado desde hace un día, al precio vigente de su plan. */
+    public function conAdicional(ConceptoTarifa $concepto): static
+    {
+        return $this->afterCreating(function (Negocio $negocio) use ($concepto): void {
+            $tarifa = Tarifa::where('concepto', $concepto)->where('plan', $negocio->plan)->sole();
+            (new NegocioAdicional)->forceFill(['negocio_id' => $negocio->id, 'tarifa_id' => $tarifa->id,
+                'desde' => now()->subDay(), 'aceptado_at' => now()->subDay()])->save();
         });
     }
 

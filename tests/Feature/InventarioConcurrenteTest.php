@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ConceptoTarifa;
 use App\Models\MovimientoStock;
 use App\Models\Negocio;
 use App\Models\Producto;
@@ -22,7 +23,7 @@ if (($_ENV['DB_CONNECTION'] ?? getenv('DB_CONNECTION')) === 'mysql') {
 }
 
 test('two simultaneous exits never leave the stock negative on mysql', function () {
-    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conSucursalPrincipal())->admin()->create();
+    $admin = User::factory()->for(Negocio::factory()->conPlanContratado()->conAdicional(ConceptoTarifa::Inventario)->conSucursalPrincipal())->admin()->create();
     $sucursal = $admin->negocio->sucursales()->where('es_principal', true)->sole();
     $producto = Producto::factory()->for($admin->negocio)->create();
     Stock::factory()->create(['producto_id' => $producto->id, 'negocio_id' => $admin->negocio_id, 'sucursal_id' => $sucursal->id, 'cantidad' => '10.000']);

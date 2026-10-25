@@ -10,6 +10,7 @@ import OlvideContrasena from '@/pages/Auth/OlvideContrasena';
 import RestablecerContrasena from '@/pages/Auth/RestablecerContrasena';
 import Dashboard from '@/pages/Dashboard';
 import NotFoundPage from '@/pages/NotFoundPage';
+import AdicionalNoContratado from '@/pages/AdicionalNoContratado';
 import SinAcceso from '@/pages/SinAcceso';
 import UsuariosIndex from '@/pages/Usuarios/Index';
 import NuevoUsuario from '@/pages/Usuarios/Nuevo';
@@ -72,6 +73,13 @@ function RequierePermiso({ permiso }: { permiso: string }) {
     const { permisos } = useSesion();
 
     return permisos.includes(permiso) ? <Outlet /> : <SinAcceso />;
+}
+
+/** Rutas de un adicional: sin él activo (prueba o contratado) se explica cómo contratarlo. */
+function RequiereAdicional({ adicional, etiqueta }: { adicional: string; etiqueta: string }) {
+    const { contexto } = useSesion();
+
+    return contexto.suscripcion?.adicionales_activos.includes(adicional) ? <Outlet /> : <AdicionalNoContratado etiqueta={etiqueta} />;
 }
 
 function RequiereSucursal() {
@@ -149,10 +157,12 @@ export default function App() {
                             </Route>
                         </Route>
                         <Route element={<RequierePermiso permiso="gestionar_inventario" />}>
-                            <Route path="inventario" element={<InventarioIndex />}>
-                                <Route path=":productoId/movimiento" element={<MovimientoFormulario />} />
-                                <Route path=":productoId/historial" element={<HistorialMovimientos />} />
-                                <Route path=":productoId/minimo" element={<MinimoFormulario />} />
+                            <Route element={<RequiereAdicional adicional="inventario" etiqueta="Inventario" />}>
+                                <Route path="inventario" element={<InventarioIndex />}>
+                                    <Route path=":productoId/movimiento" element={<MovimientoFormulario />} />
+                                    <Route path=":productoId/historial" element={<HistorialMovimientos />} />
+                                    <Route path=":productoId/minimo" element={<MinimoFormulario />} />
+                                </Route>
                             </Route>
                         </Route>
                         <Route element={<RequierePermiso permiso="gestionar_sucursales" />}>
@@ -168,3 +178,4 @@ export default function App() {
         </Routes>
     );
 }
+

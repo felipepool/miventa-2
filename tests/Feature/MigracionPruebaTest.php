@@ -8,7 +8,8 @@ uses(DatabaseMigrations::class);
 
 test('migration dates existing trials from creation and leaves contracts untouched', function () {
     $this->freezeTime();
-    $this->artisan('migrate:rollback', ['--step' => 2, '--force' => true])->assertSuccessful();
+    $posteriores = DB::table('migrations')->where('migration', '>=', '2026_10_24_171919_add_prueba_to_negocios_table')->count();
+    $this->artisan('migrate:rollback', ['--step' => $posteriores, '--force' => true])->assertSuccessful();
     $ids = [];
     foreach (['vencido' => now()->subDays(20), 'reciente' => now()->subDays(3), 'contratado' => now()->subDays(90)] as $codigo => $creacion) {
         $ids[$codigo] = DB::table('negocios')->insertGetId([
