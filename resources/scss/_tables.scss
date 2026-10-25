@@ -28,6 +28,26 @@
     }
 }
 
+// En tablets y pantallas medianas la búsqueda ocupa su propia fila y los filtros
+// se reparten la siguiente, para que ninguno quede solo en una fila.
+@include media-breakpoint-between(sm, xxl) {
+    .table-toolbar__search {
+        flex-basis: 100%;
+    }
+
+    .table-toolbar__filters {
+        flex: 1 1 10rem;
+
+        > * {
+            flex: 1 1 auto;
+        }
+
+        .form-select {
+            width: 100%;
+        }
+    }
+}
+
 @include media-breakpoint-down(sm) {
     .table-toolbar__filters {
         width: 100%;
