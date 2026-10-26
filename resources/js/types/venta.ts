@@ -70,6 +70,8 @@ export interface PagoVenta {
 }
 
 export interface LineaVenta {
+    /** Posición de la línea en la venta; identifica la línea al devolverla. */
+    linea: number;
     nombre: string;
     sku: string | null;
     unidad_venta: UnidadVenta;
@@ -80,7 +82,21 @@ export interface LineaVenta {
     descuento: number;
     total: number;
     notas: string | null;
+    /** Cantidad ya devuelta; solo viene en el detalle. */
+    devuelta: string | null;
     modificadores: { grupo: string; nombre: string; cantidad: number; precio_adicional: number; total: number }[];
+}
+
+export interface DevolucionVenta {
+    id: string;
+    monto: number;
+    motivo: string;
+    reintegra_stock: boolean;
+    medio: MedioPago;
+    etiqueta: string;
+    usuario: string;
+    created_at: string;
+    items: { nombre: string; unidad_venta: UnidadVenta; cantidad: string; monto: number }[];
 }
 
 export interface Venta {
@@ -95,8 +111,42 @@ export interface Venta {
     total: number;
     notas: string | null;
     pagada_at: string;
+    anulada_at: string | null;
+    motivo_anulacion: string | null;
+    anulada_por?: string | null;
+    /** Si el turno de la venta sigue abierto; solo viene en el detalle. */
+    turno_abierto?: boolean;
+    devolucion: 'parcial' | 'total' | null;
+    total_devuelto?: number;
     vendedor?: string;
     items_count?: number;
     pagos?: PagoVenta[];
     items?: LineaVenta[];
+    devoluciones?: DevolucionVenta[];
+}
+
+/** Comprobante interno de una venta, tal como se imprime o se comparte. */
+export interface Comprobante {
+    negocio: { nombre: string; rut: string | null; direccion: string | null; telefono: string | null };
+    sucursal: string;
+    folio: number;
+    fecha: string;
+    cajero: string;
+    estado: 'pagada' | 'anulada';
+    anulada_at: string | null;
+    subtotal: number;
+    descuento: number;
+    redondeo: number;
+    total: number;
+    items: { nombre: string; unidad_venta: UnidadVenta; cantidad: string; precio_unitario: number; subtotal: number; descuento: number; total: number;
+        modificadores: { nombre: string; cantidad: number; total: number }[] }[];
+    pagos: { etiqueta: string; monto: number; recibido: number | null; vuelto: number }[];
+    devoluciones: { fecha: string; etiqueta: string; monto: number; items: { nombre: string; unidad_venta: UnidadVenta; cantidad: string }[] }[];
+}
+
+/** Respuesta de `GET /api/v1/ventas/{venta}/enlace-comprobante`. */
+export interface ComprobanteConEnlace {
+    comprobante: Comprobante;
+    enlace: string;
+    expira_at: string;
 }

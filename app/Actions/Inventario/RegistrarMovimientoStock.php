@@ -87,6 +87,34 @@ class RegistrarMovimientoStock
         }, 3);
     }
 
+    /**
+     * Devuelve al stock de la sucursal lo descontado por una venta, al anularla (`anulacion`) o
+     * al devolver productos que vuelven a estar a la venta (`devolucion`).
+     */
+    public function reintegrarPorVenta(Producto $producto, Sucursal $sucursal, User $usuario, string $cantidad, Venta $venta, string $tipo): MovimientoStock
+    {
+        return DB::transaction(function () use ($producto, $sucursal, $usuario, $cantidad, $venta, $tipo): MovimientoStock {
+            $stock = $this->bloquearStock($producto, $sucursal);
+            $nuevoStock = bcadd($stock->cantidad, $cantidad, self::ESCALA);
+            $stock->update(['cantidad' => $nuevoStock]);
+
+            $movimiento = new MovimientoStock;
+            $movimiento->forceFill([
+                'negocio_id' => $producto->negocio_id,
+                'sucursal_id' => $sucursal->id,
+                'producto_id' => $producto->id,
+                'user_id' => $usuario->id,
+                'venta_id' => $venta->id,
+                'tipo' => $tipo,
+                'cantidad' => bcadd($cantidad, '0', self::ESCALA),
+                'stock_resultante' => $nuevoStock,
+                'motivo' => ($tipo === 'anulacion' ? 'Anulación de la venta N° ' : 'Devolución de la venta N° ').$venta->numero_sucursal,
+            ])->save();
+
+            return $movimiento->refresh();
+        }, 3);
+    }
+
     public function fijarMinimo(Producto $producto, Sucursal $sucursal, string $minimo): Stock
     {
         return DB::transaction(function () use ($producto, $sucursal, $minimo): Stock {

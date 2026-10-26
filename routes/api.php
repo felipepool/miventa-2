@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\CambiarEstadoProductoController;
 use App\Http\Controllers\Api\V1\CambiarEstadoSucursalController;
 use App\Http\Controllers\Api\V1\CambiarEstadoUsuarioController;
 use App\Http\Controllers\Api\V1\CategoriaController;
+use App\Http\Controllers\Api\V1\ComprobanteController;
 use App\Http\Controllers\Api\V1\CotizacionCajaController;
 use App\Http\Controllers\Api\V1\CotizacionSucursalController;
 use App\Http\Controllers\Api\V1\GrupoModificadorController;
@@ -53,6 +54,12 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api'
         Route::get('ventas', [VentaController::class, 'index'])->name('ventas.index');
         Route::post('ventas', [VentaController::class, 'store'])->name('ventas.store');
         Route::get('ventas/{venta}', [VentaController::class, 'show'])->name('ventas.show');
+        Route::get('ventas/{venta}/enlace-comprobante', [VentaController::class, 'comprobante'])->name('ventas.comprobante');
+    });
+
+    Route::middleware([RequerirSucursalActual::class, 'can:anular_ventas'])->group(function () {
+        Route::post('ventas/{venta}/anular', [VentaController::class, 'anular'])->name('ventas.anular');
+        Route::post('ventas/{venta}/devoluciones', [VentaController::class, 'devolver'])->name('ventas.devoluciones');
     });
 
     Route::middleware([RequerirSucursalActual::class, 'can:operar_caja'])->group(function () {
@@ -110,3 +117,7 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'throttle:api'
         Route::get('sucursales/{sucursal}/cotizacion', CotizacionSucursalController::class)->name('sucursales.cotizacion');
     });
 });
+
+// Comprobante por enlace público: sin sesión, solo con una firma válida y vigente.
+Route::get('v1/comprobantes/{venta}', ComprobanteController::class)
+    ->middleware(['signed:relative', 'throttle:30,1'])->name('api.v1.comprobantes.show');

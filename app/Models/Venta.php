@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
  * Venta de mostrador, pagada al momento. Los montos son pesos enteros con IVA
@@ -50,6 +51,63 @@ class Venta extends Model
         return $this->hasMany(Pago::class)->orderBy('id');
     }
 
+    /** @return HasMany<Devolucion, $this> */
+    public function devoluciones(): HasMany
+    {
+        return $this->hasMany(Devolucion::class)->orderBy('id');
+    }
+
+    /**
+     * Líneas devueltas en todas las devoluciones de la venta.
+     *
+     * @return HasManyThrough<DevolucionItem, Devolucion, $this>
+     */
+    public function itemsDevueltos(): HasManyThrough
+    {
+        return $this->hasManyThrough(DevolucionItem::class, Devolucion::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function anuladaPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'anulada_por');
+    }
+
+    public function estaAnulada(): bool
+    {
+        return $this->estado === EstadoVenta::Anulada;
+    }
+
+    /**
+     * Cantidad devuelta de cada línea, por id de la línea. Usa las devoluciones con sus líneas cargadas.
+     *
+     * @return array<int, string>
+     */
+    public function cantidadesDevueltas(): array
+    {
+        $devueltas = [];
+
+        foreach ($this->devoluciones as $devolucion) {
+            foreach ($devolucion->items as $item) {
+                $devueltas[$item->venta_item_id] = bcadd($devueltas[$item->venta_item_id] ?? '0', $item->cantidad, 3);
+            }
+        }
+
+        return $devueltas;
+    }
+
+    /**
+     * `total` si se devolvió todo lo vendido, `parcial` si solo una parte y `null` sin devoluciones.
+     */
+    public static function estadoDevolucion(string $vendida, string $devuelta): ?string
+    {
+        if (bccomp($devuelta, '0', 3) <= 0) {
+            return null;
+        }
+
+        return bccomp($devuelta, $vendida, 3) >= 0 ? 'total' : 'parcial';
+    }
+
     protected function casts(): array
     {
         return [
@@ -61,6 +119,7 @@ class Venta extends Model
             'redondeo' => 'integer',
             'total' => 'integer',
             'pagada_at' => 'datetime',
+            'anulada_at' => 'datetime',
         ];
     }
 }

@@ -9,7 +9,7 @@ import type { Paginated } from '@/types/api';
 import type { ItemInventario, MovimientoStock, TipoMovimientoHistorial } from '@/types/inventario';
 import DialogoProducto from './DialogoProducto';
 
-const ETIQUETAS: Record<TipoMovimientoHistorial, string> = { entrada: 'Entrada', salida: 'Salida', ajuste: 'Ajuste', venta: 'Venta' };
+const ETIQUETAS: Record<TipoMovimientoHistorial, string> = { entrada: 'Entrada', salida: 'Salida', ajuste: 'Ajuste', venta: 'Venta', anulacion: 'Venta anulada', devolucion: 'Devolución' };
 
 export default function Historial() {
     return <DialogoProducto title="Historial de movimientos" size="lg">

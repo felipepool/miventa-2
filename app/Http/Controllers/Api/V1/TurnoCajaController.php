@@ -85,6 +85,7 @@ class TurnoCajaController extends Controller
         return TurnoCaja::query()
             ->withSum(['movimientos as ingresos' => fn (Builder $query) => $query->where('tipo', 'ingreso')], 'monto')
             ->withSum(['movimientos as retiros' => fn (Builder $query) => $query->where('tipo', 'retiro')], 'monto')
-            ->withSum(['pagos as ventas_efectivo' => fn (Builder $query) => $query->where('pagos.medio', 'efectivo')->where('ventas.estado', 'pagada')], 'monto');
+            ->withSum(['pagos as ventas_efectivo' => fn (Builder $query) => $query->where('pagos.medio', 'efectivo')->where('ventas.estado', 'pagada')], 'monto')
+            ->withSum(['devoluciones as devoluciones_efectivo' => fn (Builder $query) => $query->where('medio', 'efectivo')], 'monto');
     }
 }

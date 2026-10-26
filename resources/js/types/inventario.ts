@@ -2,8 +2,8 @@ import type { OpcionCatalogo, UnidadVenta } from './catalogo';
 
 export type TipoMovimiento = 'entrada' | 'salida' | 'ajuste';
 
-/** Tipos del historial: además de los manuales, las ventas descuentan stock. */
-export type TipoMovimientoHistorial = TipoMovimiento | 'venta';
+/** Tipos del historial: además de los manuales, las ventas descuentan stock y sus anulaciones y devoluciones lo reintegran. */
+export type TipoMovimientoHistorial = TipoMovimiento | 'venta' | 'anulacion' | 'devolucion';
 
 /** Producto con sus existencias en la sucursal actual; las cantidades llegan como texto decimal. */
 export interface ItemInventario {

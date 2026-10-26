@@ -40,6 +40,7 @@ import CajaIndex from '@/pages/Caja/Index';
 import PosIndex from '@/pages/Pos/Index';
 import VentasIndex from '@/pages/Ventas/Index';
 import VentaDetalle from '@/pages/Ventas/Detalle';
+import ComprobantePublico from '@/pages/Ventas/ComprobantePublico';
 import TurnosIndex from '@/pages/Turnos/Index';
 import TurnoDetalle from '@/pages/Turnos/Detalle';
 import InventarioIndex from '@/pages/Inventario/Index';
@@ -127,6 +128,9 @@ function SoloInvitados() {
 export default function App() {
     return (
         <Routes>
+            {/* Enlace que se comparte con el cliente: no pide sesión, la firma del enlace basta. */}
+            <Route path="comprobante/:ventaId" element={<ComprobantePublico />} />
+
             <Route element={<SoloInvitados />}>
                 <Route element={<GuestLayout />}>
                     <Route path="login" element={<Login />} />

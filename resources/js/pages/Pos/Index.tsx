@@ -8,6 +8,7 @@ import CobroDialog from '@/components/pos/CobroDialog';
 import DescuentoDialog from '@/components/pos/DescuentoDialog';
 import ModificadoresDialog from '@/components/pos/ModificadoresDialog';
 import ProductoTarjeta from '@/components/pos/ProductoTarjeta';
+import ComprobanteDialog from '@/components/ventas/ComprobanteDialog';
 import { FormDialog, Icon } from '@/components/ui';
 import { formatearMonto } from '@/lib/caja';
 import { mensajeDeError } from '@/lib/http';
@@ -42,6 +43,7 @@ export default function PosIndex() {
     const [categoria, setCategoria] = useState('');
     const [dialogo, setDialogo] = useState<Dialogo | null>(null);
     const [vendida, setVendida] = useState<Venta | null>(null);
+    const [comprobante, setComprobante] = useState<string | null>(null);
     const resumen = useMemo(() => resumirCarrito(lineas, descuentoVenta), [lineas, descuentoVenta]);
     const enCarrito = useMemo(() => lineas.reduce((cantidades, linea) => cantidades.set(linea.producto.id, Number(sumarCantidades(String(cantidades.get(linea.producto.id) ?? 0), linea.cantidad))), new Map<string, number>()), [lineas]);
     const hayDescuentos = descuentoVenta !== null || lineas.some((linea) => linea.descuento !== null);
@@ -82,7 +84,7 @@ export default function PosIndex() {
 
     const reiniciar = () => { setLineas([]); setDescuentoVenta(null); setMotivo(''); setDialogo(null); };
 
-    const puedeCobrar = lineas.length > 0 && resumen.base >= 1 && dialogo === null && vendida === null;
+    const puedeCobrar = lineas.length > 0 && resumen.base >= 1 && dialogo === null && vendida === null && comprobante === null;
 
     /** En escritorio, F9 abre el cobro, igual que el botón Cobrar del carrito. */
     useEffect(() => {
@@ -167,15 +169,17 @@ export default function PosIndex() {
         {dialogo?.tipo === 'carrito' && <FormDialog title="Carrito" size="md" onHide={() => setDialogo(null)} actions={<Button variant="outline-secondary" onClick={() => setDialogo(null)}>Seguir vendiendo</Button>}>{panel}</FormDialog>}
         {dialogo?.tipo === 'cobro' && <CobroDialog base={resumen.base} medios={catalogo.medios_pago} construirVenta={construirVenta} onHide={() => setDialogo(null)}
             onVendida={(venta) => { reiniciar(); setVendida(venta); }} />}
-        {vendida && <VentaRegistrada venta={vendida} onNueva={() => setVendida(null)} />}
+        {vendida && <VentaRegistrada venta={vendida} onNueva={() => setVendida(null)} onComprobante={() => { setComprobante(vendida.id); setVendida(null); }} />}
+        {comprobante && <ComprobanteDialog ventaId={comprobante} onHide={() => setComprobante(null)} />}
     </>;
 }
 
-function VentaRegistrada({ venta, onNueva }: { venta: Venta; onNueva: () => void }) {
+function VentaRegistrada({ venta, onNueva, onComprobante }: { venta: Venta; onNueva: () => void; onComprobante: () => void }) {
     const vuelto = (venta.pagos ?? []).reduce((suma, pago) => suma+pago.vuelto, 0);
 
     return <FormDialog title="Venta registrada" size="md" onHide={onNueva} actions={<>
         <Link to={'/ventas/'+venta.id} className="btn btn-outline-secondary d-inline-flex align-items-center">Ver detalle</Link>
+        <Button variant="outline-secondary" onClick={onComprobante}><Icon name="printer" className="me-2" />Imprimir o compartir</Button>
         <Button autoFocus onClick={onNueva}>Nueva venta</Button>
     </>}>
         <div className="text-center" role="status">

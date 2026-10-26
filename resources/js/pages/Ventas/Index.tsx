@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { Badge, Button, Form, Spinner } from 'react-bootstrap';
+import { Button, Form, Spinner } from 'react-bootstrap';
 import { Link, useSearchParams } from 'react-router-dom';
 import { DataTable, PageHeader, TableActions } from '@/components/ui';
+import EstadoVenta from '@/components/ventas/EstadoVenta';
 import type { Column } from '@/components/ui';
 import { formatearFechaHora, formatearMonto } from '@/lib/caja';
 import { mensajeDeError } from '@/lib/http';
@@ -24,9 +25,10 @@ export default function VentasIndex() {
     const folio = parametros.get('folio') ?? '';
     const usuario = parametros.get('usuario') ?? '';
     const medio = parametros.get('medio') ?? '';
+    const estado = parametros.get('estado') ?? '';
     const desde = parametros.get('desde') ?? '';
     const hasta = parametros.get('hasta') ?? '';
-    const hayFiltros = Boolean(folio || usuario || medio || desde || hasta);
+    const hayFiltros = Boolean(folio || usuario || medio || estado || desde || hasta);
     const meta = listado.datos?.meta;
 
     useEffect(() => {
@@ -49,7 +51,7 @@ export default function VentasIndex() {
         { header: 'Productos', cell: (venta) => venta.items_count ?? 0 },
         { header: 'Pago', cell: (venta) => (venta.pagos ?? []).map((pago) => pago.etiqueta).join(' + ') },
         { header: 'Total', cell: (venta) => <strong>{formatearMonto(venta.total)}</strong> },
-        { header: 'Estado', cell: (venta) => <Badge pill bg={venta.estado === 'pagada' ? 'success-subtle' : 'secondary-subtle'} text={venta.estado === 'pagada' ? 'success' : 'secondary'}>{venta.estado === 'pagada' ? 'Pagada' : 'Anulada'}</Badge> },
+        { header: 'Estado', cell: (venta) => <><EstadoVenta venta={venta} />{(venta.total_devuelto ?? 0) > 0 && <small className="d-block text-body-secondary">Devuelto {formatearMonto(venta.total_devuelto ?? 0)}</small>}</> },
         { header: 'Acciones', mobile: 'actions', cell: (venta) => <TableActions recordLabel={'venta '+venta.folio} primaryAction={{ label: 'Ver', icon: 'eye', to: '/ventas/'+venta.id }} actions={[]} /> },
     ];
     let status: ReactNode;
@@ -77,6 +79,10 @@ export default function VentasIndex() {
                     <div className="table-toolbar__filters"><Form.Group controlId="ventas-medio"><Form.Label>Medio de pago</Form.Label>
                         <Form.Select className="w-100" value={medio} disabled={!listado.datos} onChange={(event) => filtrar('medio', event.target.value)}>
                             <option value="">Todos</option>{(listado.datos?.medios_pago ?? []).map((opcion) => <option key={opcion.value} value={opcion.value}>{opcion.label}</option>)}
+                        </Form.Select></Form.Group></div>
+                    <div className="table-toolbar__filters"><Form.Group controlId="ventas-estado"><Form.Label>Estado</Form.Label>
+                        <Form.Select className="w-100" value={estado} onChange={(event) => filtrar('estado', event.target.value)}>
+                            <option value="">Todos</option><option value="pagada">Pagadas</option><option value="con_devolucion">Con devolución</option><option value="anulada">Anuladas</option>
                         </Form.Select></Form.Group></div>
                     <div className="table-toolbar__filters"><Form.Group controlId="ventas-desde"><Form.Label>Desde</Form.Label>
                         <Form.Control type="date" value={desde} max={hasta || undefined} onChange={(event) => filtrar('desde', event.target.value)} /></Form.Group></div>

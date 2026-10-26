@@ -74,6 +74,16 @@ class TurnoCaja extends Model
         return $this->hasManyThrough(Pago::class, Venta::class, 'turno_caja_id');
     }
 
+    /**
+     * Devoluciones pagadas desde este turno, sean de ventas de este u otro turno.
+     *
+     * @return HasMany<Devolucion, $this>
+     */
+    public function devoluciones(): HasMany
+    {
+        return $this->hasMany(Devolucion::class, 'turno_caja_id');
+    }
+
     public function estaAbierto(): bool
     {
         return $this->cerrada_at === null;
@@ -81,12 +91,12 @@ class TurnoCaja extends Model
 
     /**
      * Efectivo que debería haber en la caja: monto inicial, más ingresos y ventas en efectivo
-     * (sin el vuelto), menos retiros.
+     * (sin el vuelto), menos retiros y devoluciones en efectivo.
      */
     public function calcularEsperado(): int
     {
         return $this->monto_inicial + $this->sumarMovimientos(TipoMovimientoCaja::Ingreso) - $this->sumarMovimientos(TipoMovimientoCaja::Retiro)
-            + $this->sumarVentasEfectivo();
+            + $this->sumarVentasEfectivo() - $this->sumarDevolucionesEfectivo();
     }
 
     /** Efectivo cobrado en las ventas pagadas del turno, descontado el vuelto. */
@@ -95,6 +105,12 @@ class TurnoCaja extends Model
         return (int) Pago::query()->join('ventas', 'ventas.id', '=', 'pagos.venta_id')
             ->where('ventas.turno_caja_id', $this->id)->where('ventas.estado', EstadoVenta::Pagada->value)
             ->where('pagos.medio', MedioPago::Efectivo->value)->sum('pagos.monto');
+    }
+
+    /** Efectivo devuelto a clientes desde este turno. */
+    public function sumarDevolucionesEfectivo(): int
+    {
+        return (int) $this->devoluciones()->where('medio', MedioPago::Efectivo)->sum('monto');
     }
 
     public function sumarMovimientos(TipoMovimientoCaja $tipo): int
