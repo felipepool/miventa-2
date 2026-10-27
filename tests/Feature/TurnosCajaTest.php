@@ -259,6 +259,22 @@ test('shifts can be filtered by box, user, state and dates', function () {
     $this->getJson('/api/v1/turnos?desde=2026-10-10&hasta=2026-10-01')->assertUnprocessable()->assertJsonValidationErrors('hasta');
 });
 
+test('the shift history shows five shifts per page unless another allowed size is requested', function () {
+    $negocio = negocioConCaja();
+    $caja = cajaDe($negocio);
+    $cajero = cajeroDe($negocio);
+    foreach (range(1, 6) as $numero) {
+        TurnoCaja::factory()->cerrado()->create(['caja_id' => $caja->id, 'user_id' => $cajero->id, 'numero' => $numero]);
+    }
+    $this->actingAs(adminDe($negocio));
+    $this->getJson('/api/v1/turnos')->assertOk()->assertJsonCount(5, 'data')->assertJsonPath('meta.per_page', 5)->assertJsonPath('meta.last_page', 2);
+    $this->getJson('/api/v1/turnos?per_page=10')->assertOk()->assertJsonCount(6, 'data')->assertJsonPath('meta.per_page', 10);
+});
+
+test('the shift history rejects page sizes outside the allowed list', function (string $porPagina) {
+    $this->actingAs(adminDe(negocioConCaja()))->getJson('/api/v1/turnos?per_page='.$porPagina)->assertUnprocessable()->assertJsonValidationErrors('per_page');
+})->with(['15', '0', '1000', 'todos']);
+
 test('a manager can close another persons shift but a cashier cannot', function () {
     $negocio = negocioConCaja();
     $cajero = cajeroDe($negocio);

@@ -45,6 +45,7 @@ class VentaController extends Controller
             'desde' => ['nullable', 'date_format:Y-m-d'],
             'hasta' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:desde'],
             'page' => ['sometimes', 'integer', 'min:1'],
+            'per_page' => ['sometimes', 'integer', Rule::in(self::POR_PAGINA)],
         ]);
         $veTodas = $this->veTodas($request);
         $ventas = Venta::with(['vendedor', 'pagos'])->withCount('items')
@@ -60,7 +61,7 @@ class VentaController extends Controller
             })
             ->when($filtros['desde'] ?? null, fn (Builder $query, string $desde) => $query->whereDate('pagada_at', '>=', $desde))
             ->when($filtros['hasta'] ?? null, fn (Builder $query, string $hasta) => $query->whereDate('pagada_at', '<=', $hasta))
-            ->orderByDesc('pagada_at')->orderByDesc('id')->paginate(15)->withQueryString();
+            ->orderByDesc('pagada_at')->orderByDesc('id')->paginate((int) ($filtros['per_page'] ?? self::POR_PAGINA[0]))->withQueryString();
 
         return VentaResource::collection($ventas)->additional([
             'usuarios' => $veTodas

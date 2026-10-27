@@ -43,7 +43,16 @@ export default function TurnosIndex() {
         nuevos.delete('page');
         return nuevos;
     });
-    const limpiarFiltros = () => setParametros({});
+    const limpiarFiltros = () => setParametros((actuales) => {
+        const porPagina = actuales.get('per_page');
+        return new URLSearchParams(porPagina ? { per_page: porPagina } : undefined);
+    });
+    const cambiarPorPagina = (cantidad: number) => setParametros((actuales) => {
+        const nuevos = new URLSearchParams(actuales);
+        nuevos.set('per_page', String(cantidad));
+        nuevos.delete('page');
+        return nuevos;
+    });
 
     const columnas: Column<TurnoCaja>[] = [
         { header: 'Turno', mobile: 'title', cell: (turno) => <><strong>{turno.caja?.nombre} · Turno {turno.numero}</strong><small className="d-block text-body-secondary">{turno.usuario}</small></> },
@@ -69,6 +78,7 @@ export default function TurnosIndex() {
         <DataTable columns={columnas} rows={listado.datos?.data ?? []} rowKey={(turno) => turno.id} caption="Turnos de caja de la sucursal"
             status={status} busy={listado.cargando} meta={meta} emptyIcon="clock-history"
             onPageChange={(pagina) => setParametros((actuales) => { const nuevos = new URLSearchParams(actuales); nuevos.set('page', String(pagina)); return nuevos; })}
+            onPerPageChange={cambiarPorPagina}
             emptyMessage={hayFiltros ? 'No encontramos turnos con estos filtros.' : 'Todavía no hay turnos. Abre tu caja para empezar.'}
             emptyAction={hayFiltros ? <Button variant="outline-secondary" onClick={limpiarFiltros}>Ver todos los turnos</Button> : <Link to="/caja" className="btn btn-primary">Abrir caja</Link>}
             toolbar={<div role="search" aria-label="Filtrar turnos">

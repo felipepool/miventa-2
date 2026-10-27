@@ -43,7 +43,16 @@ export default function VentasIndex() {
         nuevos.delete('page');
         return nuevos;
     }, { replace: campo === 'folio' });
-    const limpiarFiltros = () => setParametros({});
+    const limpiarFiltros = () => setParametros((actuales) => {
+        const porPagina = actuales.get('per_page');
+        return new URLSearchParams(porPagina ? { per_page: porPagina } : undefined);
+    });
+    const cambiarPorPagina = (cantidad: number) => setParametros((actuales) => {
+        const nuevos = new URLSearchParams(actuales);
+        nuevos.set('per_page', String(cantidad));
+        nuevos.delete('page');
+        return nuevos;
+    });
 
     const columnas: Column<Venta>[] = [
         { header: 'Venta', mobile: 'title', cell: (venta) => <><strong>N° {venta.folio}</strong><small className="d-block text-body-secondary">{venta.vendedor}</small></> },
@@ -66,6 +75,7 @@ export default function VentasIndex() {
         <DataTable columns={columnas} rows={listado.datos?.data ?? []} rowKey={(venta) => venta.id} caption="Ventas de la sucursal"
             status={status} busy={listado.cargando} meta={meta} emptyIcon="receipt"
             onPageChange={(pagina) => setParametros((actuales) => { const nuevos = new URLSearchParams(actuales); nuevos.set('page', String(pagina)); return nuevos; })}
+            onPerPageChange={cambiarPorPagina}
             emptyMessage={hayFiltros ? 'No encontramos ventas con estos filtros.' : 'Todavía no hay ventas registradas.'}
             emptyAction={hayFiltros ? <Button variant="outline-secondary" onClick={limpiarFiltros}>Ver todas las ventas</Button> : <Link to="/pos" className="btn btn-primary">Ir a vender</Link>}
             toolbar={<div role="search" aria-label="Filtrar ventas">

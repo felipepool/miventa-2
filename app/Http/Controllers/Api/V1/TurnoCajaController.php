@@ -32,6 +32,7 @@ class TurnoCajaController extends Controller
             'desde' => ['nullable', 'date_format:Y-m-d'],
             'hasta' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:desde'],
             'page' => ['sometimes', 'integer', 'min:1'],
+            'per_page' => ['sometimes', 'integer', Rule::in(self::POR_PAGINA)],
         ]);
         $veTodos = $this->veTodos($request);
         $turnos = $this->consultaConTotales()->with(['caja', 'usuario', 'cerradoPor'])
@@ -41,7 +42,7 @@ class TurnoCajaController extends Controller
             ->when($filtros['estado'] ?? null, fn (Builder $query, string $estado) => $estado === 'abierto' ? $query->whereNull('cerrada_at') : $query->whereNotNull('cerrada_at'))
             ->when($filtros['desde'] ?? null, fn (Builder $query, string $desde) => $query->whereDate('abierta_at', '>=', $desde))
             ->when($filtros['hasta'] ?? null, fn (Builder $query, string $hasta) => $query->whereDate('abierta_at', '<=', $hasta))
-            ->orderByDesc('abierta_at')->orderByDesc('id')->paginate(15)->withQueryString();
+            ->orderByDesc('abierta_at')->orderByDesc('id')->paginate((int) ($filtros['per_page'] ?? self::POR_PAGINA[0]))->withQueryString();
 
         return TurnoCajaResource::collection($turnos)->additional([
             'cajas' => Caja::where('sucursal_id', $actual->id())->orderBy('nombre')->orderBy('id')->get()->map(fn (Caja $caja) => $caja->datosPublicos('nombre'))->all(),

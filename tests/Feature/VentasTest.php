@@ -381,6 +381,21 @@ test('the sales history can be filtered', function () {
     $this->getJson('/api/v1/ventas?desde=2026-10-10&hasta=2026-10-01')->assertUnprocessable()->assertJsonValidationErrors('hasta');
 });
 
+test('the sales history shows five sales per page unless another allowed size is requested', function () {
+    $negocio = negocioDeVentas();
+    $admin = vendedorConTurno($negocio, 'admin');
+    Venta::factory()->count(6)->sequence(fn ($secuencia) => ['numero' => $secuencia->index + 1, 'numero_sucursal' => $secuencia->index + 1])
+        ->create(['turno_caja_id' => TurnoCaja::sole()->id, 'user_id' => $admin->id]);
+    $this->actingAs($admin);
+    $this->getJson('/api/v1/ventas')->assertOk()->assertJsonCount(5, 'data')->assertJsonPath('meta.per_page', 5)->assertJsonPath('meta.last_page', 2);
+    $this->getJson('/api/v1/ventas?per_page=10')->assertOk()->assertJsonCount(6, 'data')->assertJsonPath('meta.per_page', 10);
+});
+
+test('the sales history rejects page sizes outside the allowed list', function (string $porPagina) {
+    $negocio = negocioDeVentas();
+    $this->actingAs(vendedorConTurno($negocio, 'admin'))->getJson('/api/v1/ventas?per_page='.$porPagina)->assertUnprocessable()->assertJsonValidationErrors('per_page');
+})->with(['15', '0', '1000', 'todos']);
+
 test('sales cannot be registered when the business is read only', function () {
     $negocio = negocioDeVentas();
     $cajero = vendedorConTurno($negocio);
